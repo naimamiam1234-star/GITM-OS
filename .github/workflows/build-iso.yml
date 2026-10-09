@@ -1,0 +1,31 @@
+name: Build GITM development ISO
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/**', '.github/workflows/build-iso.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gitm-iso-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  ubuntu-iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check build privileges and capacity
+        run: |
+          sudo chroot / /bin/true
+          df -h / /var/tmp
+      - name: Build desktop foundation
+        run: sudo bash scripts/build-iso.sh
+      - name: Upload single ISO and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: GITM-OS-3.2-development-amd64
+          path: dist/
+          compression-level: 0
+          retention-days: 2
+          if-no-files-found: error
