@@ -52,6 +52,7 @@ edit('device_admin.py',"['/usr/bin/sudo','-n','/usr/local/sbin/gitm-device-admin
 print('Source integration patches applied')
 
 shutil.copy('patches/gitm_desktop.py',root/'gitm_desktop.py')
+shutil.copy('patches/desktop_radios.py',root/'desktop_radios.py')
 shutil.copy('patches/start_release.py',root/'start_release.py')
 shutil.copytree('patches/desktop-assets',root/'assets/desktop',dirs_exist_ok=True)
 edit('usb_update.py',"{'version':'3.0.0','current':str(BASE)","{'version':'3.3.0','current':str(BASE)")

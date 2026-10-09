@@ -17,7 +17,6 @@ APPS = [
  ('browser','المتصفح','الإنترنت والمراجع','browser',['falkon']),
  ('settings','الإعدادات','الشبكة والشاشة والصوت','settings',None),
  ('updates','التحديثات','النظام وبرنامج التشخيص','update',None),
- ('terminal','الطرفية','أدوات Linux','terminal',['konsole']),
  ('photos','الصور','مكتبة الصور','camera',['gwenview']),
  ('media','الوسائط','الموسيقى والفيديو','music',['vlc']),
  ('calculator','الحاسبة','حساباتك اليومية','calculator',['kcalc']),
@@ -76,7 +75,12 @@ class Desktop(QWidget):
   brand=QLabel('GITM OS');brand.setStyleSheet('font-size:21px;font-family:DejaVu Sans');top.addWidget(brand);top.addSpacing(18)
   for title,fn in [('الرئيسية',lambda:self.search.clear()),('التطبيقات',lambda:self.search.setFocus()),('النظام',self.settings)]:
    b=QPushButton(title);b.setObjectName('nav');b.clicked.connect(fn);top.addWidget(b)
-  top.addStretch();self.radio_status=QLabel('');self.radio_status.setStyleSheet('font-size:15px;color:#c9d7eb');top.addWidget(self.radio_status)
+  top.addStretch()
+  self.status_buttons={}
+  for key,title,fn in [('wifi','Wi-Fi',lambda:self.radios.show('wifi')),('bluetooth','Bluetooth',lambda:self.radios.show('bluetooth')),('battery','البطارية',self.power),('sync','تحديث الحالة',lambda:self.radios.refresh()),('search','بحث',lambda:self.search.setFocus()),('chevron','مركز التحكم',self.toggle_control)]:
+   b=QPushButton();b.setIcon(self.icon(key));b.setIconSize(QSize(24,24));b.setFixedSize(42,40);b.setObjectName('nav');b.setToolTip(title);b.setAccessibleName(title);b.clicked.connect(fn);top.addWidget(b);self.status_buttons[key]=b
+  self.status_buttons['chevron'].setCheckable(True)
+  self.battery_label=QLabel();self.battery_label.setStyleSheet('font-size:13px');top.addWidget(self.battery_label)
   self.clock=QLabel();self.clock.setStyleSheet('font-size:15px');top.addWidget(self.clock)
   power=QPushButton();power.setIcon(self.icon('power'));power.setIconSize(QSize(24,24));power.setToolTip('الطاقة');power.setObjectName('nav');power.clicked.connect(self.power);top.addWidget(power);outer.addLayout(top)
   content=QHBoxLayout();content.setSpacing(28)
@@ -87,7 +91,7 @@ class Desktop(QWidget):
   self.search=QLineEdit();self.search.setPlaceholderText('ابحث عن تطبيق، إعدادات أو أدوات…');self.search.textChanged.connect(self.filter_apps);self.search.setLayoutDirection(Qt.RightToLeft);left.addWidget(self.search)
   scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setFrameShape(QFrame.NoFrame)
   container=QWidget();grid=QGridLayout(container);grid.setContentsMargins(0,0,0,0);grid.setSpacing(14);scroll.setWidget(container);self.app_grid=grid
-  order=['autodiag','documents','photos','media','settings','files','browser','updates','calculator','terminal','install']
+  order=['autodiag','documents','photos','media','settings','files','browser','updates','calculator','install']
   for i,key in enumerate(order):
    _,name,desc,icon,command=next(a for a in APPS if a[0]==key)
    card=QWidget();v=QVBoxLayout(card);v.setContentsMargins(2,8,2,8);v.setSpacing(7);v.setAlignment(Qt.AlignCenter)
@@ -99,7 +103,7 @@ class Desktop(QWidget):
   self.control=GlassPanel(self);self.control.setFixedWidth(355);right=QVBoxLayout(self.control);right.setContentsMargins(20,20,20,20);right.setSpacing(15)
   control_title=QLabel('مركز التحكم');control_title.setStyleSheet('font-size:17px;font-weight:bold;color:#a9bbd2');right.addWidget(control_title)
   radios=QGridLayout();right.addLayout(radios)
-  for i,(title,icon,fn) in enumerate([('Wi-Fi','wifi',lambda:self.launch('network',['nm-connection-editor'])),('Bluetooth','bluetooth',lambda:self.launch('bluetooth',['blueman-manager'])),('المظهر','settings',self.choose_appearance),('وضع الطيران','airplane',self.toggle_airplane)]):
+  for i,(title,icon,fn) in enumerate([('Wi-Fi','wifi',lambda:self.radios.show('wifi')),('Bluetooth','bluetooth',lambda:self.radios.show('bluetooth')),('المظهر','settings',self.choose_appearance),('وضع الطيران','airplane',self.toggle_airplane)]):
    v=QVBoxLayout();b=QPushButton();b.setIcon(self.icon(icon));b.setIconSize(QSize(40,40));b.setFixedSize(60,60);b.setObjectName('radio');b.clicked.connect(fn);b.setAccessibleName(title);v.addWidget(b,0,Qt.AlignCenter)
    label=QLabel(title);label.setAlignment(Qt.AlignCenter);label.setStyleSheet('font-size:13px');v.addWidget(label);radios.addLayout(v,0,i)
   right.addWidget(self.divider())
@@ -112,6 +116,7 @@ class Desktop(QWidget):
   right.addWidget(self.divider())
   tip=QLabel('مساحة عمل جاهزة\nافتح ملفاتك وبرامجك، وانتقل إلى AutoDiag عند بدء فحص السيارة.');tip.setWordWrap(True);tip.setStyleSheet('font-size:16px;color:#bfcee1');right.addWidget(tip)
   self.settings_button=QPushButton('كل الإعدادات  ›');self.settings_button.clicked.connect(self.settings);right.addWidget(self.settings_button);right.addStretch();content.addWidget(self.control)
+  self.control.hide()
   outer.addLayout(content,1)
   cards=QHBoxLayout();cards.setSpacing(20)
   intro=GlassPanel(self);il=QVBoxLayout(intro);il.setContentsMargins(22,18,22,18);il.addWidget(QLabel('GITM AutoDiag'));info=QLabel('بيئة تشخيص مستقلة\nالمحولات · المركبات · التقارير');info.setWordWrap(True);info.setObjectName('muted');il.addWidget(info)
@@ -126,10 +131,22 @@ class Desktop(QWidget):
   self.stats=QLabel();self.stats.setStyleSheet('font-size:13px;color:#b5c4d9');self.stats.setWordWrap(True);sl.addWidget(self.stats);cards.addWidget(system,1);outer.addLayout(cards)
   dock=GlassPanel(self);dr=QHBoxLayout(dock);dr.setContentsMargins(15,10,15,10);dr.setSpacing(10)
   launcher=QPushButton('⠿');launcher.setObjectName('dockIcon');launcher.setStyleSheet('font-size:29px');launcher.clicked.connect(lambda:self.search.setFocus());dr.addWidget(launcher)
-  for key in ['autodiag','files','browser','documents','photos','media','terminal','settings']:
+  for key in ['autodiag','files','browser','documents','photos','media','settings']:
    item=next(a for a in APPS if a[0]==key);b=QPushButton();b.setObjectName('dockIcon');b.setIcon(self.icon(item[3]));b.setIconSize(QSize(49,49));b.setFixedSize(56,56);b.setToolTip(item[1]);b.setAccessibleName(item[1]);b.clicked.connect(lambda checked=False,k=key:self.activate(k));dr.addWidget(b)
   outer.addWidget(dock,0,Qt.AlignHCenter)
+  from desktop_radios import Radios
+  self.radios=Radios(self);self.radios.changed.connect(self.refresh_radios)
+  self.refresh_radios()
   self.refresh();self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(5000)
+ def toggle_control(self):
+  visible=not self.control.isVisible();self.control.setVisible(visible);self.status_buttons['chevron'].setChecked(visible)
+ def refresh_radios(self):
+  from desktop_radios import battery
+  self.status_buttons['wifi'].setToolTip('Wi-Fi · '+self.radios.wifi)
+  self.status_buttons['bluetooth'].setToolTip('Bluetooth · '+self.radios.bluetooth)
+  text=battery();self.battery_label.setText(text);self.status_buttons['battery'].setToolTip(text)
+  for key,value in [('wifi',self.radios.wifi),('bluetooth',self.radios.bluetooth)]:
+   self.status_buttons[key].setStyleSheet('color:#56b5ff;' if value not in ('غير متصل','متوقف','غير متوفر','غير معروف') else 'color:#a0aabd;')
  def divider(self):
   line=QFrame();line.setFixedHeight(1);line.setStyleSheet('background:rgba(162,184,211,55)');return line
  def choose_appearance(self):
@@ -160,7 +177,6 @@ class Desktop(QWidget):
   super().resizeEvent(event)
   if not hasattr(self,'app_grid'):return
   columns=5 if self.width()>=1250 else 3 if self.width()>=850 else 2
-  if hasattr(self,'control'):self.control.setVisible(self.width()>=1100)
   for i,(_,b) in enumerate(self.tiles):self.app_grid.addWidget(b,i//columns,i%columns)
   self.update_background()
  def update_background(self):
@@ -179,6 +195,7 @@ class Desktop(QWidget):
   for label,button in self.tiles: button.setVisible(text.casefold() in label.casefold())
  def refresh(self):
   self.clock.setText(datetime.datetime.now().strftime('%a %d %b  %H:%M'))
+  if hasattr(self,'radios'):self.refresh_radios()
   try:
    from system_settings import metrics
    m=metrics();g=1024**3
@@ -214,7 +231,7 @@ class Desktop(QWidget):
  def settings(self):
   d,v=self.panel('مركز التحكم والإعدادات')
   for title,key,cmd in [('Wi-Fi والشبكات','network',['nm-connection-editor']),('Bluetooth','bluetooth',['blueman-manager']),('الصوت','sound',['pavucontrol']),('الشاشة والسطوع والطاقة','power-settings',['systemsettings5']),('دقة الشاشة','display',['systemsettings5']),('لوحة المفاتيح على الشاشة','keyboard',['onboard']),('مراقبة العمليات','tasks',['plasma-systemmonitor'])]:self.action(v,title,key,cmd)
-  self.action(v,'تغيير كلمة المرور','password',['konsole','-e','passwd'])
+  self.action(v,'الحسابات وكلمة المرور','password',['systemsettings5','kcm_users'])
   d.show()
  def updates(self):
   d,v=self.panel('مركز التحديثات')
