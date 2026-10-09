@@ -1,3 +1,3 @@
 #!/bin/sh
 export QT_FFMPEG_DECODING_HW_DEVICE_TYPES=,
-exec /opt/gitm-venv/bin/python /opt/gitm/native.py "$@"
+exec /opt/gitm-venv/bin/python /opt/gitm/start_release.py "$@"

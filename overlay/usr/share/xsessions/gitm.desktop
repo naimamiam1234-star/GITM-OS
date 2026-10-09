@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=GITM OS
+Comment=GITM workspace
+Exec=/usr/local/bin/gitm-session
+Type=Application
+DesktopNames=GITM

@@ -27,8 +27,20 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: GITM-OS-3.2-integration-amd64
+          name: GITM-OS-3.3-integration-amd64
           path: dist/
           compression-level: 0
-          retention-days: 2
+          retention-days: 14
           if-no-files-found: error
+
+      - name: Upload boot diagnostics separately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: GITM-boot-diagnostics
+          path: |
+            dist/*.png
+            dist/*.log
+            dist/*.txt
+            dist/*.sha256
+          retention-days: 14

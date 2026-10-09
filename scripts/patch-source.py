@@ -50,3 +50,8 @@ p=root/'workshop_tools.py';s=p.read_text().replace('firefox-esr','falkon').repla
 # Keep original update trust; no fabricated replacement signing key.
 edit('device_admin.py',"['/usr/bin/sudo','-n','/usr/local/sbin/gitm-device-admin'","['/usr/bin/pkexec','/usr/local/sbin/gitm-device-admin'")
 print('Source integration patches applied')
+
+shutil.copy('patches/gitm_desktop.py',root/'gitm_desktop.py')
+shutil.copy('patches/start_release.py',root/'start_release.py')
+shutil.copytree('patches/desktop-assets',root/'assets/desktop',dirs_exist_ok=True)
+edit('usb_update.py',"{'version':'3.0.0','current':str(BASE)","{'version':'3.3.0','current':str(BASE)")

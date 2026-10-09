@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM workshop
-Exec=gitm-autodiag --skip-intro
-OnlyShowIn=KDE;
