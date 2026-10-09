@@ -29,7 +29,7 @@ chmod 755 "$root/usr/sbin/policy-rc.d"
 chroot "$root" /usr/bin/env DEBIAN_FRONTEND=noninteractive /bin/bash <<'ROOT'
 set -Eeuo pipefail
 apt-get update
-apt-get install -y linux-generic casper initramfs-tools dbus systemd-sysv sudo locales plasma-desktop sddm xserver-xorg network-manager plasma-nm bluez bluedevil pipewire wireplumber upower power-profiles-daemon polkit-kde-agent-1 dolphin konsole okular kate kde-config-screenlocker kde-config-gtk-style fonts-noto-core fonts-noto-color-emoji qt6-declarative-dev python3-pyqt6 python3-venv v4l-utils vlc qalculate-qt falkon
+apt-get install -y linux-generic casper initramfs-tools dbus systemd-sysv sudo locales plasma-desktop sddm xserver-xorg network-manager plasma-nm bluez bluedevil pipewire wireplumber upower power-profiles-daemon polkit-kde-agent-1 dolphin konsole okular kate kde-config-screenlocker kde-config-gtk-style fonts-noto-core fonts-noto-color-emoji qt6-declarative-dev python3-pyqt6 python3-venv v4l-utils vlc kcalc falkon
 locale-gen en_US.UTF-8 fr_FR.UTF-8 ar_MA.UTF-8
 printf 'LANG=en_US.UTF-8\n' > /etc/default/locale
 printf 'gitm\n' > /etc/hostname
