@@ -7,7 +7,7 @@ try:
  while time.monotonic()<deadline:
   if '(initramfs)' in log.read_text(errors='replace'):break
   time.sleep(1)
- command="uname -r; cat /conf/modules; /sbin/modprobe -v overlay; cat /proc/filesystems; ls /lib/modules; dmesg | tail -40; echo __PROBE_END__\n"
+ command="/sbin/modprobe -q -b overlay; echo MODPROBE_QUIET_STATUS=$?; /sbin/modprobe '' -b overlay; echo MODPROBE_EMPTY_STATUS=$?; grep -n 'no support found' /scripts/casper; uname -r; cat /conf/modules; /sbin/modprobe -v overlay; cat /proc/filesystems; ls /lib/modules; dmesg | tail -40; echo __PROBE_END__\n"
  p.stdin.write(command.encode());p.stdin.flush();time.sleep(5)
  print(log.read_text(errors='replace')[-18000:],flush=True)
 finally:
