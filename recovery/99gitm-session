@@ -1,0 +1,12 @@
+#!/bin/sh
+PREREQ=""
+case "$1" in prereqs) echo "$PREREQ"; exit 0;; esac
+# Runs only in the live boot after Casper's display-manager setup.
+cat > "$rootmnt/etc/sddm.conf" <<'CONF'
+[Autologin]
+User=gitm
+Session=gitm.desktop
+Relogin=false
+[General]
+DisplayServer=x11
+CONF

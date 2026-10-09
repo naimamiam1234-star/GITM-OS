@@ -1,0 +1,47 @@
+name: Repair and verify GITM ISO
+on:
+  push:
+    paths: ['recovery/**', '.github/workflows/repair-iso.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-OS-3.3-integration-amd64
+          run-id: 37996329268
+          github-token: ${{ github.token }}
+          path: dist
+      - name: Install repair tools
+        run: sudo apt-get update -o Acquire::Retries=0 -o Acquire::ForceIPv4=true -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 && sudo apt-get install -y -o Acquire::Retries=1 -o Acquire::ForceIPv4=true squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools dosfstools initramfs-tools-core qemu-system-x86 ovmf python3-pil
+      - name: Repair root and initramfs
+        run: sudo bash recovery/repair-iso.sh
+      - name: Verify BIOS and UEFI desktop boot
+        run: sudo python3 scripts/boot-smoke.py
+      - name: Publish verified preview ISO
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create gitm-os-3.3.0-preview dist/*.iso dist/*.sha256 dist/desktop-smoke.png dist/qt-smoke.png dist/split-smoke.png dist/bios.png dist/uefi.png --prerelease --title "GITM OS 3.3 boot-tested preview" --notes-file docs/release-3.3.md --target ${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-OS-3.3-repaired
+          path: dist/
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: repaired-boot-diagnostics
+          path: |
+            dist/*.png
+            dist/*.log
+            dist/*.txt
+            dist/*.sha256
