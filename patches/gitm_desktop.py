@@ -21,6 +21,7 @@ APPS = [
  ('photos','الصور','مكتبة الصور','camera',['gwenview']),
  ('media','الوسائط','الموسيقى والفيديو','music',['vlc']),
  ('calculator','الحاسبة','حساباتك اليومية','calculator',['kcalc']),
+ ('install','تثبيت GITM OS','التثبيت على القرص','update',['gitm-install']),
  ('documents','المستندات','قراءة ملفات PDF','reports',['okular']),
 ]
 STYLE = '''
@@ -86,7 +87,7 @@ class Desktop(QWidget):
   self.search=QLineEdit();self.search.setPlaceholderText('ابحث عن تطبيق، إعدادات أو أدوات…');self.search.textChanged.connect(self.filter_apps);self.search.setLayoutDirection(Qt.RightToLeft);left.addWidget(self.search)
   scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setFrameShape(QFrame.NoFrame)
   container=QWidget();grid=QGridLayout(container);grid.setContentsMargins(0,0,0,0);grid.setSpacing(14);scroll.setWidget(container);self.app_grid=grid
-  order=['autodiag','documents','photos','media','settings','files','browser','updates','calculator','terminal']
+  order=['autodiag','documents','photos','media','settings','files','browser','updates','calculator','terminal','install']
   for i,key in enumerate(order):
    _,name,desc,icon,command=next(a for a in APPS if a[0]==key)
    card=QWidget();v=QVBoxLayout(card);v.setContentsMargins(2,8,2,8);v.setSpacing(7);v.setAlignment(Qt.AlignCenter)

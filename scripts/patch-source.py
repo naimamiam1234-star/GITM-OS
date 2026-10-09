@@ -12,7 +12,7 @@ p=root/'native.py';s=p.read_text();a=s.index('    def ai_page(self):');b=s.index
 s=s[:a]+"    def ai_page(self):\n        import cloud_ui\n        cloud_ui.show(self)\n\n"+s[b:]
 s=s.replace("Qt.FramelessWindowHint)","Qt.Window)")
 s=s.replace("tr('انتهى الطلب · ') + str(transport.LINK.info())","tr('المحول متصل') if transport.LINK.info().get('connected') else tr('المحول غير متصل')")
-s=s.replace("3.1.0-rc1","3.2.0-integration")
+s=s.replace("3.1.0-rc1","3.3.0-integration")
 a=s.index('    from desktop_shell import Dock',s.index('def main():'));b=s.index("    if '--smoke' in sys.argv:",a)
 s=s[:a]+'''    w.showMaximized()
     if '--tool' in sys.argv:
@@ -29,7 +29,7 @@ s=s[:a]+'''    w.showMaximized()
 s=s.replace('        transport.LINK.close()','        if getattr(self,"cloud_task",None) is not None and self.cloud_task.isRunning():\n            event.ignore();return\n        transport.LINK.close()')
 p.write_text(s)
 edit('visual_theme.py','s=min(g.width()/1672,g.height()/941)','s=max(0.7,min(g.width()/1672,g.height()/941))')
-edit('visual_theme.py','3.1.0-rc1','3.2.0-integration')
+edit('visual_theme.py','3.1.0-rc1','3.3.0-integration')
 p=root/'system_settings.py';s=p.read_text();a=s.index('    tools={',s.index('def launch('));b=s.index("    if name not in tools",a)
 s=s[:a]+'''    tools={'network':['nm-connection-editor'],'bluetooth':['systemsettings5','kcm_bluetooth'],
            'sound':['systemsettings5','kcm_pulseaudio'],'display':['systemsettings5','kcm_kscreen'],
@@ -55,3 +55,18 @@ shutil.copy('patches/gitm_desktop.py',root/'gitm_desktop.py')
 shutil.copy('patches/start_release.py',root/'start_release.py')
 shutil.copytree('patches/desktop-assets',root/'assets/desktop',dirs_exist_ok=True)
 edit('usb_update.py',"{'version':'3.0.0','current':str(BASE)","{'version':'3.3.0','current':str(BASE)")
+
+shutil.copy('patches/split_workspace.py',root/'split_workspace.py')
+p=root/'native.py';s=p.read_text()
+s=s.replace("workshop_tools.launch(self,'firefox-esr'", "workshop_tools.launch(self,'falkon'")
+s=s.replace('    w.showMaximized()', "    if '--secondary' in sys.argv:\n        os.environ['GITM_NO_AUTODISCOVER']='1'\n        w.setWindowTitle('GITM AUTODIAG · Vehicle 2')\n        w.adapter_page()\n    w.showMaximized()")
+s=s.replace('    def engines_page(self):', '    def split_page(self):\n        import split_workspace\n        split_workspace.show(self)\n\n    def engines_page(self):')
+s=s.replace('        self.vehicle = {}', "        self.vehicle = {}\n        self.menuBar().addAction('Split Screen / Dual Diagnosis',self.split_page)")
+p.write_text(s)
+p=root/'transport.py';s=p.read_text().replace('  # Do not send the GITM/ELM handshake', "  if os.environ.get('GITM_NO_AUTODISCOVER')=='1':return self.info()\n  # Do not send the GITM/ELM handshake")
+s=s.replace('  self.io=self.fd=self.family', '  if self.reservation is not None:self.reservation.close();self.reservation=None\n  self.io=self.fd=self.family')
+# Reserve each adapter across processes, including primary/secondary windows.
+s=s.replace('self.lock=threading.RLock()', 'self.lock=threading.RLock(); self.reservation=None')
+s=s.replace(' def close(self):', ' def close(self):')
+s=s.replace('   self.close()\n   if kind', "   self.close()\n   import fcntl,hashlib\n   from pathlib import Path\n   scope=Path(os.environ.get('XDG_RUNTIME_DIR',str(Path.home()/'.local/share/gitm')))/'vci-locks';scope.mkdir(parents=True,exist_ok=True)\n   key=hashlib.sha256((str(kind)+':'+str(target)).encode()).hexdigest()\n   self.reservation=(scope/(key+'.lock')).open('a')\n   try:fcntl.flock(self.reservation,fcntl.LOCK_EX|fcntl.LOCK_NB)\n   except BlockingIOError:raise ConnectionError('Adapter already in use by another GITM session')\n   if kind")
+p.write_text(s)

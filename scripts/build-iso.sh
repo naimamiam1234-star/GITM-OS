@@ -48,6 +48,7 @@ systemctl enable NetworkManager sddm
 systemctl set-default graphical.target
 mkdir -p /etc/systemd/journald.conf.d
 printf "[Journal]\nForwardToConsole=yes\nTTYPath=/dev/ttyS0\nMaxLevelConsole=info\n" > /etc/systemd/journald.conf.d/gitm-test-console.conf
+printf 'overlay\nsquashfs\nloop\nisofs\n' >> /etc/initramfs-tools/modules
 update-initramfs -u -k all
 apt-get clean
 rm /usr/sbin/policy-rc.d
@@ -61,11 +62,18 @@ chroot "$root" /opt/gitm-venv/bin/pip install PySide6==6.8.3 bleak==0.22.3 odxto
 chroot "$root" /opt/gitm-venv/bin/pip freeze > "$project/dist/python-packages.txt"
 chroot "$root" /usr/bin/env QT_QPA_PLATFORM=offscreen GITM_STATE=/tmp/gitm-smoke GITM_SCREENSHOT=/tmp/gitm-native.png /opt/gitm-venv/bin/python /opt/gitm/native.py --smoke
 cp "$root/tmp/gitm-native.png" "$project/dist/qt-smoke.png"
+cp "$project/scripts/check-split.py" "$root/tmp/check-split.py"
+mkdir -p "$root/build-input" "$root/dist"
+ln -s /opt/gitm "$root/build-input/app"
+chroot "$root" /usr/bin/env QT_QPA_PLATFORM=offscreen GITM_STATE=/tmp/gitm-split-check /opt/gitm-venv/bin/python /tmp/check-split.py
+cp "$root/dist/split-smoke.png" "$project/dist/split-smoke.png"
+rm -rf "$root/build-input" "$root/dist" "$root/tmp/check-split.py" "$root/tmp/gitm-split-check"
 rm -rf "$root/tmp/gitm-smoke" "$root/tmp/gitm-native.png"
 chroot "$root" /usr/bin/env QT_QPA_PLATFORM=offscreen GITM_STATE=/tmp/gitm-desktop-smoke GITM_SCREENSHOT=/tmp/gitm-desktop.png /opt/gitm-venv/bin/python /opt/gitm/gitm_desktop.py --smoke
 cp "$root/tmp/gitm-desktop.png" "$project/dist/desktop-smoke.png"
 rm -rf "$root/tmp/gitm-desktop-smoke" "$root/tmp/gitm-desktop.png"
 chroot "$root" update-initramfs -u -k all
+python3 scripts/check-initramfs.py "$root/boot"
 mkdir -p "$root/etc/gitm"
 printf '{"product":"GITM OS","version":"3.3.0-integration","base":"Ubuntu 24.04","autodiag_integrated":true,"full_system_update_verified":false,"installer_verified":false}\n' > "$root/etc/gitm/release.json"
 chroot "$root" dpkg-query -W --showformat='${Package} ${Version}\n' > "$iso/casper/filesystem.manifest"
@@ -76,16 +84,16 @@ truncate -s 0 "$root/etc/machine-id"
 rm -f "$root/var/lib/dbus/machine-id"
 rm -rf "$root/var/lib/apt/lists/"*
 du -sx --block-size=1 "$root" | cut -f1 > "$iso/casper/filesystem.size"
-mksquashfs "$root" "$iso/casper/filesystem.squashfs" -noappend -comp xz -processors 2
+mksquashfs "$root" "$iso/casper/filesystem.squashfs" -noappend -comp zstd -Xcompression-level 8 -processors 2
 cat > "$iso/boot/grub/grub.cfg" <<'GRUB'
 set timeout=8
 set default=0
 menuentry 'GITM OS 3.3 — Integration Preview' {
- linux /casper/vmlinuz boot=casper quiet console=ttyS0,115200 console=tty0 ---
+ linux /casper/vmlinuz boot=casper console=tty0 console=ttyS0,115200 ---
  initrd /casper/initrd
 }
 menuentry 'GITM OS — Safe graphics' {
- linux /casper/vmlinuz boot=casper nomodeset console=ttyS0,115200 console=tty0 ---
+ linux /casper/vmlinuz boot=casper nomodeset console=tty0 console=ttyS0,115200 ---
  initrd /casper/initrd
 }
 GRUB
