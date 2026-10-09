@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=GITM Customers
+Exec=gitm-autodiag --tool customers
+Icon=system-users
+Categories=Utility;
+Terminal=false

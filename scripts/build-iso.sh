@@ -11,7 +11,10 @@ cleanup() {
 trap cleanup EXIT
 chroot / /bin/true
 apt-get update
-apt-get install -y debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools dosfstools
+apt-get install -y debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools dosfstools qemu-system-x86 ovmf python3-pil
+cd "$project"
+python3 scripts/fetch-source.py
+python3 scripts/patch-source.py
 mkdir -p "$iso/casper" "$iso/boot/grub" "$project/dist"
 debootstrap --arch=amd64 --variant=minbase noble "$root" http://archive.ubuntu.com/ubuntu/
 cat > "$root/etc/apt/sources.list" <<'SOURCES'
@@ -29,7 +32,7 @@ chmod 755 "$root/usr/sbin/policy-rc.d"
 chroot "$root" /usr/bin/env DEBIAN_FRONTEND=noninteractive /bin/bash <<'ROOT'
 set -Eeuo pipefail
 apt-get update
-apt-get install -y linux-generic casper initramfs-tools dbus systemd-sysv sudo locales plasma-desktop sddm xserver-xorg network-manager plasma-nm bluez bluedevil pipewire wireplumber upower power-profiles-daemon polkit-kde-agent-1 dolphin konsole okular kate kde-config-screenlocker kde-config-gtk-style fonts-noto-core fonts-noto-color-emoji qt6-declarative-dev python3-pyqt6 python3-venv v4l-utils vlc kcalc falkon
+apt-get install -y linux-generic casper initramfs-tools dbus systemd-sysv sudo locales plasma-desktop sddm xserver-xorg network-manager plasma-nm bluez bluedevil pipewire wireplumber upower power-profiles-daemon polkit-kde-agent-1 dolphin konsole okular kate kde-config-screenlocker kde-config-gtk-style fonts-noto-core fonts-noto-color-emoji qt6-declarative-dev python3-pyqt6 python3-venv v4l-utils vlc kcalc falkon gwenview plasma-systemmonitor plasma-discover kscreen kde-config-gtk-style pavucontrol onboard network-manager-gnome rfkill can-utils libxcb-cursor0 libxkbcommon-x11-0 libegl1 libopengl0 libpulse0 libnss3 calamares grub-pc-bin grub-efi-amd64-bin efibootmgr rsync btrfs-progs dosfstools partitionmanager gparted openssl python3-pip python3-serial language-pack-ar language-pack-fr
 locale-gen en_US.UTF-8 fr_FR.UTF-8 ar_MA.UTF-8
 printf 'LANG=en_US.UTF-8\n' > /etc/default/locale
 printf 'gitm\n' > /etc/hostname
@@ -42,13 +45,24 @@ export HOST="gitm"
 CASPER
 systemctl enable NetworkManager sddm
 systemctl set-default graphical.target
+mkdir -p /etc/systemd/journald.conf.d
+printf "[Journal]\nForwardToConsole=yes\nTTYPath=/dev/ttyS0\nMaxLevelConsole=info\n" > /etc/systemd/journald.conf.d/gitm-test-console.conf
 update-initramfs -u -k all
 apt-get clean
 rm /usr/sbin/policy-rc.d
 ROOT
-# Preserve upstream identification and notices. Product identity is separate.
+cp -a "$project/build-input/app" "$root/opt/gitm"
+cp -a "$project/overlay/." "$root/"
+install -D "$project/build-input/overlay/usr/share/gitm/update-public.pem" "$root/usr/share/gitm/update-public.pem"
+chmod 755 "$root/usr/local/bin/gitm-autodiag" "$root/usr/local/bin/gitm-install" "$root/usr/local/sbin/gitm-device-admin"
+chroot "$root" python3 -m venv /opt/gitm-venv
+chroot "$root" /opt/gitm-venv/bin/pip install PySide6==6.8.3 bleak==0.22.3 odxtools==11.6.2 python-can can-isotp udsoncan doipclient
+chroot "$root" /opt/gitm-venv/bin/pip freeze > "$project/dist/python-packages.txt"
+chroot "$root" /usr/bin/env QT_QPA_PLATFORM=offscreen GITM_STATE=/tmp/gitm-smoke GITM_SCREENSHOT=/tmp/gitm-native.png /opt/gitm-venv/bin/python /opt/gitm/native.py --smoke
+cp "$root/tmp/gitm-native.png" "$project/dist/qt-smoke.png"
+rm -rf "$root/tmp/gitm-smoke" "$root/tmp/gitm-native.png"
 mkdir -p "$root/etc/gitm"
-printf '{"product":"GITM OS","version":"3.2.0-development","base":"Ubuntu 24.04","stage":"desktop-foundation","autodiag_integrated":false,"full_system_update_verified":false}\n' > "$root/etc/gitm/release.json"
+printf '{"product":"GITM OS","version":"3.2.0-integration","base":"Ubuntu 24.04","autodiag_integrated":true,"full_system_update_verified":false,"installer_verified":false}\n' > "$root/etc/gitm/release.json"
 chroot "$root" dpkg-query -W --showformat='${Package} ${Version}\n' > "$iso/casper/filesystem.manifest"
 cp "$(find "$root/boot" -name 'vmlinuz-*' | sort -V | tail -1)" "$iso/casper/vmlinuz"
 cp "$(find "$root/boot" -name 'initrd.img-*' | sort -V | tail -1)" "$iso/casper/initrd"
@@ -61,18 +75,18 @@ mksquashfs "$root" "$iso/casper/filesystem.squashfs" -noappend -comp xz -process
 cat > "$iso/boot/grub/grub.cfg" <<'GRUB'
 set timeout=8
 set default=0
-menuentry 'GITM OS 3.2 — Development desktop' {
- linux /casper/vmlinuz boot=casper quiet ---
+menuentry 'GITM OS 3.2 — Integration Preview' {
+ linux /casper/vmlinuz boot=casper quiet console=ttyS0,115200 console=tty0 ---
  initrd /casper/initrd
 }
 menuentry 'GITM OS — Safe graphics' {
- linux /casper/vmlinuz boot=casper nomodeset ---
+ linux /casper/vmlinuz boot=casper nomodeset console=ttyS0,115200 console=tty0 ---
  initrd /casper/initrd
 }
 GRUB
-grub-mkrescue -o "$project/dist/GITM-OS-3.2.0-development-amd64.iso" "$iso" -- -volid GITM_OS_32
+grub-mkrescue -o "$project/dist/GITM-OS-3.2.0-integration-amd64.iso" "$iso" -- -volid GITM_OS_32
 cd "$project/dist"
-sha256sum GITM-OS-3.2.0-development-amd64.iso > GITM-OS-3.2.0-development-amd64.iso.sha256
-xorriso -indev GITM-OS-3.2.0-development-amd64.iso -report_el_torito plain > boot-layout.txt 2>&1
+sha256sum GITM-OS-3.2.0-integration-amd64.iso > GITM-OS-3.2.0-integration-amd64.iso.sha256
+xorriso -indev GITM-OS-3.2.0-integration-amd64.iso -report_el_torito plain > boot-layout.txt 2>&1
 cp "$iso/casper/filesystem.manifest" packages.txt
-printf 'Built development image; runtime boot, installation, AutoDiag, and updates are not verified.\n' > STATUS.txt
+printf 'Built development image; Qt integration smoke passed; actual guest boot results are recorded separately. Installation, vehicle hardware, authenticated cloud, and full-system updates are not verified.\n' > STATUS.txt

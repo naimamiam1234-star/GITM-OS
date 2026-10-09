@@ -1,0 +1,17 @@
+#!/usr/bin/python3
+import re,subprocess,sys
+args=sys.argv[1:]
+fixed={'wifi-on':['nmcli','radio','wifi','on'],'wifi-off':['nmcli','radio','wifi','off'],'bluetooth-on':['rfkill','unblock','bluetooth'],'bluetooth-off':['rfkill','block','bluetooth']}
+if len(args)==1 and args[0] in fixed:cmd=fixed[args[0]]
+elif len(args)==2 and args[0]=='brightness' and args[1].isdigit() and 5<=int(args[1])<=100:
+ from pathlib import Path
+ devices=list(Path('/sys/class/backlight').glob('*'))
+ if not devices:raise SystemExit('Backlight unavailable')
+ for device in devices:
+  maximum=int((device/'max_brightness').read_text());(device/'brightness').write_text(str(max(1,maximum*int(args[1])//100)))
+ raise SystemExit(0)
+elif len(args)==3 and args[0]=='can-up' and re.fullmatch(r'can[0-9]{1,2}',args[1]) and args[2] in ('125000','250000','500000','1000000'):
+ cmd=['ip','link','set',args[1],'up','type','can','bitrate',args[2]]
+elif len(args)==2 and args[0]=='can-down' and re.fullmatch(r'can[0-9]{1,2}',args[1]):cmd=['ip','link','set',args[1],'down']
+else:raise SystemExit('Unsupported device operation')
+subprocess.run(cmd,check=True,timeout=20)

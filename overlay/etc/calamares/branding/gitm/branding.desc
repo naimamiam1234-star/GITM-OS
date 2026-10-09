@@ -1,0 +1,18 @@
+---
+componentName: gitm
+strings:
+ productName: GITM OS
+ shortProductName: GITM
+ version: '3.2 Integration Preview'
+ shortVersion: '3.2'
+ bootloaderEntryName: GITM OS
+ welcomeStyleCalamares: true
+images:
+ productLogo: logo.svg
+ productIcon: logo.svg
+ productWelcome: wallpaper.svg
+style:
+ sidebarBackground: '#101c2f'
+ sidebarText: '#eef5ff'
+ sidebarTextSelect: '#ffffff'
+ sidebarTextHighlight: '#16a8dc'

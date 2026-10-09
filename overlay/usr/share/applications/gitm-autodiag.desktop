@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=GITM AutoDiag
+Name[ar]=تشخيص GITM
+Name[fr]=Diagnostic GITM
+Exec=gitm-autodiag
+Icon=applications-engineering
+Categories=Utility;
+Terminal=false
