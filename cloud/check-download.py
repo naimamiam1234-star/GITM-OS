@@ -1,6 +1,12 @@
 import urllib.request,urllib.error,json,hashlib,time
+urllib.request.install_opener(urllib.request.build_opener())
+urllib.request._opener.addheaders=[("User-Agent","Mozilla/5.0 GITM-ISO-verification")]
 BASE="https://gitm-os-download-33.naimamiam1234.workers.dev"
-m=json.load(urllib.request.urlopen(BASE+"/manifest.json",timeout=90));url=BASE+"/"+m["name"]
+try:
+ m=json.load(urllib.request.urlopen(BASE+"/manifest.json",timeout=90))
+except urllib.error.HTTPError as e:
+ print("Manifest HTTP error",e.code,e.headers,e.read(4096).decode(errors="replace"),flush=True);raise
+url=BASE+"/"+m["name"]
 def read_range(value):
  r=urllib.request.urlopen(urllib.request.Request(url,headers={"Range":value}),timeout=90)
  assert r.status==206,(r.status,r.headers)
