@@ -19,6 +19,9 @@ once the ISO is built. Cloud features require internet and user sign-in.
 
 ## Build and download
 
+A boot-tested ISO is published permanently. See [download instructions](docs/download.md)
+for the single-file link, SHA-256, and verified release-part fallback.
+
 Use **Build GITM development ISO** under GitHub Actions. The ISO artifact contains
 one bootable ISO, SHA-256, package inventories and boot reports. Boot screenshots
 and logs also have a separate small artifact. Artifacts are retained for 14 days.
