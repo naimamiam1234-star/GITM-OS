@@ -1,0 +1,24 @@
+name: Validate ISO download service
+on:
+  push:
+    paths: ['cloud/**', '.github/workflows/download-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Current platform types and static validation
+        run: |
+          npm install --no-save typescript@latest @cloudflare/workers-types@latest
+          node --check cloud/download-worker.js
+          npx tsc --allowJs --checkJs --noEmit --skipLibCheck --target ES2022 --lib es2022 --types @cloudflare/workers-types cloud/download-worker.js
+          node cloud/check-range.js
+      - name: Verify live download including full ISO SHA-256
+        run: python3 cloud/check-download.py

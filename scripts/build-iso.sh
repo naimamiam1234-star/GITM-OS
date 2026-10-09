@@ -72,6 +72,8 @@ rm -rf "$root/tmp/gitm-smoke" "$root/tmp/gitm-native.png"
 chroot "$root" /usr/bin/env QT_QPA_PLATFORM=offscreen GITM_STATE=/tmp/gitm-desktop-smoke GITM_SCREENSHOT=/tmp/gitm-desktop.png /opt/gitm-venv/bin/python /opt/gitm/gitm_desktop.py --smoke
 cp "$root/tmp/gitm-desktop.png" "$project/dist/desktop-smoke.png"
 rm -rf "$root/tmp/gitm-desktop-smoke" "$root/tmp/gitm-desktop.png"
+python3 recovery/patch-casper.py "$root"
+install -D -m755 recovery/99gitm-session "$root/usr/share/initramfs-tools/scripts/casper-bottom/99gitm-session"
 chroot "$root" update-initramfs -u -k all
 python3 scripts/check-initramfs.py "$root/boot"
 mkdir -p "$root/etc/gitm"
