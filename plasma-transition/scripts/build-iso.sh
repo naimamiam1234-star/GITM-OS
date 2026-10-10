@@ -62,7 +62,7 @@ chmod 755 "$root/usr/local/bin/gitm-desktop"
 install -D "$project/build-input/overlay/usr/share/gitm/update-public.pem" "$root/usr/share/gitm/update-public.pem"
 chmod 755 "$root/usr/local/bin/gitm-session" "$root/usr/local/bin/gitm-autodiag" "$root/usr/local/bin/gitm-install" "$root/usr/local/sbin/gitm-device-admin"
 chroot "$root" python3 -m venv /opt/gitm-venv
-chroot "$root" /opt/gitm-venv/bin/pip install 'PySide6>=6.10,<7' bleak==0.22.3 odxtools==11.6.2 python-can can-isotp udsoncan doipclient requests pyserial
+chroot "$root" /opt/gitm-venv/bin/pip install PySide6==6.12.0 bleak==3.0.2 odxtools==11.6.2 python-can can-isotp udsoncan doipclient requests pyserial
 chroot "$root" /opt/gitm-venv/bin/pip freeze > "$project/dist/python-packages.txt"
 chroot "$root" /usr/bin/env QT_QPA_PLATFORM=offscreen GITM_STATE=/tmp/gitm-smoke GITM_SCREENSHOT=/tmp/gitm-native.png /opt/gitm-venv/bin/python /opt/gitm/native.py --smoke
 cp "$root/tmp/gitm-native.png" "$project/dist/qt-smoke.png"
