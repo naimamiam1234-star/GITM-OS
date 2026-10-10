@@ -1,0 +1,6 @@
+#!/bin/sh
+export GITM_NATIVE_PLASMA=1
+export QT_QPA_PLATFORM=xcb
+export QT_FFMPEG_DECODING_HW_DEVICE_TYPES=,
+mkdir -p "$HOME/.local/share/gitm"
+exec /opt/gitm-venv/bin/python /opt/gitm/gitm_desktop.py >> "$HOME/.local/share/gitm/desktop.log" 2>&1
