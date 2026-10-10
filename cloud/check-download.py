@@ -29,3 +29,17 @@ with urllib.request.urlopen(url,timeout=120) as response:
 assert count==m["size"],(count,m["size"])
 assert sha.hexdigest()==m["sha256"],sha.hexdigest()
 print("FULL_ISO_SHA256_VERIFIED",count,sha.hexdigest(),flush=True)
+
+with urllib.request.urlopen(BASE+"/gallery",timeout=120) as album:
+ assert album.headers.get_content_type()=="text/html"
+ digest=hashlib.sha256();total=0;figures=0
+ for line in album:
+  total+=len(line);assert total<=m["gallery"]["size"]
+  digest.update(line);figures+=line.count(b"<figure ")
+assert total==m["gallery"]["size"] and digest.hexdigest()==m["gallery"]["sha256"]
+assert figures==m["gallery"]["images"]==58
+with urllib.request.urlopen(BASE+"/gallery-overview.png",timeout=90) as overview:assert overview.read(8)==bytes.fromhex("89504e470d0a1a0a")
+print("GALLERY_VERIFIED",figures,total,digest.hexdigest(),flush=True)
+request=urllib.request.Request(url,method="HEAD",headers={"Range":"bytes=0-9","If-Range":'"old-iso"'})
+r=urllib.request.urlopen(request,timeout=90);assert r.status==200
+print("If-Range protects resume across ISO revisions",flush=True)

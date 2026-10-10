@@ -1,4 +1,4 @@
-const manifest = {"name":"GITM-OS-3.3.0-integration-amd64.iso","size":3008573440,"sha256":"c39399eed36a7f6dff97e48140a096567ba75dce819b1e8a5a418bbb224fc7c8","parts":[{"name":"GITM-OS-3.3.0-integration-amd64.iso.part-01","size":1572864000,"sha256":"bd6eca3105bd3b63d0cf2e316c459965bd6c8783e78792eb6e55315fc440c0dd","url":"https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-statusfix1/GITM-OS-3.3.0-integration-amd64.iso.part-01"},{"name":"GITM-OS-3.3.0-integration-amd64.iso.part-02","size":1435709440,"sha256":"40e7c4f28d7cbacb9a2db7f3c963b260ae5f0c6a42ea265529bbc51111c5cef9","url":"https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-statusfix1/GITM-OS-3.3.0-integration-amd64.iso.part-02"}],"boundary_offset":1572863984,"boundary_hex":"4617ba44eace7071d81982de348afe9f2473c4ab3645d01f1cfc32381f03abf8","tail_hex":"0000000000000000000000000000000000000000000000000000000000000000","boot_test_run":38006827522,"bios":"passed","uefi":"passed"};
+const manifest = {"name":"GITM-OS-3.3.0-integration-amd64.iso","size":3008589824,"sha256":"e0a29ca5b6e8bf881be39cdc395794c0a0d6c0b5c6c04c96ed2f488dfa27fc93","parts":[{"name":"GITM-OS-3.3.0-integration-amd64.iso.part-01","size":1572864000,"sha256":"4bac934d96e9245201ad5aaa0858c02042d7cbe12cddd5181e0c71aca6802bea","url":"https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix1/GITM-OS-3.3.0-integration-amd64.iso.part-01"},{"name":"GITM-OS-3.3.0-integration-amd64.iso.part-02","size":1435725824,"sha256":"d7a72043aa9f7e5f008acd04604a64554ddd86bc99509e356313d878b657ef7f","url":"https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix1/GITM-OS-3.3.0-integration-amd64.iso.part-02"}],"boundary_offset":1572863984,"boundary_hex":"0c22e098c89bf81913b5a068d5dcc8933195330195bfb5092ad95789f6aff877","tail_hex":"0000000000000000000000000000000000000000000000000000000000000000","boot_test_run":38011421948,"bios":"passed","uefi":"passed","gallery":{"images":58,"size":38834817,"sha256":"644baa2e4d82622ba511210d66b0472acbf3b90770ae6dcd2d77ccd46e9a8ff0","url":"https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix1/gallery.html","overview_url":"https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix1/gallery-overview.png"}};
 /** @param {string|null} header @param {number} size */
 export function parseRange(header,size) {
  if(!header) return [0,size-1];
@@ -25,10 +25,27 @@ export default {
   const path=new URL(request.url).pathname;
   if(!["GET","HEAD"].includes(request.method))return new Response("Method not allowed",{status:405,headers:{"Allow":"GET, HEAD"}});
   if(["/","/health","/manifest.json"].includes(path))return Response.json(manifest);
+  if(path==='/gallery' || path==='/gallery-overview.png'){
+   const isHtml=path==='/gallery';
+   const url=isHtml?manifest.gallery.url:manifest.gallery.overview_url;
+   const headers=new Headers({'Content-Type':isHtml?'text/html; charset=utf-8':'image/png','Cache-Control':'public, max-age=3600','X-Content-Type-Options':'nosniff'});
+   if(isHtml){
+    headers.set('ETag','"'+manifest.gallery.sha256+'"');
+    headers.set('Content-Security-Policy',"default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'");
+   }
+   if(request.method==='HEAD')return new Response(null,{headers});
+   try{
+    const upstream=await fetch(url,{redirect:'follow',headers:{'Accept-Encoding':'identity','User-Agent':'GITM-Gallery'}});
+    if(upstream.status!==200||!upstream.body)return new Response('Gallery unavailable',{status:502});
+    return new Response(upstream.body,{headers});
+   }catch(error){console.error(JSON.stringify({event:'gallery_failed',message:String(error)}));return new Response('Gallery unavailable',{status:502});}
+  }
   if(path!=="/"+manifest.name)return new Response("Not found",{status:404});
   let start,end;
-  try{[start,end]=parseRange(request.headers.get("Range"),manifest.size);}catch{return new Response(null,{status:416,headers:{"Content-Range":`bytes */${manifest.size}`}});}
-  const partial=request.headers.has("Range"),length=end-start+1;
+  const range=request.headers.get("Range"),ifRange=request.headers.get("If-Range");
+  const selectedRange=range&&(!ifRange||ifRange==='"'+manifest.sha256+'"')?range:null;
+  try{[start,end]=parseRange(selectedRange,manifest.size);}catch{return new Response(null,{status:416,headers:{"Content-Range":`bytes */${manifest.size}`}});}
+  const partial=selectedRange!==null,length=end-start+1;
   const headers=new Headers({"Content-Type":"application/octet-stream","Content-Disposition":`attachment; filename="${manifest.name}"`,"Content-Length":String(length),"Accept-Ranges":"bytes","ETag":`"${manifest.sha256}"`,"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"});
   if(partial)headers.set("Content-Range",`bytes ${start}-${end}/${manifest.size}`);
   if(request.method==="HEAD")return new Response(null,{status:partial?206:200,headers});
