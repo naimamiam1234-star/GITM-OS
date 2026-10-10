@@ -1,0 +1,16 @@
+name: Verify Plasma preview public download
+on:
+  push:
+    branches: [main]
+    paths: ['plasma-publish/**', '.github/workflows/plasma-download-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify complete ISO, resumable ranges and screenshot gallery
+        run: python3 plasma-publish/check-download.py

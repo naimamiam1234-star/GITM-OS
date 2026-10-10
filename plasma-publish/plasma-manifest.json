@@ -1,0 +1,43 @@
+{
+  "name": "GITM-OS-Plasma6-amd64.iso",
+  "size": 3029362688,
+  "sha256": "e5ee6b368ccd2e54b111e0537af97858f8d3b3040bb7791a7d82302e0eb64831",
+  "parts": [
+    {
+      "name": "GITM-OS-Plasma6-amd64.iso.part01",
+      "size": 1572864000,
+      "sha256": "7489117337b4c275b13067ad0d2dc1c462324203f763afdbe5d4a08884fe4cf4",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma1/GITM-OS-Plasma6-amd64.iso.part01"
+    },
+    {
+      "name": "GITM-OS-Plasma6-amd64.iso.part02",
+      "size": 1456498688,
+      "sha256": "8a48c10e44de8ef32d177e945366b6f5a85d6e6127e2b0e4d6b1e53f0337039d",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma1/GITM-OS-Plasma6-amd64.iso.part02"
+    }
+  ],
+  "boundary_offset": 1572863984,
+  "boundary_hex": "df27449d008d2564725ee41d4d40371f678895e503bf79843963a4574b221e9f",
+  "tail_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+  "boot_test_run": 38060501100,
+  "bios": "passed",
+  "uefi": "passed",
+  "base": "Ubuntu 26.04",
+  "desktop": "Plasma 6.6.6",
+  "cpu_features": [
+    "ssse3",
+    "sse4_1",
+    "sse4_2",
+    "popcnt"
+  ],
+  "gallery": {
+    "images": 60,
+    "size": 35265807,
+    "sha256": "314e780f3791776e6b96f2cf363359a5fafa56c4b1259641e21bc7e3a296a973",
+    "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma1/gallery.html",
+    "overview_url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma1/gallery-overview.png",
+    "capture_runs": [
+      38060501100
+    ]
+  }
+}
