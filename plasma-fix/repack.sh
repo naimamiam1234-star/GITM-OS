@@ -11,7 +11,7 @@ install -m755 plasma-fix/gitm-desktop "$work/root/usr/local/bin/gitm-desktop"
 install -D -m600 plasma-fix/network-manager.yaml "$work/root/etc/netplan/01-gitm-network-manager.yaml"
 install -m755 plasma-fix/network-smoke.py "$work/root/usr/local/bin/gitm-network-smoke"
 install -m644 plasma-fix/network-smoke.service "$work/root/etc/systemd/system/gitm-network-smoke.service"
-ln -s /etc/systemd/system/gitm-network-smoke.service "$work/root/etc/systemd/system/multi-user.target.wants/gitm-network-smoke.service"
+ln -sf /etc/systemd/system/gitm-network-smoke.service "$work/root/etc/systemd/system/multi-user.target.wants/gitm-network-smoke.service"
 sed -i '/^#!\/bin\/sh/a export QT_STYLE_OVERRIDE=Fusion\nexport QT_QPA_PLATFORMTHEME=generic' "$work/root/usr/local/bin/gitm-autodiag"
 # Use the application's bundled style only for Python Qt, not native programs.
 python3 - "$work/root/opt/gitm/gitm_desktop.py" <<'PY'
@@ -21,6 +21,7 @@ p=Path(sys.argv[1]);s=p.read_text()
 s=s.replace('p=QProcess(self);p.setProgram(argv[0]);', "p=QProcess(self)\n  from PySide6.QtCore import QProcessEnvironment\n  env=QProcessEnvironment.systemEnvironment()\n  if argv[0]!=sys.executable:\n   env.remove('QT_STYLE_OVERRIDE');env.remove('QT_QPA_PLATFORMTHEME')\n  p.setProcessEnvironment(env);p.setProgram(argv[0]);")
 p.write_text(s)
 PY
+bash theme-integration/install-root.sh "$work/root"
 # Populate APT's AppStream catalogue after all desktop packages are installed.
 # Preserve these lists in the live image so Discover works on first launch.
 chroot "$work/root" apt-get update

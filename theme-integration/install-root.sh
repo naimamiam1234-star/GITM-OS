@@ -1,0 +1,73 @@
+#!/bin/bash
+set -Eeuo pipefail
+root=$1
+project=$PWD
+mkdir -p "$root/var/tmp/gitm-theme-src" "$root/usr/share/doc/gitm-theme"
+# Immutable upstream revisions; preserve source and licence notices in the release.
+curl -fL --retry 3 https://codeload.github.com/paulmcauley/klassy/tar.gz/9b788b2ea8d40c6a7af3b0130de9e891d41fbb30 | tar xz -C "$root/var/tmp/gitm-theme-src"
+curl -fL --retry 3 https://codeload.github.com/luisbocanegra/plasma-panel-colorizer/tar.gz/d0b1d4cab773f05cdcda2c1b2970093a5c367b54 | tar xz -C "$root/var/tmp/gitm-theme-src"
+chroot "$root" dpkg-query -W -f='${binary:Package}\n' > "$root/var/tmp/gitm-theme-existing"
+chroot "$root" env DEBIAN_FRONTEND=noninteractive bash <<'ROOT'
+set -Eeuo pipefail
+apt-get update
+apt-get install -y papirus-icon-theme language-pack-kde-ar language-pack-kde-fr cmake ninja-build g++ extra-cmake-modules qt6-base-dev qt6-svg-dev qt6-declarative-dev libkf6coreaddons-dev libkf6colorscheme-dev libkf6config-dev libkf6guiaddons-dev libkf6i18n-dev libkf6iconthemes-dev libkf6windowsystem-dev libkf6kcmutils-dev libkf6frameworkintegration-dev libkdecorations3-dev libplasma-dev
+cmake -S /var/tmp/gitm-theme-src/klassy-* -B /var/tmp/gitm-theme-src/klassy-build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DBUILD_QT5=OFF -DBUILD_TESTING=OFF -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
+cmake --build /var/tmp/gitm-theme-src/klassy-build -j2
+cmake --install /var/tmp/gitm-theme-src/klassy-build
+cmake -S /var/tmp/gitm-theme-src/plasma-panel-colorizer-* -B /var/tmp/gitm-theme-src/colorizer-build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_PLUGIN=ON -DINSTALL_PLASMOID=ON
+cmake --build /var/tmp/gitm-theme-src/colorizer-build -j2
+cmake --install /var/tmp/gitm-theme-src/colorizer-build
+ROOT
+cp -a "$root"/var/tmp/gitm-theme-src/klassy-9*/LICENSES "$root/usr/share/doc/gitm-theme/klassy-licenses"
+cp -a "$root"/var/tmp/gitm-theme-src/plasma-panel-colorizer-*/LICENSE* "$root/usr/share/doc/gitm-theme/"
+printf '%s\n' 'Klassy source: https://github.com/paulmcauley/klassy/tree/9b788b2ea8d40c6a7af3b0130de9e891d41fbb30' 'Panel Colorizer source: https://github.com/luisbocanegra/plasma-panel-colorizer/tree/d0b1d4cab773f05cdcda2c1b2970093a5c367b54' 'Papirus: Ubuntu papirus-icon-theme package, see /usr/share/doc/papirus-icon-theme' > "$root/usr/share/doc/gitm-theme/SOURCES"
+install -m644 plasma-transition/patches/gitm_desktop.py "$root/opt/gitm/gitm_desktop.py"
+install -D -m644 theme-integration/layout.js "$root/usr/share/plasma/look-and-feel/org.gitm.desktop/contents/layouts/org.kde.plasma.desktop-layout.js"
+# Seed matching native app style, decoration and icons, without upstream layout overrides.
+mkdir -p "$root/etc/skel/.config"
+cat > "$root/etc/skel/.config/kdeglobals" <<'CFG'
+[KDE]
+widgetStyle=klassy
+[Icons]
+Theme=Papirus-Dark
+[General]
+ColorScheme=BreezeDark
+[Locale]
+Language=ar:fr:en_US
+CFG
+cat > "$root/etc/skel/.config/kwinrc" <<'CFG'
+[org.kde.kdecoration2]
+library=org.kde.klassy
+[Plugins]
+blurEnabled=true
+CFG
+cat > "$root/usr/share/applications/gitm-desktop.desktop" <<'DESKTOP'
+[Desktop Entry]
+Type=Application
+Name=GITM OS
+Exec=gitm-desktop
+Icon=gitm-more
+NoDisplay=true
+StartupWMClass=gitm-desktop
+DESKTOP
+# Native calculator from desktop; AutoDiag retains its clearly scoped workshop calculator.
+python3 - "$root/opt/gitm/gallery_runner.py" <<'PY'
+from pathlib import Path
+import sys
+p=Path(sys.argv[1]);s=p.read_text().replace('systemsettings5','systemsettings')
+s=s.replace("lambda:w.app_buttons[k].click()", "lambda:w.app_buttons[k].click()")
+p.write_text(s)
+PY
+# Ensure the installed native binaries/plugins actually exist before repacking.
+chroot "$root" bash -c 'command -v klassy-settings; find /usr/lib -name "org.kde.klassy.so" -o -name "klassy.so"; test -d /usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer; test -d /usr/share/icons/Papirus-Dark'
+rm -rf "$root/var/tmp/gitm-theme-src"
+chroot "$root" apt-get clean
+# Give AutoDiag a real launcher identity and icon on the native task manager.
+python3 - "$root/opt/gitm/native.py" <<'PY'
+from pathlib import Path
+import sys
+p=Path(sys.argv[1]);s=p.read_text()
+pos=s.index("        self.setWindowTitle(")
+s=s[:pos]+"        from PySide6.QtGui import QIcon\n        from pathlib import Path\n        QApplication.setDesktopFileName('gitm-autodiag')\n        self.setWindowIcon(QIcon(str(Path(__file__).parent/'assets/desktop/engine.svg')))\n"+s[pos:]
+p.write_text(s);compile(s,str(p),'exec')
+PY

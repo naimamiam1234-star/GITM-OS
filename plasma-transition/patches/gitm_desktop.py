@@ -101,6 +101,8 @@ class Desktop(QWidget):
    if not personal.isNull():self.wallpaper=personal
   except OSError:pass
   for f in (ROOT/'assets').glob('Tajawal-*.ttf'):QFontDatabase.addApplicationFont(str(f))
+  self.setWindowIcon(self.icon('settings'))
+  QApplication.setDesktopFileName('gitm-desktop')
   self.setLayoutDirection(Qt.LeftToRight);self.setStyleSheet(STYLE)
   outer=QVBoxLayout(self);outer.setSizeConstraint(QLayout.SetNoConstraint);outer.setContentsMargins(28,18,28,16);outer.setSpacing(14)
   top=QHBoxLayout();logo=QLabel('G');logo.setStyleSheet('color:#159bff;font-size:33px;font-family:DejaVu Sans;font-weight:900');top.addWidget(logo)
@@ -141,10 +143,9 @@ class Desktop(QWidget):
   import system_settings
   self.brightness.setEnabled(bool(system_settings.brightness_devices()));self.brightness.setToolTip('السطوع' if self.brightness.isEnabled() else 'العتاد لا يوفر تحكمًا بالسطوع');self.brightness.sliderReleased.connect(self.apply_brightness);light.addWidget(self.brightness);light.addWidget(QLabel('☀'));right.addLayout(light)
   tools=QGridLayout();right.addLayout(tools)
-  for i,(label,icon,key,cmd) in enumerate([('الشاشة','display','display',['systemsettings']),('الصوت','volume','sound',['pavucontrol']),('لوحة المفاتيح','keyboard','keyboard',['onboard']),('الطاقة','battery','power-settings',['systemsettings'])]):
+  for i,(label,icon,key,cmd) in enumerate([('الشاشة','display','display',['systemsettings','kcm_kscreen']),('الصوت','volume','sound',['systemsettings','kcm_pulseaudio']),('لوحة المفاتيح','keyboard','keyboard',['onboard']),('الطاقة','battery','power-settings',['systemsettings','kcm_powerdevilprofilesconfig'])]):
    b=QPushButton(label);b.setIcon(self.icon(icon));b.setIconSize(QSize(24,24));b.setMinimumHeight(60);b.setStyleSheet('padding:8px;font-size:13px;background:rgba(25,38,56,155);border:1px solid #344054;border-radius:12px');b.clicked.connect(lambda checked=False,k=key,c=cmd:self.launch(k,c));tools.addWidget(b,i//2,i%2)
   right.addWidget(self.divider())
-  tip=QLabel('مساحة عمل جاهزة\nافتح ملفاتك وبرامجك، وانتقل إلى AutoDiag عند بدء فحص السيارة.');tip.setWordWrap(True);tip.setStyleSheet('font-size:16px;color:#bfcee1');right.addWidget(tip)
   self.settings_button=QPushButton('كل الإعدادات  ›');self.settings_button.clicked.connect(self.settings);right.addWidget(self.settings_button);right.addStretch()
   self.control.hide()
   outer.addLayout(content,1)
@@ -188,6 +189,10 @@ class Desktop(QWidget):
   css=css.replace('rgba(42,74,110,225)','rgba(211,227,248,245)')
   return css
  def apply_appearance(self):
+  mode=self.appearance['mode']
+  if getattr(self,'_native_mode',None)!=mode and shutil.which('plasma-apply-colorscheme'):
+   self._native_mode=mode
+   QProcess.startDetached('plasma-apply-colorscheme',['BreezeLight' if mode=='light' else 'BreezeDark'])
   self.setStyleSheet(self.theme_css(STYLE))
   for button in self.app_buttons.values():button.setIconSize(QSize(self.appearance['icon_size'],self.appearance['icon_size']))
   for widget in self.findChildren(QWidget):
@@ -237,27 +242,7 @@ class Desktop(QWidget):
  def divider(self):
   line=QFrame();line.setFixedHeight(1);line.setStyleSheet('background:rgba(162,184,211,55)');return line
  def choose_appearance(self):
-  d,v=self.panel('المظهر')
-  note=QLabel('الخلفية الحالية مستوحاة من مرجعك. يمكنك اختيار خلفية شخصية.');note.setWordWrap(True);v.addWidget(note)
-  mode=QComboBox();mode.addItem('داكن','dark');mode.addItem('نهاري','light');mode.setCurrentIndex(1 if self.appearance['mode']=='light' else 0);mode.setAccessibleName('نمط المظهر');v.addWidget(mode)
-  def set_mode():self.appearance['mode']=mode.currentData();self.save_appearance()
-  mode.currentIndexChanged.connect(set_mode)
-  for key,title in [('performance','وضع الأداء — إيقاف ضبابية الخلفية'),('reduce_motion','تقليل الحركة')]:
-   option=QCheckBox(title);option.setChecked(self.appearance[key]);option.setAccessibleName(title);v.addWidget(option)
-   def change(value,k=key):self.appearance[k]=bool(value);self.save_appearance()
-   option.toggled.connect(change)
-  size_title=QLabel('حجم أيقونات التطبيقات');v.addWidget(size_title)
-  size=QSlider(Qt.Horizontal);size.setRange(48,68);size.setValue(self.appearance['icon_size']);size.setAccessibleName('حجم الأيقونات');v.addWidget(size)
-  def set_size():self.appearance['icon_size']=size.value();self.save_appearance()
-  size.sliderReleased.connect(set_size)
-  b=QPushButton('اختيار خلفية');v.addWidget(b)
-  def choose():
-   path,_=QFileDialog.getOpenFileName(self,'الخلفية',str(Path.home()),'Images (*.png *.jpg *.jpeg)')
-   if path:
-    image=QPixmap(path)
-    if not image.isNull():
-     STATE.mkdir(parents=True,exist_ok=True);(STATE/'wallpaper-path.txt').write_text(path);self.wallpaper=image;self.update_background();self.update()
-  b.clicked.connect(choose);self.apply_appearance();d.show()
+  self.launch('settings',['systemsettings','kcm_colors'])
  def toggle_airplane(self):
   answer=QMessageBox.question(self,'وضع الطيران','تعطيل الاتصالات اللاسلكية؟ اختر لا لاستعادة الحالة السابقة.',QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
   if answer==QMessageBox.Cancel:return
@@ -305,11 +290,12 @@ class Desktop(QWidget):
   try:
    from system_settings import metrics
    m=metrics();g=1024**3
-   self.stats.setText(f"المساحة المتاحة  {m['disk_free']/g:.1f} GB · RAM {m['ram_total']/g:.1f} GB")
+   self.stats.setText(f"التخزين المتاح: \u2066{m['disk_free']/g:.1f} GB\u2069\nRAM: \u2066{m['ram_total']/g:.1f} GB\u2069")
    for key,used,total in [('ram',m['ram_total']-m['ram_available'],m['ram_total']),('disk',m['disk_total']-m['disk_free'],m['disk_total'])]:
     percent=round(100*used/total);self.stat_rows[key].setValue(percent)
   except Exception: self.stats.setText('تعذرت قراءة حالة النظام')
  def launch(self,key,argv):
+  if argv[0]=='systemsettings':key='settings'
   running=self.processes.get(key)
   if running and running.state()!=QProcess.NotRunning:
    if shutil.which('wmctrl'):
@@ -330,6 +316,7 @@ class Desktop(QWidget):
   env=QProcessEnvironment.systemEnvironment()
   if argv[0]!=sys.executable:
    env.remove('QT_STYLE_OVERRIDE');env.remove('QT_QPA_PLATFORMTHEME')
+  env.insert('LANG','ar_MA.UTF-8') if argv[0]=='systemsettings' else None
   p.setProcessEnvironment(env);p.setProgram(argv[0]);p.setArguments(argv[1:]);p.setWorkingDirectory(str(ROOT))
   STATE.mkdir(parents=True,exist_ok=True);p.setStandardErrorFile(str(STATE/(key+'.log')),QIODevice.Append)
   p.errorOccurred.connect(lambda error:QMessageBox.warning(self,'GITM','تعذر تشغيل '+key))
@@ -342,54 +329,14 @@ class Desktop(QWidget):
   else:
    item=next(x for x in APPS if x[0]==key);self.launch(key,item[4])
  def panel(self,title):
-  d=QDialog(self);d.setWindowTitle(title);d.setMinimumWidth(560);d.setStyleSheet(STYLE);v=QVBoxLayout(d);v.setContentsMargins(24,24,24,24);v.setSpacing(14)
+  d=QDialog(self);d.setWindowIcon(self.icon('settings'));d.setWindowTitle(title);d.setMinimumWidth(560);d.setStyleSheet(STYLE);v=QVBoxLayout(d);v.setContentsMargins(24,24,24,24);v.setSpacing(14)
   h=QLabel(title);h.setStyleSheet('font-size:27px;font-weight:bold');v.addWidget(h)
   d._gitm_original_style=STYLE;d.setStyleSheet(self.theme_css(STYLE));self.dialogs.append(d);d.finished.connect(lambda _:self.dialogs.remove(d));return d,v
  def action(self,v,title,key,command):
   b=QPushButton(title);b.setEnabled(bool(shutil.which(command[0])));b.setToolTip(' '.join(command));b.clicked.connect(lambda:self.launch(key,command));v.addWidget(b);return b
  def settings(self):
-  d,v=self.panel('الإعدادات');d.resize(940,720);d.setLayoutDirection(Qt.RightToLeft)
-  search=QLineEdit();search.setPlaceholderText('ابحث في الإعدادات…');search.setAccessibleName('بحث الإعدادات');v.addWidget(search)
-  layout=QGridLayout();layout.setSpacing(16);v.addLayout(layout,1);buttons=[];groups=[]
-  catalog=[
-   ('الاتصالات',[
-    ('Wi-Fi','wifi',lambda:self.radios.show('wifi'),None),
-    ('Bluetooth','bluetooth',lambda:self.radios.show('bluetooth'),None),
-    ('الشبكات والاتصالات','network',lambda:self.launch('network',['nm-connection-editor']),'nm-connection-editor')]),
-   ('المظهر والتفاعل',[
-    ('المظهر والخلفية والحركة','appearance',self.choose_appearance,None),
-    ('الشاشة والسطوع','display',lambda:self.launch('display',['systemsettings']),'systemsettings'),
-    ('الصوت','volume',lambda:self.launch('sound',['pavucontrol']),'pavucontrol'),
-    ('لوحة المفاتيح على الشاشة','keyboard',lambda:self.launch('keyboard',['onboard']),'onboard')]),
-   ('النظام والأجهزة',[
-    ('البطارية والطاقة','battery',self.power,None),
-    ('RAM والتخزين','files',self.system_information,None),
-    ('مراقبة العمليات','performance',lambda:self.launch('tasks',['plasma-systemmonitor']),'plasma-systemmonitor'),
-    ('تحديثات النظام','update',self.updates,None)]),
-   ('الحسابات والمزيد',[
-    ('الحسابات وكلمة المرور','accounts',lambda:self.launch('password',['systemsettings','kcm_users']),'systemsettings'),
-    ('جميع إعدادات Ubuntu','settings',lambda:self.launch('all-settings',['systemsettings']),'systemsettings'),
-    ('حول GITM OS','reports',self.system_information,None)])]
-  for index,(title,entries) in enumerate(catalog):
-   card=GlassPanel(self,d);column=QVBoxLayout(card);column.setContentsMargins(18,14,18,14);column.setSpacing(7)
-   heading=QLabel(title);heading.setStyleSheet('font-size:15px;font-weight:bold;color:#b6c5de');column.addWidget(heading);members=[]
-   for label,icon,callback,program in entries:
-    button=QPushButton(label);button.setIcon(self.icon(icon));button.setIconSize(QSize(30,30));button.setMinimumHeight(48);button.setAccessibleName(label)
-    button.setStyleSheet('QPushButton{text-align:right;border:0;border-radius:12px;padding:8px 12px;}')
-    if program and not shutil.which(program):button.setEnabled(False);button.setToolTip('البرنامج غير مثبت')
-    button.clicked.connect(callback);column.addWidget(button);buttons.append(button);members.append(button)
-   column.addStretch();layout.addWidget(card,index//2,index%2);groups.append((card,title,members))
-  empty=QLabel('لا توجد إعدادات مطابقة');empty.setAlignment(Qt.AlignCenter);empty.hide();v.addWidget(empty)
-  def filter_settings(text):
-   query=text.strip().casefold();found=False
-   for card,title,members in groups:
-    matching=False
-    for button in members:
-     show=query in (title+' '+button.text()).casefold();button.setVisible(show);matching|=show
-    card.setVisible(matching);found|=matching
-   empty.setVisible(not found)
-  search.textChanged.connect(filter_settings)
-  self.apply_appearance();d.show()
+  self.control.hide();self.status_buttons['chevron'].setChecked(False)
+  self.launch('settings',['systemsettings'])
  def system_information(self):
   d,v=self.panel('حول GITM OS');d.setLayoutDirection(Qt.RightToLeft)
   from desktop_radios import battery_info

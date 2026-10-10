@@ -1,8 +1,8 @@
-name: Repair Plasma Qt startup
+name: Integrate GITM native theme and dock
 on:
   push:
     branches: [main]
-    paths: ['plasma-fix/**', '.github/workflows/plasma-fix.yml']
+    paths: ['plasma-fix/**', 'theme-integration/**', '.github/workflows/plasma-fix.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -10,13 +10,13 @@ permissions:
 jobs:
   repair:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: GITM-Plasma6-preview-amd64
-          run-id: '38057058395'
+          run-id: '38075316494'
           github-token: ${{ github.token }}
           path: input
       - name: Repack existing Ubuntu 26.04 image
