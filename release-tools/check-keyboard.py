@@ -1,5 +1,5 @@
 """Boot the exact release ISO and exercise real mouse/keyboard input via QMP."""
-import json,socket,subprocess,time
+import base64,json,socket,subprocess,time
 from pathlib import Path
 from PIL import Image,ImageOps
 
@@ -34,6 +34,7 @@ try:
   command('screendump',{'filename':str(ppm)})
   Image.open(ppm).save(png);ppm.unlink();return png
  initial=screenshot('desktop-before-input')
+ print('GITM_INPUT_BEFORE_PNG '+base64.b64encode(initial.read_bytes()).decode(),flush=True)
  width,height=Image.open(initial).size
  def move(x,y):
   command('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':round(x*32767/width)}},{'type':'abs','data':{'axis':'y','value':round(y*32767/height)}}]})
@@ -47,6 +48,7 @@ try:
  for letter in 'calculator':key(letter)
  time.sleep(2)
  png=screenshot('keyboard-search')
+ print('GITM_INPUT_AFTER_PNG '+base64.b64encode(png.read_bytes()).decode(),flush=True)
  crop=Image.open(png).crop((35,177,min(960,width-30),230)).convert('RGB')
  crop=ImageOps.grayscale(crop).resize((crop.width*3,crop.height*3));crop.save(out/'search-text.png')
  result=subprocess.run(['tesseract',str(out/'search-text.png'),'stdout','--psm','7','-l','eng'],capture_output=True,text=True,check=True)
