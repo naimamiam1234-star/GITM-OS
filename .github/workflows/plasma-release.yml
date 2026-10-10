@@ -1,0 +1,60 @@
+name: Publish verified Plasma 6 preview
+on:
+  push:
+    branches: [main]
+    paths: ['release-tools/**', '.github/workflows/plasma-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: gitm-plasma-publish
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_RUN: '38060501100'
+      RELEASE_TAG: gitm-os-3.3.0-plasma1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require successful source build
+        run: |
+          test "$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .conclusion)" = success
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          path: download/iso
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-gallery
+          path: download/gallery
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+      - name: Validate ISO and guest evidence
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pil
+          python3 release-tools/verify-plasma.py
+      - name: Package verified preview
+        run: |
+          mkdir release-assets dist
+          cp -a download/gallery dist/gallery
+          python3 release-tools/prepare-gallery.py
+          mv download/iso/GITM-OS-3.3.0-integration-amd64.iso release-assets/GITM-OS-Plasma6-amd64.iso
+          cd release-assets
+          sha256sum GITM-OS-Plasma6-amd64.iso > GITM-OS-Plasma6-amd64.iso.sha256
+          split -b 1500M -d -a 2 --numeric-suffixes=1 GITM-OS-Plasma6-amd64.iso GITM-OS-Plasma6-amd64.iso.part
+          cp ../dist/gallery.zip GITM-Plasma6-gallery.zip
+          cp ../dist/gallery.html ../dist/gallery-overview.png .
+          sha256sum GITM-OS-Plasma6-amd64.iso.part* > parts.sha256
+          python3 ../release-tools/manifest-plasma.py
+          rm GITM-OS-Plasma6-amd64.iso
+      - name: Publish development preview
+        run: |
+          source_sha=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .head_sha)
+          gh release create "$RELEASE_TAG" --target "$source_sha" --prerelease --title 'GITM OS — Plasma 6 preview' --notes-file release-tools/plasma-notes.md release-assets/*
