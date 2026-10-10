@@ -1,4 +1,4 @@
-import urllib.request,urllib.error,json,hashlib,time
+import urllib.request,urllib.error,json,hashlib,time,pathlib
 urllib.request.install_opener(urllib.request.build_opener())
 urllib.request._opener.addheaders=[("User-Agent","Mozilla/5.0 GITM-ISO-verification")]
 BASE="https://gitm-os-plasma-preview.naimamiam1234.workers.dev"
@@ -6,6 +6,9 @@ try:
  m=json.load(urllib.request.urlopen(BASE+"/manifest.json",timeout=90))
 except urllib.error.HTTPError as e:
  print("Manifest HTTP error",e.code,e.headers,e.read(4096).decode(errors="replace"),flush=True);raise
+expected=json.loads(pathlib.Path(__file__).with_name("plasma-manifest.json").read_text())
+assert m["sha256"]==expected["sha256"], "Public route serves a different ISO revision"
+assert m["gallery"]["sha256"]==expected["gallery"]["sha256"], "Public gallery revision mismatch"
 url=BASE+"/"+m["name"]
 def read_range(value):
  r=urllib.request.urlopen(urllib.request.Request(url,headers={"Range":value}),timeout=90)
