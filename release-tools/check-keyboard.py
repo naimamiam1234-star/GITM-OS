@@ -24,6 +24,7 @@ try:
    if 'error' in reply:raise RuntimeError(reply)
    if 'return' in reply:return reply['return']
  command('qmp_capabilities')
+ print('GITM_INPUT_ACCELERATOR '+repr(command('query-kvm')),flush=True)
  while 'GITM_DESKTOP_VISIBLE' not in (serial.read_text(errors='replace') if serial.exists() else ''):
   assert p.poll() is None,'Guest exited'
   assert time.monotonic()<deadline,'No visible desktop'
@@ -68,6 +69,7 @@ try:
  key('esc');time.sleep(1);screenshot('escape-cleared-search')
  (out/'result.txt').write_text('Actual release ISO booted; mouse focused the home search; physical scancodes entered calculator; OCR verified its rendered text. Escape screenshot captured for visual review.\n')
 finally:
+ print('GITM_INPUT_QEMU_LOG '+(out/'qemu.log').read_text(errors='replace'),flush=True)
  p.terminate()
  try:p.wait(timeout=10)
  except subprocess.TimeoutExpired:p.kill();p.wait()

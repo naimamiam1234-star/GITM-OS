@@ -46,7 +46,7 @@ jobs:
           sudo apt-get install -y python3-pil qemu-system-x86 tesseract-ocr
           python3 release-tools/verify-plasma.py
       - name: Verify actual desktop keyboard input
-        run: python3 release-tools/check-keyboard.py
+        run: sudo python3 release-tools/check-keyboard.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
