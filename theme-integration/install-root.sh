@@ -10,7 +10,7 @@ chroot "$root" dpkg-query -W -f='${binary:Package}\n' > "$root/var/tmp/gitm-them
 chroot "$root" env DEBIAN_FRONTEND=noninteractive bash <<'ROOT'
 set -Eeuo pipefail
 apt-get update
-apt-get install -y xdotool papirus-icon-theme language-pack-kde-ar language-pack-kde-fr cmake ninja-build g++ extra-cmake-modules qt6-base-dev qt6-svg-dev qt6-declarative-dev libkf6coreaddons-dev libkf6colorscheme-dev libkf6config-dev libkf6guiaddons-dev libkf6i18n-dev libkf6iconthemes-dev libkf6windowsystem-dev libkf6kcmutils-dev libkf6frameworkintegration-dev libkdecorations3-dev libplasma-dev
+apt-get install -y xdotool papirus-icon-theme language-pack-kde-ar language-pack-kde-fr cmake ninja-build g++ extra-cmake-modules qt6-base-dev qt6-svg-dev qt6-declarative-dev libkf6coreaddons-dev libkf6colorscheme-dev libkf6config-dev libkf6guiaddons-dev libkf6i18n-dev libkf6iconthemes-dev libkf6windowsystem-dev libkf6kcmutils-dev libkf6style-dev libkdecorations3-dev libplasma-dev
 cmake -S /var/tmp/gitm-theme-src/klassy-* -B /var/tmp/gitm-theme-src/klassy-build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DBUILD_QT5=OFF -DBUILD_TESTING=OFF -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
 cmake --build /var/tmp/gitm-theme-src/klassy-build -j2
 cmake --install /var/tmp/gitm-theme-src/klassy-build
@@ -56,7 +56,8 @@ python3 - "$root/opt/gitm/gallery_runner.py" <<'PY'
 from pathlib import Path
 import sys
 p=Path(sys.argv[1]);s=p.read_text().replace('systemsettings5','systemsettings')
-s=s.replace("lambda:w.app_buttons[k].click()", "lambda:w.app_buttons[k].click()")
+s=s.replace(" def cleanup(self):\n", " def cleanup(self):\n  subprocess.run(['xdotool','mousemove','640','80'],check=False)\n")
+s=s.replace(" def capture(self,name):\n", " def capture(self,name):\n  if name in {'desktop','desktop-light'}:subprocess.run(['xdotool','mousemove','640','799'],check=False)\n  if name=='settings':\n   self.w.settings();self.w.choose_appearance()\n   native=[line for line in windows() if 'System Settings' in line or 'إعدادات النظام' in line or 'إعدادات النّظام' in line]\n   emit('GITM_SETTINGS_WINDOWS|'+str(len(native)))\n   if len(native)!=1:emit('GITM_GALLERY_ERROR|settings|Expected one native settings window')\n")
 p.write_text(s)
 PY
 # Ensure the installed native binaries/plugins actually exist before repacking.
