@@ -98,7 +98,9 @@ cp "$(find "$root/boot" -name 'initrd.img-*' | sort -V | tail -1)" "$iso/casper/
 cleanup
 truncate -s 0 "$root/etc/machine-id"
 rm -f "$root/var/lib/dbus/machine-id"
-rm -rf "$root/var/lib/apt/lists/"*
+chroot "$root" apt-get update
+chroot "$root" appstreamcli refresh-cache --force
+chroot "$root" env LC_ALL=C appstreamcli status | python3 plasma-fix/check-catalog.py
 du -sx --block-size=1 "$root" | cut -f1 > "$iso/casper/filesystem.size"
 mksquashfs "$root" "$iso/casper/filesystem.squashfs" -noappend -comp zstd -Xcompression-level 8 -processors 2
 cat > "$iso/boot/grub/grub.cfg" <<'GRUB'
