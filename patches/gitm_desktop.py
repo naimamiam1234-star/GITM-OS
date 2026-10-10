@@ -25,7 +25,7 @@ APPS = [
 ]
 STYLE = '''
 QWidget{color:#f0f5ff;font-family:Tajawal;font-size:17px;background:transparent;}
-QLabel#title{font-size:43px;font-weight:bold;} QLabel#muted{color:#b6c5de;font-size:16px;}
+QLabel#title{font-size:34px;font-weight:bold;} QLabel#muted{color:#b6c5de;font-size:16px;}
 QPushButton{background:rgba(22,39,62,195);border:1px solid #36485f;border-radius:12px;padding:10px;}
 QPushButton:hover{background:rgba(42,74,110,225);border-color:#449eff;}
 QPushButton:pressed{background:#12518c;} QPushButton:disabled{color:#77859a;}
@@ -57,12 +57,27 @@ class GlassPanel(QFrame):
   gradient=QLinearGradient(0,0,self.width(),self.height());gradient.setColorAt(0,QColor(16,29,47,218));gradient.setColorAt(1,QColor(8,17,28,227));p.fillRect(self.rect(),gradient)
   p.setClipping(False);p.setPen(QPen(QColor(158,188,219,65),1));p.drawRoundedRect(bounds,22,22)
 
+
+class UsageRing(QWidget):
+ def __init__(self,title,parent=None):
+  super().__init__(parent);self.title=title;self.value=None;self.setMinimumSize(90,90)
+ def setValue(self,value):
+  self.value=max(0,min(100,value));self.update()
+ def paintEvent(self,event):
+  p=QPainter(self);p.setRenderHint(QPainter.Antialiasing)
+  side=min(self.width(),self.height())-18;r=QRectF((self.width()-side)/2,(self.height()-side)/2,side,side)
+  p.setPen(QPen(QColor('#29425f'),7));p.drawEllipse(r)
+  if self.value is not None:
+   p.setPen(QPen(QColor('#339cff'),7,Qt.SolidLine,Qt.RoundCap));p.drawArc(r,90*16,-round(self.value*3.6*16))
+  p.setPen(QColor('#f0f5ff'));p.drawText(r.adjusted(0,10,0,-20),Qt.AlignCenter,self.title)
+  p.setPen(QColor('#91caff'));p.drawText(r.adjusted(0,35,0,0),Qt.AlignCenter,'—' if self.value is None else str(self.value)+'%')
+
 class Desktop(QWidget):
  def __init__(self):
   super().__init__()
   self.setWindowTitle('GITM OS 3.3 · Desktop')
   self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|Qt.WindowStaysOnBottomHint)
-  self.resize(1440,900);self.processes={};self.dialogs=[];self.tiles=[]
+  self.resize(1440,900);self.processes={};self.dialogs=[];self.tiles=[];self.app_buttons={};self.control_radios={};self.sync_phase=0
   self.wallpaper=QPixmap(str(ROOT/'assets/desktop/wallpaper.png'));self.background=QPixmap();self.blurred=QPixmap()
   try:
    personal=QPixmap((STATE/'wallpaper-path.txt').read_text().strip())
@@ -70,7 +85,7 @@ class Desktop(QWidget):
   except OSError:pass
   for f in (ROOT/'assets').glob('Tajawal-*.ttf'):QFontDatabase.addApplicationFont(str(f))
   self.setLayoutDirection(Qt.LeftToRight);self.setStyleSheet(STYLE)
-  outer=QVBoxLayout(self);outer.setSizeConstraint(QLayout.SetNoConstraint);outer.setContentsMargins(42,24,42,20);outer.setSpacing(22)
+  outer=QVBoxLayout(self);outer.setSizeConstraint(QLayout.SetNoConstraint);outer.setContentsMargins(28,18,28,16);outer.setSpacing(14)
   top=QHBoxLayout();logo=QLabel('G');logo.setStyleSheet('color:#159bff;font-size:33px;font-family:DejaVu Sans;font-weight:900');top.addWidget(logo)
   brand=QLabel('GITM OS');brand.setStyleSheet('font-size:21px;font-family:DejaVu Sans');top.addWidget(brand);top.addSpacing(18)
   for title,fn in [('الرئيسية',lambda:self.search.clear()),('التطبيقات',lambda:self.search.setFocus()),('النظام',self.settings)]:
@@ -84,27 +99,25 @@ class Desktop(QWidget):
   self.clock=QLabel();self.clock.setStyleSheet('font-size:15px');top.addWidget(self.clock)
   power=QPushButton();power.setIcon(self.icon('power'));power.setIconSize(QSize(24,24));power.setToolTip('الطاقة');power.setObjectName('nav');power.clicked.connect(self.power);top.addWidget(power);outer.addLayout(top)
   content=QHBoxLayout();content.setSpacing(28)
-  left=QVBoxLayout();left.setSpacing(18);content.addLayout(left,1)
+  left=QVBoxLayout();left.setSpacing(12);content.addLayout(left,1)
   welcome=QHBoxLayout();words=QVBoxLayout();heading=QLabel('مرحبًا بك.');heading.setObjectName('title');words.addWidget(heading)
   subtitle=QLabel('كل أدواتك، في مساحة عمل واحدة.');subtitle.setObjectName('muted');words.addWidget(subtitle);welcome.addLayout(words,1)
-  title=QLabel('GITM <span style="color:#248dff">OS</span><br><span style="font-size:12px;letter-spacing:3px;color:#becce1">YOUR WORKSPACE. YOUR WAY.</span>');title.setStyleSheet('font-size:40px;font-family:DejaVu Sans;font-weight:bold');title.setAlignment(Qt.AlignRight|Qt.AlignVCenter);welcome.addWidget(title);left.addLayout(welcome)
+  title=QLabel('GITM <span style="color:#248dff">OS</span><br><span style="font-size:12px;letter-spacing:3px;color:#becce1">YOUR WORKSPACE. YOUR WAY.</span>');title.setStyleSheet('font-size:32px;font-family:DejaVu Sans;font-weight:bold');title.setAlignment(Qt.AlignRight|Qt.AlignVCenter);welcome.addWidget(title);left.addLayout(welcome)
   self.search=QLineEdit();self.search.setPlaceholderText('ابحث عن تطبيق، إعدادات أو أدوات…');self.search.textChanged.connect(self.filter_apps);self.search.setLayoutDirection(Qt.RightToLeft);left.addWidget(self.search)
-  scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setFrameShape(QFrame.NoFrame)
-  container=QWidget();grid=QGridLayout(container);grid.setContentsMargins(0,0,0,0);grid.setSpacing(14);scroll.setWidget(container);self.app_grid=grid
+  container=QWidget();grid=QGridLayout(container);grid.setContentsMargins(0,0,0,0);grid.setSpacing(10);self.app_grid=grid;self.app_container=container
   order=['autodiag','documents','photos','media','settings','files','browser','updates','calculator','install']
   for i,key in enumerate(order):
    _,name,desc,icon,command=next(a for a in APPS if a[0]==key)
    card=QWidget();v=QVBoxLayout(card);v.setContentsMargins(2,8,2,8);v.setSpacing(7);v.setAlignment(Qt.AlignCenter)
-   b=QPushButton();b.setObjectName('appIcon');b.setIcon(self.icon(icon));b.setIconSize(QSize(80,80));b.setFixedSize(88,88);b.setToolTip(name);b.setAccessibleName(name);b.clicked.connect(lambda checked=False,k=key:self.activate(k));v.addWidget(b,0,Qt.AlignHCenter)
-   label=QLabel(name);label.setAlignment(Qt.AlignCenter);label.setStyleSheet('font-weight:bold;font-size:18px');v.addWidget(label)
-   detail=QLabel(desc);detail.setWordWrap(True);detail.setAlignment(Qt.AlignCenter);detail.setStyleSheet('color:#b3c4db;font-size:14px');v.addWidget(detail)
+   b=QPushButton();b.setObjectName('appIcon');b.setIcon(self.icon(icon));b.setIconSize(QSize(64,64));b.setFixedSize(72,72);b.setToolTip(name);b.setAccessibleName(name);self.app_buttons[key]=b;b.clicked.connect(lambda checked=False,k=key:self.activate(k));v.addWidget(b,0,Qt.AlignHCenter)
+   label=QLabel(name);label.setAlignment(Qt.AlignCenter);label.setWordWrap(True);label.setStyleSheet('font-weight:bold;font-size:16px');v.addWidget(label)
    grid.addWidget(card,i//5,i%5);self.tiles.append((name+' '+desc+' '+key,card))
-  left.addWidget(scroll,1)
-  self.control=GlassPanel(self);self.control.setFixedWidth(355);right=QVBoxLayout(self.control);right.setContentsMargins(20,20,20,20);right.setSpacing(15)
+  left.addWidget(container,1)
+  self.control=GlassPanel(self,self);self.control.setFixedWidth(340);right=QVBoxLayout(self.control);right.setContentsMargins(20,20,20,20);right.setSpacing(15)
   control_title=QLabel('مركز التحكم');control_title.setStyleSheet('font-size:17px;font-weight:bold;color:#a9bbd2');right.addWidget(control_title)
   radios=QGridLayout();right.addLayout(radios)
   for i,(title,icon,fn) in enumerate([('Wi-Fi','wifi',lambda:self.radios.show('wifi')),('Bluetooth','bluetooth',lambda:self.radios.show('bluetooth')),('المظهر','settings',self.choose_appearance),('وضع الطيران','airplane',self.toggle_airplane)]):
-   v=QVBoxLayout();b=QPushButton();b.setIcon(self.icon(icon));b.setIconSize(QSize(40,40));b.setFixedSize(60,60);b.setObjectName('radio');b.clicked.connect(fn);b.setAccessibleName(title);v.addWidget(b,0,Qt.AlignCenter)
+   v=QVBoxLayout();b=QPushButton();b.setIcon(self.icon(icon));b.setIconSize(QSize(40,40));b.setFixedSize(60,60);b.setObjectName('radio');self.control_radios[icon]=b;b.clicked.connect(fn);b.setAccessibleName(title);v.addWidget(b,0,Qt.AlignCenter)
    label=QLabel(title);label.setAlignment(Qt.AlignCenter);label.setStyleSheet('font-size:13px');v.addWidget(label);radios.addLayout(v,0,i)
   right.addWidget(self.divider())
   light=QHBoxLayout();light.addWidget(QLabel('☀'));self.brightness=QSlider(Qt.Horizontal);self.brightness.setRange(5,100);self.brightness.setValue(70)
@@ -115,20 +128,18 @@ class Desktop(QWidget):
    b=QPushButton(label);b.setIcon(self.icon(icon));b.setIconSize(QSize(24,24));b.setMinimumHeight(60);b.setStyleSheet('padding:8px;font-size:13px;background:rgba(25,38,56,155);border:1px solid #344054;border-radius:12px');b.clicked.connect(lambda checked=False,k=key,c=cmd:self.launch(k,c));tools.addWidget(b,i//2,i%2)
   right.addWidget(self.divider())
   tip=QLabel('مساحة عمل جاهزة\nافتح ملفاتك وبرامجك، وانتقل إلى AutoDiag عند بدء فحص السيارة.');tip.setWordWrap(True);tip.setStyleSheet('font-size:16px;color:#bfcee1');right.addWidget(tip)
-  self.settings_button=QPushButton('كل الإعدادات  ›');self.settings_button.clicked.connect(self.settings);right.addWidget(self.settings_button);right.addStretch();content.addWidget(self.control)
+  self.settings_button=QPushButton('كل الإعدادات  ›');self.settings_button.clicked.connect(self.settings);right.addWidget(self.settings_button);right.addStretch()
   self.control.hide()
   outer.addLayout(content,1)
-  cards=QHBoxLayout();cards.setSpacing(20)
-  intro=GlassPanel(self);il=QVBoxLayout(intro);il.setContentsMargins(22,18,22,18);il.addWidget(QLabel('GITM AutoDiag'));info=QLabel('بيئة تشخيص مستقلة\nالمحولات · المركبات · التقارير');info.setWordWrap(True);info.setObjectName('muted');il.addWidget(info)
-  open_diag=QPushButton('فتح برنامج التشخيص  ›');open_diag.clicked.connect(lambda:self.activate('autodiag'));il.addWidget(open_diag);cards.addWidget(intro,1)
-  quick=GlassPanel(self);ql=QVBoxLayout(quick);ql.setContentsMargins(20,18,20,18);ql.addWidget(QLabel('وصول سريع'));qr=QHBoxLayout();ql.addLayout(qr)
-  for key in ['files','updates','browser']:
-   item=next(a for a in APPS if a[0]==key);b=QPushButton(item[1]);b.setIcon(self.icon(item[3]));b.setIconSize(QSize(28,28));b.setMinimumHeight(75);b.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Preferred);b.clicked.connect(lambda checked=False,k=key:self.activate(k));qr.addWidget(b)
-  cards.addWidget(quick,1)
-  system=GlassPanel(self);sl=QVBoxLayout(system);sl.setContentsMargins(22,18,22,18);sl.setSpacing(8);sl.addWidget(QLabel('حالة النظام'));self.stat_rows={}
+  self.system_panel=GlassPanel(self);self.system_panel.setFixedSize(260,260)
+  sl=QVBoxLayout(self.system_panel);sl.setContentsMargins(16,16,16,16);sl.setSpacing(12)
+  caption=QLabel('حالة النظام');caption.setAlignment(Qt.AlignCenter);sl.addWidget(caption)
+  rings=QHBoxLayout();self.stat_rows={}
   for key,title in [('ram','RAM'),('disk','التخزين')]:
-   row=QHBoxLayout();label=QLabel(title);label.setMinimumWidth(66);row.addWidget(label);bar=QProgressBar();bar.setRange(0,100);bar.setTextVisible(False);bar.setFixedHeight(10);row.addWidget(bar,1);value=QLabel();value.setMinimumWidth(47);row.addWidget(value);sl.addLayout(row);self.stat_rows[key]=(bar,value)
-  self.stats=QLabel();self.stats.setStyleSheet('font-size:13px;color:#b5c4d9');self.stats.setWordWrap(True);sl.addWidget(self.stats);cards.addWidget(system,1);outer.addLayout(cards)
+   ring=UsageRing(title);rings.addWidget(ring);self.stat_rows[key]=ring
+  sl.addLayout(rings,1)
+  self.stats=QLabel();self.stats.setStyleSheet('font-size:12px;color:#b5c4d9');self.stats.setWordWrap(True);self.stats.setAlignment(Qt.AlignCenter);sl.addWidget(self.stats)
+  content.addWidget(self.system_panel,0,Qt.AlignVCenter)
   dock=GlassPanel(self);dr=QHBoxLayout(dock);dr.setContentsMargins(15,10,15,10);dr.setSpacing(10)
   launcher=QPushButton('⠿');launcher.setObjectName('dockIcon');launcher.setStyleSheet('font-size:29px');launcher.clicked.connect(lambda:self.search.setFocus());dr.addWidget(launcher)
   for key in ['autodiag','files','browser','documents','photos','media','settings']:
@@ -137,16 +148,27 @@ class Desktop(QWidget):
   from desktop_radios import Radios
   self.radios=Radios(self);self.radios.changed.connect(self.refresh_radios)
   self.refresh_radios()
+  self.animation=QTimer(self);self.animation.timeout.connect(self.animate_status);self.animation.start(200)
   self.refresh();self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(5000)
  def toggle_control(self):
   visible=not self.control.isVisible();self.control.setVisible(visible);self.status_buttons['chevron'].setChecked(visible)
+  self.position_control();self.control.raise_()
+ def position_control(self):
+  self.control.setGeometry(max(8,self.width()-self.control.width()-28),68,self.control.width(),min(540,self.height()-86))
  def refresh_radios(self):
-  from desktop_radios import battery
+  from desktop_radios import battery_info,state_icon
+  for key,state in [('wifi',self.radios.wifi_state),('bluetooth',self.radios.bluetooth_state)]:
+   icon=state_icon(key,state);self.status_buttons[key].setIcon(icon)
+   if key in self.control_radios:self.control_radios[key].setIcon(icon)
   self.status_buttons['wifi'].setToolTip('Wi-Fi · '+self.radios.wifi)
   self.status_buttons['bluetooth'].setToolTip('Bluetooth · '+self.radios.bluetooth)
-  text=battery();self.battery_label.setText(text);self.status_buttons['battery'].setToolTip(text)
-  for key,value in [('wifi',self.radios.wifi),('bluetooth',self.radios.bluetooth)]:
-   self.status_buttons[key].setStyleSheet('color:#56b5ff;' if value not in ('غير متصل','متوقف','غير متوفر','غير معروف') else 'color:#a0aabd;')
+  info=battery_info();self.status_buttons['battery'].setIcon(state_icon('battery',info))
+  self.battery_label.setText('' if not info['present'] else str(info['percent'])+'%')
+  self.status_buttons['battery'].setToolTip(info['text'])
+  self.status_buttons['sync'].setIcon(state_icon('sync',{'busy':self.radios.busy,'phase':self.sync_phase}))
+ def animate_status(self):
+  self.sync_phase=(self.sync_phase+1)%12
+  if hasattr(self,'radios'):self.refresh_radios()
  def divider(self):
   line=QFrame();line.setFixedHeight(1);line.setStyleSheet('background:rgba(162,184,211,55)');return line
  def choose_appearance(self):
@@ -176,7 +198,10 @@ class Desktop(QWidget):
  def resizeEvent(self,event):
   super().resizeEvent(event)
   if not hasattr(self,'app_grid'):return
-  columns=5 if self.width()>=1250 else 3 if self.width()>=850 else 2
+  columns=5
+  if hasattr(self,'system_panel'):
+   size=260 if self.width()>=1150 else 220;self.system_panel.setFixedSize(size,size)
+  if hasattr(self,'control'):self.position_control()
   for i,(_,b) in enumerate(self.tiles):self.app_grid.addWidget(b,i//columns,i%columns)
   self.update_background()
  def update_background(self):
@@ -201,7 +226,7 @@ class Desktop(QWidget):
    m=metrics();g=1024**3
    self.stats.setText(f"المساحة المتاحة  {m['disk_free']/g:.1f} GB · RAM {m['ram_total']/g:.1f} GB")
    for key,used,total in [('ram',m['ram_total']-m['ram_available'],m['ram_total']),('disk',m['disk_total']-m['disk_free'],m['disk_total'])]:
-    percent=round(100*used/total);bar,value=self.stat_rows[key];bar.setValue(percent);value.setText(str(percent)+'%')
+    percent=round(100*used/total);self.stat_rows[key].setValue(percent)
   except Exception: self.stats.setText('تعذرت قراءة حالة النظام')
  def launch(self,key,argv):
   running=self.processes.get(key)
@@ -262,6 +287,9 @@ def main():
   QTimer.singleShot(500,capture)
  else:
   w.showFullScreen()
+  if 'gitm.gallery=1' in Path('/proc/cmdline').read_text():
+   import gallery_runner
+   QTimer.singleShot(6000,lambda:gallery_runner.start(w))
   def visible_marker():
    if w.isVisible():
     __import__('subprocess').run(['logger','-t','gitm','GITM_DESKTOP_VISIBLE'],check=False)

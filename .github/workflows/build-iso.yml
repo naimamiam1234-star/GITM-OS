@@ -21,18 +21,29 @@ jobs:
           df -h / /var/tmp
       - name: Build desktop foundation
         run: sudo bash scripts/build-iso.sh
-      - name: Boot BIOS and UEFI virtual machines
-        run: sudo python3 scripts/boot-smoke.py
+      - name: Boot BIOS/UEFI and capture actual application gallery
+        run: sudo env GITM_GALLERY=1 python3 scripts/boot-smoke.py
       - name: Upload single ISO and checksums
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: GITM-OS-3.3-integration-amd64
-          path: dist/
+          path: |
+            dist/*.iso
+            dist/*.sha256
+            dist/*.png
+            dist/*.txt
+            dist/*.log
           compression-level: 0
           retention-days: 14
           if-no-files-found: error
-
+      - name: Upload full application gallery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: GITM-full-gallery
+          path: dist/gallery/
+          retention-days: 90
       - name: Upload boot diagnostics separately
         if: always()
         uses: actions/upload-artifact@v4

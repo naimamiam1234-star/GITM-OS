@@ -14,22 +14,60 @@ def fields(line):
  result.append(current)
  return result
 
-def battery(root=Path('/sys/class/power_supply')):
+def battery_info(root=Path('/sys/class/power_supply')):
  for p in sorted(root.glob('*')):
   try:
    if (p/'type').read_text().strip()!='Battery':continue
    if (p/'present').exists() and (p/'present').read_text().strip()=='0':continue
    value=max(0,min(100,int((p/'capacity').read_text())))
    status=(p/'status').read_text().strip()
-   return f'{value}% · '+{'Charging':'يشحن','Discharging':'على البطارية','Full':'مكتملة'}.get(status,status)
+   return {'present':True,'percent':value,'charging':status=='Charging','text':f'{value}% · '+{'Charging':'يشحن','Discharging':'على البطارية','Full':'مكتملة'}.get(status,status)}
   except (OSError,ValueError):continue
- return 'لا توجد بطارية'
+ return {'present':False,'percent':0,'charging':False,'text':'لا توجد بطارية'}
+
+def battery(root=Path('/sys/class/power_supply')):
+ return battery_info(root)['text']
+
+def state_icon(name,state):
+ from PySide6.QtGui import QPixmap,QPainter,QPen,QColor,QIcon
+ from PySide6.QtCore import Qt,QRectF
+ pix=QPixmap(44,44);pix.fill(Qt.transparent);p=QPainter(pix);p.setRenderHint(QPainter.Antialiasing)
+ kind=state.get('kind','unknown');active=kind in ('connected','on')
+ color=QColor('#42b7ff' if active else '#8998ad');p.setPen(QPen(color,2.5,Qt.SolidLine,Qt.RoundCap))
+ if name=='wifi':
+  strength=state.get('signal',0)
+  for i,(threshold,rect) in enumerate([(0,QRectF(15,22,14,10)),(35,QRectF(9,14,26,20)),(70,QRectF(3,6,38,30))]):
+   p.setPen(QPen(QColor('#42b7ff' if kind=='connected' and strength>=threshold else '#65778e'),2.5,Qt.SolidLine,Qt.RoundCap));p.drawArc(rect,35*16,110*16)
+  p.setBrush(color);p.drawEllipse(20,33,4,4)
+ elif name=='bluetooth':
+  p.drawLine(21,5,21,38);p.drawLine(21,5,32,16);p.drawLine(32,16,10,31);p.drawLine(10,12,32,27);p.drawLine(32,27,21,38)
+  if kind=='connected':
+   p.setBrush(QColor('#55e5b0'));p.setPen(Qt.NoPen);p.drawEllipse(33,17,7,7)
+ elif name=='battery':
+  present=state.get('present',False);level=state.get('percent',0)
+  color=QColor('#ff5a66' if level<=15 and present else '#4fe0a5' if state.get('charging') else '#b8d8f9');p.setPen(QPen(color,2.5));p.setBrush(Qt.NoBrush)
+  p.drawRoundedRect(QRectF(4,13,32,18),3,3);p.drawLine(39,19,39,25)
+  if present:
+   p.fillRect(QRectF(7,16,26*level/100,12),color)
+   if state.get('charging'):
+    p.setPen(QPen(QColor('#fff'),2));p.drawLine(23,10,16,22);p.drawLine(16,22,25,22);p.drawLine(25,22,19,35)
+  else:kind='missing'
+ elif name=='sync':
+  p.setPen(QPen(QColor('#42b7ff' if state.get('busy') else '#b8d8f9'),2.5))
+  if state.get('busy'):p.translate(22,22);p.rotate(state.get('phase',0)*30);p.translate(-22,-22)
+  p.drawArc(QRectF(8,8,28,28),25*16,135*16);p.drawArc(QRectF(8,8,28,28),205*16,135*16)
+  p.drawLine(8,8,8,18);p.drawLine(8,18,18,18);p.drawLine(36,36,36,26);p.drawLine(36,26,26,26)
+ if kind=='missing':
+  p.setPen(QPen(QColor('#ff4355'),3.5,Qt.SolidLine,Qt.RoundCap));p.drawLine(29,5,39,15);p.drawLine(39,5,29,15)
+ elif kind=='off':
+  p.setPen(QPen(QColor('#c0c8d4'),2.5));p.drawLine(7,37,36,7)
+ p.end();return QIcon(pix)
 
 class Radios(QObject):
  changed=Signal()
  def __init__(self,desktop):
   super().__init__(desktop);self.desktop=desktop;self.pending=[];self.busy=False
-  self.wifi='غير معروف';self.bluetooth='غير معروف';self.networks=[];self.devices=[]
+  self.wifi='غير معروف';self.bluetooth='غير معروف';self.networks=[];self.devices=[];self.wifi_state={'kind':'unknown','signal':0};self.bluetooth_state={'kind':'unknown'}
   self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(15000)
   self.refresh()
  def run(self,args,done):
@@ -38,21 +76,36 @@ class Radios(QObject):
   if self.busy or not self.pending:return
   args,done=self.pending.pop(0)
   if not shutil.which(args[0]):done(False,'الأداة غير متوفرة');self.next();return
-  self.busy=True;p=QProcess(self);self.process=p
+  self.busy=True;self.changed.emit();p=QProcess(self);self.process=p
   env=p.processEnvironment();env=__import__('PySide6.QtCore',fromlist=['QProcessEnvironment']).QProcessEnvironment.systemEnvironment();env.insert('LC_ALL','C');p.setProcessEnvironment(env)
   timeout=QTimer(p);timeout.setSingleShot(True);timeout.timeout.connect(p.kill)
   def finish(code,status):
    timeout.stop();out=bytes(p.readAllStandardOutput()).decode(errors='replace');err=bytes(p.readAllStandardError()).decode(errors='replace')
-   self.busy=False;done(code==0,out if code==0 else err or 'تعذر تنفيذ العملية');p.deleteLater();self.next()
+   self.busy=False;self.changed.emit();done(code==0,out if code==0 else err or 'تعذر تنفيذ العملية');p.deleteLater();self.next()
   p.finished.connect(finish);p.start(args[0],args[1:]);timeout.start(12000)
  def refresh(self):
   if self.busy or self.pending:return
   def wifi(ok,out):
    rows=[fields(x) for x in out.splitlines()] if ok else []
-   connected=[x for x in rows if len(x)>=3 and x[0]=='wifi' and x[1]=='connected']
-   self.wifi=connected[0][2] if connected else 'غير متصل' if ok else 'غير متوفر';self.changed.emit()
+   hardware=[x for x in rows if len(x)>=3 and x[0]=='wifi']
+   connected=[x for x in hardware if x[1]=='connected']
+   self.wifi=connected[0][2] if connected else 'غير متصل' if hardware else 'غير متوفر'
+   self.wifi_state={'kind':'connected' if connected else 'off' if hardware else 'missing','signal':0};self.changed.emit()
+   if connected:
+    def signal(ok2,out2):
+     signals=[fields(x) for x in out2.splitlines()] if ok2 else []
+     values=[int(x[1]) for x in signals if len(x)>=2 and x[0]=='*' and x[1].isdigit()]
+     self.wifi_state['signal']=values[0] if values else 0;self.changed.emit()
+    self.run(['nmcli','-t','-f','IN-USE,SIGNAL','device','wifi','list','--rescan','no'],signal)
   def bluetooth(ok,out):
-   self.bluetooth='مفعّل' if ok and 'Powered: yes' in out else 'متوقف' if ok else 'غير متوفر';self.changed.emit()
+   on=ok and 'Powered: yes' in out
+   self.bluetooth='مفعّل' if on else 'متوقف' if ok else 'غير متوفر'
+   self.bluetooth_state={'kind':'on' if on else 'off' if ok else 'missing'};self.changed.emit()
+   if on:
+    def connections(ok2,out2):
+     if ok2 and any(x.startswith('Device ') for x in out2.splitlines()):self.bluetooth_state={'kind':'connected'};self.bluetooth='متصل'
+     self.changed.emit()
+    self.run(['bluetoothctl','devices','Connected'],connections)
   self.run(['nmcli','-t','-f','TYPE,STATE,CONNECTION','device'],wifi)
   self.run(['bluetoothctl','show'],bluetooth)
  def show(self,kind):
