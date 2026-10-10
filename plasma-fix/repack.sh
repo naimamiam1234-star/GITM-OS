@@ -8,6 +8,10 @@ source=$(find input -name '*.iso' -print -quit)
 xorriso -osirrox on -indev "$source" -extract /casper/filesystem.squashfs "$work/original.squashfs"
 unsquashfs -d "$work/root" "$work/original.squashfs"
 install -m755 plasma-fix/gitm-desktop "$work/root/usr/local/bin/gitm-desktop"
+install -D -m600 plasma-fix/network-manager.yaml "$work/root/etc/netplan/01-gitm-network-manager.yaml"
+install -m755 plasma-fix/network-smoke.py "$work/root/usr/local/bin/gitm-network-smoke"
+install -m644 plasma-fix/network-smoke.service "$work/root/etc/systemd/system/gitm-network-smoke.service"
+ln -s /etc/systemd/system/gitm-network-smoke.service "$work/root/etc/systemd/system/multi-user.target.wants/gitm-network-smoke.service"
 sed -i '/^#!\/bin\/sh/a export QT_STYLE_OVERRIDE=Fusion\nexport QT_QPA_PLATFORMTHEME=generic' "$work/root/usr/local/bin/gitm-autodiag"
 # Use the application's bundled style only for Python Qt, not native programs.
 python3 - "$work/root/opt/gitm/gitm_desktop.py" <<'PY'

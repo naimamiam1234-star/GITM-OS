@@ -42,7 +42,8 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
    time.sleep(1)
   if mode=='gallery':
    if 'GITM_GALLERY_DONE' not in text:raise RuntimeError('Gallery did not finish')
-   (root/'gallery'/'guest-report.txt').write_text('\n'.join(x for x in text.splitlines() if 'GITM_GALLERY_' in x or 'GITM_BROWSER_POLICY' in x))
+   if 'GITM_NETWORK_RELEASE_OK|resolute' not in text:raise RuntimeError('Gallery guest could not read the official Ubuntu repository')
+   (root/'gallery'/'guest-report.txt').write_text('\n'.join(x for x in text.splitlines() if 'GITM_GALLERY_' in x or 'GITM_BROWSER_POLICY' in x or 'GITM_NETWORK_' in x))
   result=command({'execute':'screendump','arguments':{'filename':str(root/(mode+'.ppm'))}})
   if 'error' in result:raise RuntimeError(result)
   s.close()
