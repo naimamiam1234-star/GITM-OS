@@ -11,7 +11,7 @@ assert "self.panel(" not in appearance
 assert "if argv[0]=='systemsettings':key='settings'" in s
 layout=Path('theme-integration/layout.js').read_text()
 assert 'systemtray' not in layout and 'digitalclock' not in layout
-assert "dock.floating = true" in layout and "dock.hiding = 'autohide'" in layout
+assert "dock.floating = true" in layout and "dock.hiding = 'none'" in layout
 assert "dock.lengthMode = 'fit'" in layout
 assert 'LookAndFeelPackage=org.gitm.desktop' in Path('theme-integration/install-root.sh').read_text()
 print('Settings launch paths unified; dock layout regression checks passed')

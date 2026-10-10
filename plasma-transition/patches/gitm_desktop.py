@@ -270,8 +270,12 @@ class Desktop(QWidget):
   self.update_background()
  def update_background(self):
   if self.wallpaper.isNull():return
-  scaled=self.wallpaper.scaled(self.size(),Qt.KeepAspectRatioByExpanding,Qt.SmoothTransformation)
-  self.background=scaled.copy((scaled.width()-self.width())//2,(scaled.height()-self.height())//2,self.width(),self.height())
+  native=os.environ.get('GITM_NATIVE_PLASMA')=='1' and self.screen() is not None
+  area=self.screen().geometry() if native else self.rect()
+  scaled=self.wallpaper.scaled(area.size(),Qt.KeepAspectRatioByExpanding,Qt.SmoothTransformation)
+  x=(scaled.width()-area.width())//2+(self.x()-area.x() if native else 0)
+  y=(scaled.height()-area.height())//2+(self.y()-area.y() if native else 0)
+  self.background=scaled.copy(x,y,self.width(),self.height())
   if not self.appearance['performance'] and self.appearance['mode']=='dark':
    tiny=self.background.scaled(max(1,self.width()//30),max(1,self.height()//30),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
    self.blurred=tiny.scaled(self.size(),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)

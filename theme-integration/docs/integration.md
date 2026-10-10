@@ -8,8 +8,12 @@ The Ubuntu/Plasma preview uses pinned open-source components:
 
 Upstream source URLs and licence notices are preserved under `/usr/share/doc/gitm-theme`.
 
-The bottom panel is a centered, floating, fit-content auto-hide dock containing launchers and native icon tasks; the repeated bottom clock and system tray are removed. Settings entry points route to native System Settings with one process key; module requests are forwarded to the application's existing instance. The former custom settings and appearance dialogs are removed. Native child processes do not inherit the Python runtime's Fusion/generic overrides. KDE background colour changes synchronize the desktop's light/dark mode. KCalc remains the native desktop calculator; AutoDiag's workshop tools remain scoped to AutoDiag.
+The bottom panel is a centered, floating, fit-content dock that is visible by default; automatic hiding is optional through native panel settings. The dock contains launchers and native icon tasks; the repeated bottom clock and system tray are removed. Settings entry points route to native System Settings with one process key; module requests are forwarded to the application's existing instance. The former custom settings and appearance dialogs are removed. Native child processes do not inherit the Python runtime's Fusion/generic overrides. KDE background colour changes synchronize the desktop's light/dark mode. KCalc remains the native desktop calculator; AutoDiag's workshop tools remain scoped to AutoDiag.
 
 Regression checks: `check-contract.py` and `check-launches.py`. The latter exercises repeated settings launch paths with an isolated process fake, without changing the host's desktop. Actual guest gallery capture records `GITM_SETTINGS_WINDOWS|1` after repeated activation; BIOS/UEFI and native windows must still be validated separately.
 
 ISO success and download checks do not establish installation, physical device compatibility, update installation or OEM vehicle function support.
+
+The native wallpaper and workspace use the same image and full-screen crop coordinates. This prevents a second wallpaper appearing behind the floating dock. The wallpaper scripting follows https://develop.kde.org/docs/plasma/scripting/api/.
+
+Release checks now require a nonblack framebuffer on BIOS/UEFI boots and exercise actual mouse/keyboard input via QMP with the same KVM access as boot checks. Input and gallery evidence are collected from the exact release ISO.

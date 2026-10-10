@@ -1,3 +1,10 @@
+// Use the same wallpaper for Plasma and the GITM workspace.
+for (var desktop of desktops()) {
+  desktop.wallpaperPlugin = 'org.kde.image';
+  desktop.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
+  desktop.writeConfig('Image', 'file:///opt/gitm/assets/desktop/wallpaper.png');
+  desktop.writeConfig('FillMode', 2);
+}
 // GITM bottom dock: application controls only. Status belongs at the top.
 for (var old of panels()) { old.remove(); }
 var dock = new Panel;
