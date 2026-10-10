@@ -20,7 +20,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for run_id in 38087917743 38087604415; do
+          for run_id in 38087917743 38087604415 38089192966 38087996356 $(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$GITHUB_SHA" --jq ' .workflow_runs[] | select(.name=="Build GITM Plasma 6 preview") | .id'); do
             gh api -X POST repos/${{ github.repository }}/actions/runs/$run_id/cancel || true
           done
       - uses: actions/download-artifact@v4

@@ -300,7 +300,7 @@ class Desktop(QWidget):
   try:
    from system_settings import metrics
    m=metrics();g=1024**3
-   self.stats.setText(f"التخزين المتاح: \u2066{m['disk_free']/g:.1f} GB\u2069\nRAM: \u2066{m['ram_total']/g:.1f} GB\u2069")
+   self.stats.setText(f"التخزين المتاح: \u2066{m['disk_free']/g:.1f} GB\u2069\n\u2066RAM: {m['ram_total']/g:.1f} GB\u2069")
    for key,used,total in [('ram',m['ram_total']-m['ram_available'],m['ram_total']),('disk',m['disk_total']-m['disk_free'],m['disk_total'])]:
     percent=round(100*used/total);self.stat_rows[key].setValue(percent)
   except Exception: self.stats.setText('تعذرت قراءة حالة النظام')

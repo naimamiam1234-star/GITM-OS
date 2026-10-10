@@ -65,7 +65,7 @@ import sys
 p=Path(sys.argv[1]);s=p.read_text().replace('systemsettings5','systemsettings')
 s=s.replace(" def cleanup(self):\n", " def cleanup(self):\n  subprocess.run(['xdotool','mousemove','640','80'],check=False)\n")
 s=s.replace("QTimer.singleShot(10000 if", "QTimer.singleShot(35000 if name=='system-updates' else 10000 if")
-s=s.replace(" def capture(self,name):\n", " def capture(self,name):\n  if name in {'desktop','desktop-light'}:subprocess.run(['xdotool','mousemove','640','799'],check=False)\n  if name=='settings':\n   self.w.settings();self.w.choose_appearance()\n   native=[line for line in windows() if 'System Settings' in line or 'إعدادات النظام' in line or 'إعدادات النّظام' in line]\n   emit('GITM_SETTINGS_WINDOWS|'+str(len(native)))\n   if len(native)!=1:emit('GITM_GALLERY_ERROR|settings|Expected one native settings window')\n")
+s=s.replace(" def capture(self,name):\n", " def capture(self,name):\n  if name in {'desktop','desktop-light'}:\n   subprocess.run(['xdotool','mousemove','640','799'],check=False);__import__('time').sleep(0.8)\n  if name=='settings':\n   self.w.settings();self.w.choose_appearance()\n   native=[line for line in windows() if 'System Settings' in line or 'إعدادات النظام' in line or 'إعدادات النّظام' in line]\n   emit('GITM_SETTINGS_WINDOWS|'+str(len(native)))\n   if len(native)!=1:emit('GITM_GALLERY_ERROR|settings|Expected one native settings window')\n")
 p.write_text(s)
 PY
 # Ensure the installed native binaries/plugins actually exist before repacking.
