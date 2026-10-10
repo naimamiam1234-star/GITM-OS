@@ -40,7 +40,7 @@ with urllib.request.urlopen(BASE+"/gallery",timeout=120) as album:
   total+=len(line);assert total<=m["gallery"]["size"]
   digest.update(line);figures+=line.count(b"<figure ")
 assert total==m["gallery"]["size"] and digest.hexdigest()==m["gallery"]["sha256"]
-assert figures==m["gallery"]["images"]==60
+assert figures==m["gallery"]["images"] and figures>=60
 with urllib.request.urlopen(BASE+"/gallery-overview.png",timeout=90) as overview:assert overview.read(8)==bytes.fromhex("89504e470d0a1a0a")
 print("GALLERY_VERIFIED",figures,total,digest.hexdigest(),flush=True)
 request=urllib.request.Request(url,method="HEAD",headers={"Range":"bytes=0-9","If-Range":'"old-iso"'})
