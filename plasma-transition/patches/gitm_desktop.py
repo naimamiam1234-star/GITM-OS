@@ -325,7 +325,12 @@ class Desktop(QWidget):
    return
   if not Path(argv[0]).is_file() and not shutil.which(argv[0]):
    QMessageBox.information(self,'GITM','هذا البرنامج غير مثبت: '+argv[0]);return
-  p=QProcess(self);p.setProgram(argv[0]);p.setArguments(argv[1:]);p.setWorkingDirectory(str(ROOT))
+  p=QProcess(self)
+  from PySide6.QtCore import QProcessEnvironment
+  env=QProcessEnvironment.systemEnvironment()
+  if argv[0]!=sys.executable:
+   env.remove('QT_STYLE_OVERRIDE');env.remove('QT_QPA_PLATFORMTHEME')
+  p.setProcessEnvironment(env);p.setProgram(argv[0]);p.setArguments(argv[1:]);p.setWorkingDirectory(str(ROOT))
   STATE.mkdir(parents=True,exist_ok=True);p.setStandardErrorFile(str(STATE/(key+'.log')),QIODevice.Append)
   p.errorOccurred.connect(lambda error:QMessageBox.warning(self,'GITM','تعذر تشغيل '+key))
   p.finished.connect(lambda code,status:QMessageBox.warning(self,'GITM',f'توقف {key} برمز {code}. سجل التفاصيل: {STATE/(key+".log")}') if code else None)

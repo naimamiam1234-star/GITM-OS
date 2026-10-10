@@ -7,7 +7,7 @@ if gallery:
  subprocess.run(['xorriso','-osirrox','on','-indev',str(iso),'-extract','/casper/vmlinuz',str(root/'gallery-vmlinuz'),'-extract','/casper/initrd',str(root/'gallery-initrd')],check=True)
 for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
  qmp=root/(mode+'.qmp');serial=root/(mode+'-serial.log')
- args=['qemu-system-x86_64','-machine','q35,accel=kvm:tcg','-m','4096','-smp','2','-cdrom',str(iso),'-boot','d','-display','none','-serial','file:'+str(serial),'-qmp','unix:'+str(qmp)+',server=on,wait=off','-device','virtio-vga']
+ args=['qemu-system-x86_64','-machine','q35,accel=kvm:tcg','-cpu','max','-m','4096','-smp','2','-cdrom',str(iso),'-boot','d','-display','none','-serial','file:'+str(serial),'-qmp','unix:'+str(qmp)+',server=on,wait=off','-device','virtio-vga']
  if mode=='uefi':args+=['-drive','if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd']
  if mode=='gallery':args+=['-kernel',str(root/'gallery-vmlinuz'),'-initrd',str(root/'gallery-initrd'),'-append','boot=casper gitm.gallery=1 console=tty0 console=ttyS0,115200 ---']
  p=subprocess.Popen(args,stdout=subprocess.DEVNULL,stderr=(root/(mode+'-qemu.log')).open('w'))
@@ -27,6 +27,7 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
    if p.poll() is not None:break
    text=serial.read_text(errors='replace') if serial.exists() else ''
    ready='GITM_DESKTOP_VISIBLE' in text and 'GITM_PLASMA_SESSION|plasmashell 6.' in text
+   if 'GITM_DESKTOP_START_FAILED|' in text:break
    if mode=='gallery':
     import re
     for name in re.findall(r'GITM_GALLERY_FRAME\|([a-z0-9-]+)',text):
@@ -41,7 +42,8 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
    time.sleep(1)
   if mode=='gallery':
    if 'GITM_GALLERY_DONE' not in text:raise RuntimeError('Gallery did not finish')
-   (root/'gallery'/'guest-report.txt').write_text('\n'.join(x for x in text.splitlines() if 'GITM_GALLERY_' in x or 'GITM_BROWSER_POLICY' in x))
+   if 'GITM_NETWORK_RELEASE_OK|resolute' not in text:raise RuntimeError('Gallery guest could not read the official Ubuntu repository')
+   (root/'gallery'/'guest-report.txt').write_text('\n'.join(x for x in text.splitlines() if 'GITM_GALLERY_' in x or 'GITM_BROWSER_POLICY' in x or 'GITM_NETWORK_' in x))
   result=command({'execute':'screendump','arguments':{'filename':str(root/(mode+'.ppm'))}})
   if 'error' in result:raise RuntimeError(result)
   s.close()
