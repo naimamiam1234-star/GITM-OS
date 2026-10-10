@@ -19,6 +19,9 @@ with p.open('rb') as f:
 with p.open('rb') as f:
  f.seek(chunk-16);boundary=f.read(32).hex();f.seek(-32,2);tail=f.read(32).hex()
 m={'name':p.name,'size':p.stat().st_size,'sha256':expected,'parts':parts,'boundary_offset':chunk-16,'boundary_hex':boundary,'tail_hex':tail,'boot_test_run':int(os.environ['BOOT_TEST_RUN']),'bios':'passed','uefi':'passed'}
+gallery=root/'gallery.html'
+if not gallery.exists():raise RuntimeError('Missing verified screenshot album')
+m['gallery']={'images':58,'size':gallery.stat().st_size,'sha256':hashlib.sha256(gallery.read_bytes()).hexdigest(),'url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix1/gallery.html','overview_url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix1/gallery-overview.png'}
 (root/'release-manifest.json').write_text(json.dumps(m,indent=2))
 cmd='@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n'
 cmd+=f'if exist "{p.name}" goto verify\r\n'
