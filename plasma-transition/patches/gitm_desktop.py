@@ -86,7 +86,6 @@ class Desktop(QWidget):
   super().__init__()
   self.setWindowTitle('GITM OS 3.3 · Desktop')
   self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|Qt.WindowStaysOnBottomHint)
-  if os.environ.get('GITM_NATIVE_PLASMA')=='1':self.setAttribute(Qt.WA_X11NetWmWindowTypeDesktop,True)
   self.resize(1440,900);self.processes={};self.dialogs=[];self.tiles=[];self.app_buttons={};self.control_radios={};self.sync_phase=0
   self.appearance={'mode':'dark','performance':False,'reduce_motion':False,'icon_size':64}
   try:
@@ -420,6 +419,10 @@ def main():
   if os.environ.get('GITM_NATIVE_PLASMA')=='1':
    screen=app.primaryScreen();w.setGeometry(screen.availableGeometry());w.show()
    screen.availableGeometryChanged.connect(w.setGeometry)
+   # Keep the workspace above Plasma's wallpaper while omitting it from the dock.
+   def hide_workspace_task():
+    QProcess.startDetached('wmctrl',['-ir',hex(int(w.winId())),'-b','add,skip_taskbar,skip_pager'])
+   QTimer.singleShot(1000,hide_workspace_task)
   else:w.showFullScreen()
   if 'gitm.gallery=1' in Path('/proc/cmdline').read_text():
    import gallery_runner
