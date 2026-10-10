@@ -21,7 +21,7 @@ with iso.open('rb') as stream:
 gallery = root / 'gallery.html'
 manifest = {'name': iso.name, 'size': iso.stat().st_size, 'sha256': digest(iso), 'parts': parts,
             'boundary_offset': boundary, 'boundary_hex': boundary_hex, 'tail_hex': tail_hex,
-            'boot_test_run': int(os.environ['SOURCE_RUN']), 'bios': 'passed', 'uefi': 'passed',
+            'build_commit': os.environ['SOURCE_SHA'], 'boot_test_run': int(os.environ['SOURCE_RUN']), 'bios': 'passed', 'uefi': 'passed',
             'base': 'Ubuntu 26.04', 'desktop': 'Plasma 6.6.6',
             'cpu_features': ['ssse3', 'sse4_1', 'sse4_2', 'popcnt'],
             'gallery': {'images': 60, 'size': gallery.stat().st_size, 'sha256': digest(gallery),

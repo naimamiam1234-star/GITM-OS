@@ -52,9 +52,8 @@ jobs:
           cp ../dist/gallery.zip GITM-Plasma6-gallery.zip
           cp ../dist/gallery.html ../dist/gallery-overview.png .
           sha256sum GITM-OS-Plasma6-amd64.iso.part* > parts.sha256
-          python3 ../release-tools/manifest-plasma.py
+          SOURCE_SHA=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .head_sha) python3 ../release-tools/manifest-plasma.py
           rm GITM-OS-Plasma6-amd64.iso
       - name: Publish development preview
         run: |
-          source_sha=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .head_sha)
-          gh release create "$RELEASE_TAG" --target "$source_sha" --prerelease --title 'GITM OS — Plasma 6 preview' --notes-file release-tools/plasma-notes.md release-assets/*
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title 'GITM OS — Plasma 6 preview' --notes-file release-tools/plasma-notes.md release-assets/*
