@@ -6,7 +6,7 @@ dock.height = 64;
 dock.floating = true;
 dock.alignment = 'center';
 dock.lengthMode = 'fit';
-dock.hiding = 'autohide';
+dock.hiding = 'none'; // Automatic hiding remains available through native panel settings.
 var launcher = dock.addWidget('org.kde.plasma.kickoff');
 launcher.currentConfigGroup = ['General'];
 launcher.writeConfig('icon', '/usr/share/icons/hicolor/scalable/apps/gitm-more.svg');

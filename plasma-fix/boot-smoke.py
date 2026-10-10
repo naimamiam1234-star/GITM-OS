@@ -61,6 +61,9 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
   s.close()
   from PIL import Image
   Image.open(root/(mode+'.ppm')).save(root/(mode+'.png'));(root/(mode+'.ppm')).unlink()
+  if mode=='bios':
+   import base64
+   print('GITM_BIOS_FRAME_PNG '+base64.b64encode((root/(mode+'.png')).read_bytes()).decode(),flush=True)
   if not ready:
    print(serial.read_text(errors='replace')[-25000:] if serial.exists() else 'No serial log',flush=True)
    raise RuntimeError(mode+' failed to reach visible GITM desktop within 600 seconds')
