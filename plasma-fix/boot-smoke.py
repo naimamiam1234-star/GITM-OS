@@ -47,6 +47,17 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
    (root/'gallery'/'guest-report.txt').write_text('\n'.join(x for x in text.splitlines() if 'GITM_GALLERY_' in x or 'GITM_BROWSER_POLICY' in x or 'GITM_NETWORK_' in x or 'GITM_CATALOG_' in x))
   result=command({'execute':'screendump','arguments':{'filename':str(root/(mode+'.ppm'))}})
   if 'error' in result:raise RuntimeError(result)
+  if mode!='gallery' and ready:
+   from PIL import ImageStat,Image
+   visible_deadline=time.monotonic()+120
+   while True:
+    frame=Image.open(root/(mode+'.ppm')).convert('RGB')
+    if sum(ImageStat.Stat(frame).mean)>30:break
+    if time.monotonic()>visible_deadline:raise RuntimeError(mode+': desktop marker present but framebuffer remains black')
+    command({'execute':'send-key','arguments':{'keys':[{'type':'qcode','data':'shift'}]}})
+    time.sleep(5)
+    command({'execute':'screendump','arguments':{'filename':str(root/(mode+'.ppm'))}})
+   print(mode+': nonblank actual framebuffer verified',flush=True)
   s.close()
   from PIL import Image
   Image.open(root/(mode+'.ppm')).save(root/(mode+'.png'));(root/(mode+'.ppm')).unlink()
