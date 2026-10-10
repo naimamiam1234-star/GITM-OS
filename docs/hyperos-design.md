@@ -18,3 +18,10 @@
 
 ## التحقق
 اختبارات التخطيط والأيقونات المتغيرة والبحث وحفظ المظهر. إعادة إقلاع BIOS/UEFI والتقاط 60 صورة من ISO الحالي، مع التحقق من نافذة Falkon وسياسة AppArmor. تتضمن النسخة ISO وألبوم الصور وبصمة SHA-256؛ نتائج الإقلاع مثبتة في سجل البناء.
+
+
+## النسخة المنشورة
+Release: https://github.com/naimamiam1234-star/GITM-OS/releases/tag/gitm-os-3.3.0-design2
+ISO: https://gitm-os-download-33.naimamiam1234.workers.dev/GITM-OS-3.3.0-integration-amd64.iso?revision=design2
+Album: https://gitm-os-download-33.naimamiam1234.workers.dev/gallery?revision=design2
+SHA-256: 209c6db062a550d61581c7688952763bdbcdc46b1c1e33759b7be342365a92f5
