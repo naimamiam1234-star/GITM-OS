@@ -312,7 +312,15 @@ class Desktop(QWidget):
  def launch(self,key,argv):
   running=self.processes.get(key)
   if running and running.state()!=QProcess.NotRunning:
-   if key=='autodiag' and shutil.which('wmctrl'):QProcess.startDetached('wmctrl',['-a','GITM AutoDiag'])
+   if shutil.which('wmctrl'):
+    probe=QProcess(self);probe.setProgram('wmctrl');probe.setArguments(['-lp'])
+    def raise_window():
+     for line in bytes(probe.readAllStandardOutput()).decode(errors='replace').splitlines():
+      fields=line.split(None,4)
+      if len(fields)>=3 and fields[2]==str(running.processId()):
+       QProcess.startDetached('wmctrl',['-ia',fields[0]]);break
+     probe.deleteLater()
+    probe.finished.connect(raise_window);probe.start()
    if 'update' in argv: QMessageBox.information(self,'GITM','اختر تحديثات البرنامج داخل نافذة AutoDiag المفتوحة.')
    return
   if not Path(argv[0]).is_file() and not shutil.which(argv[0]):
