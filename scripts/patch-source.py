@@ -73,3 +73,6 @@ s=s.replace('self.lock=threading.RLock()', 'self.lock=threading.RLock(); self.re
 s=s.replace(' def close(self):', ' def close(self):')
 s=s.replace('   self.close()\n   if kind', "   self.close()\n   import fcntl,hashlib\n   from pathlib import Path\n   scope=Path(os.environ.get('XDG_RUNTIME_DIR',str(Path.home()/'.local/share/gitm')))/'vci-locks';scope.mkdir(parents=True,exist_ok=True)\n   key=hashlib.sha256((str(kind)+':'+str(target)).encode()).hexdigest()\n   self.reservation=(scope/(key+'.lock')).open('a')\n   try:fcntl.flock(self.reservation,fcntl.LOCK_EX|fcntl.LOCK_NB)\n   except BlockingIOError:raise ConnectionError('Adapter already in use by another GITM session')\n   if kind")
 p.write_text(s)
+
+# AutoDiag application UI; leaves the operating-system shell unchanged.
+shutil.copy('patches/autodiag_theme.py',root/'visual_theme.py')
