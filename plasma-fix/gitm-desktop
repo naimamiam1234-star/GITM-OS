@@ -1,0 +1,13 @@
+#!/bin/sh
+export GITM_NATIVE_PLASMA=1
+export QT_QPA_PLATFORM=xcb
+# The Python Qt runtime must not load the distribution's older KDE Qt style.
+export QT_STYLE_OVERRIDE=Fusion
+export QT_QPA_PLATFORMTHEME=generic
+export QT_FFMPEG_DECODING_HW_DEVICE_TYPES=,
+mkdir -p "$HOME/.local/share/gitm"
+/opt/gitm-venv/bin/python /opt/gitm/gitm_desktop.py > "$HOME/.local/share/gitm/desktop.log" 2>&1
+result=$?
+cat "$HOME/.local/share/gitm/desktop.log" | systemd-cat -t gitm-desktop
+if [ "$result" != 0 ]; then logger -t gitm "GITM_DESKTOP_START_FAILED|$result"; fi
+exit "$result"

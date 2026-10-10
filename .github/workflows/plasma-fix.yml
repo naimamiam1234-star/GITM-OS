@@ -1,0 +1,46 @@
+name: Repair Plasma Qt startup
+on:
+  push:
+    branches: [main]
+    paths: ['plasma-fix/**', '.github/workflows/plasma-fix.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          run-id: '38057058395'
+          github-token: ${{ github.token }}
+          path: input
+      - name: Repack existing Ubuntu 26.04 image
+        run: sudo bash plasma-fix/repack.sh
+      - name: Test BIOS UEFI and applications
+        run: sudo env GITM_GALLERY=1 python3 plasma-transition/scripts/boot-smoke.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-Plasma6-preview-amd64
+          path: dist/
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-Plasma6-gallery
+          path: dist/gallery/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-Plasma6-diagnostics
+          path: |
+            dist/*.png
+            dist/*.log
+            dist/*.txt
+            dist/*.sha256
