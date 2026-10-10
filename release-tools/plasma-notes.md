@@ -2,7 +2,7 @@ GITM OS Plasma 6 preview, based on Ubuntu 26.04 LTS (amd64).
 
 The bundled Qt runtime requires SSSE3, SSE4.1, SSE4.2 and POPCNT CPU support.
 
-Runs a native Plasma X11 session with KWin and the GITM home screen. Includes the existing GITM AutoDiag application. The release workflow checks the ISO checksum, BIOS/UEFI guest session markers and the captured application gallery.
+Runs a native Plasma X11 session with KWin and the GITM home screen. Includes the existing GITM AutoDiag application. The release workflow checks the ISO checksum, nonblack BIOS/UEFI guest framebuffers, actual mouse/keyboard search input and the captured application gallery.
 
 This is a development preview. Installation on physical hardware, vehicle adapters, OEM coding, ADAS/key equipment, authenticated cloud services and complete system updates have not been validated by these guest tests.
 
@@ -18,6 +18,8 @@ This revision populates and preserves the Ubuntu APT/AppStream application catal
 
 The gallery ZIP contains screenshots captured from the running ISO guest. Opening the software centre does not validate installation of system updates or applications on physical hardware.
 
-This revision integrates pinned Klassy window decorations/application style, Papirus icons and Panel Colorizer. The bottom panel becomes a centered floating auto-hide dock with native icon tasks, without a repeated bottom clock/system tray. Settings entry points use native System Settings; repeated activation is checked for a single window. Native colour-scheme light/dark changes synchronize the GITM home screen. Desktop calculator launches KCalc; AutoDiag receives its launcher identity and application icon.
+This revision integrates pinned Klassy window decorations/application style, Papirus icons and Panel Colorizer. The bottom panel becomes a centered floating dock that is visible by default (automatic hiding is optional through native panel settings) with native icon tasks, without a repeated bottom clock/system tray. Settings entry points use native System Settings; repeated activation is checked for a single window. Native colour-scheme light/dark changes synchronize the GITM home screen. Desktop calculator launches KCalc; AutoDiag receives its launcher identity and application icon.
 
 Upstream sources/licences are retained in `/usr/share/doc/gitm-theme`. These guest checks do not establish every theme customization, touch interaction or physical-hardware behavior.
+
+The native desktop and GITM workspace share the same wallpaper and screen crop. Status remains in the top bar; the bottom dock contains application controls only.

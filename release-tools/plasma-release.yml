@@ -16,8 +16,8 @@ jobs:
     timeout-minutes: 30
     env:
       GH_TOKEN: ${{ github.token }}
-      SOURCE_RUN: '38093594899'
-      RELEASE_TAG: gitm-os-3.3.0-plasma4
+      SOURCE_RUN: '38094790367'
+      RELEASE_TAG: gitm-os-3.3.0-plasma5
     steps:
       - uses: actions/checkout@v4
       - name: Require successful source build
