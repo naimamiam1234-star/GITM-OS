@@ -20,6 +20,10 @@ class Gallery(QObject):
    ('search',lambda:w.search.setFocus()),
    ('sync',lambda:w.status_buttons['sync'].click()),
    ('settings',w.settings),('updates',w.updates),('appearance',w.choose_appearance),
+   ('airplane-confirm',w.toggle_airplane),
+   ('suspend-confirm',lambda:w.confirm_power('suspend')),
+   ('reboot-confirm',lambda:w.confirm_power('reboot')),
+   ('shutdown-confirm',lambda:w.confirm_power('poweroff')),
   ]
   for key in ['files','browser','photos','media','calculator','install','documents']:
    self.steps.append(('app-'+key,lambda k=key:w.app_buttons[k].click()))
@@ -28,7 +32,7 @@ class Gallery(QObject):
  def cleanup(self):
   for dialog in list(self.w.dialogs):dialog.reject()
   for dialog in QApplication.topLevelWidgets():
-   if isinstance(dialog,QMessageBox):dialog.reject()
+   if isinstance(dialog,QMessageBox):dialog.done(QMessageBox.Cancel)
   self.w.control.hide();self.w.status_buttons['chevron'].setChecked(False);self.w.search.clear()
   for line in windows():
    subprocess.run(['wmctrl','-ic',line.split()[0]],check=False)
@@ -41,9 +45,9 @@ class Gallery(QObject):
    self.native=QProcess(self);self.native.setProgram(sys.executable);self.native.setArguments([str(Path(__file__).with_name('gallery_native.py'))])
    self.native.finished.connect(self.done);self.native.start();return
   name,fn=self.steps[self.index];self.index+=1
+  QTimer.singleShot(8000,lambda:self.capture(name))
   try:fn()
   except Exception as e:emit('GITM_GALLERY_ERROR|'+name+'|'+str(e))
-  QTimer.singleShot(8000,lambda:self.capture(name))
  def capture(self,name):
   self.records.append({'name':name,'windows':windows()})
   emit('GITM_GALLERY_FRAME|'+name)

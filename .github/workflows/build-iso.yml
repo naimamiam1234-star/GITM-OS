@@ -8,7 +8,7 @@ permissions:
   contents: read
 concurrency:
   group: gitm-iso-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   ubuntu-iso:
     runs-on: ubuntu-24.04

@@ -60,7 +60,7 @@ class GlassPanel(QFrame):
 
 class UsageRing(QWidget):
  def __init__(self,title,parent=None):
-  super().__init__(parent);self.title=title;self.value=None;self.setMinimumSize(90,90)
+  super().__init__(parent);self.title=title;self.value=None;self.setMinimumSize(80,80)
  def setValue(self,value):
   self.value=max(0,min(100,value));self.update()
  def paintEvent(self,event):
@@ -168,7 +168,7 @@ class Desktop(QWidget):
   self.status_buttons['sync'].setIcon(state_icon('sync',{'busy':self.radios.busy,'phase':self.sync_phase}))
  def animate_status(self):
   self.sync_phase=(self.sync_phase+1)%12
-  if hasattr(self,'radios'):self.refresh_radios()
+  if hasattr(self,'radios') and self.radios.busy:self.status_buttons['sync'].setIcon(__import__('desktop_radios').state_icon('sync',{'busy':True,'phase':self.sync_phase}))
  def divider(self):
   line=QFrame();line.setFixedHeight(1);line.setStyleSheet('background:rgba(162,184,211,55)');return line
  def choose_appearance(self):
