@@ -26,7 +26,7 @@ print(f'Published {len(images)} real screenshots')
 
 from PIL import Image,ImageDraw,ImageFont,ImageStat
 for path in images:
- if sum(ImageStat.Stat(Image.open(path).convert('RGB')).stddev)/3<3:raise RuntimeError('Inactive or blank screenshot: '+path.name)
+ if sum(ImageStat.Stat(Image.open(path).convert('RGB')).stddev)/3<8:raise RuntimeError('Inactive or blank screenshot: '+path.name)
 columns=6;cellw=360;cellh=250;rows=(len(images)+columns-1)//columns
 sheet=Image.new('RGB',(columns*cellw,rows*cellh),'#0c1b30');draw=ImageDraw.Draw(sheet)
 for i,image in enumerate(images):
