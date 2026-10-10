@@ -1,0 +1,58 @@
+name: Fix and verify browser launch
+on:
+  push:
+    paths: ['browser-recovery/**', '.github/workflows/browser-recovery.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-OS-3.3-integration-amd64
+          run-id: 38009212923
+          github-token: ${{ github.token }}
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: final-gallery-diagnostics
+          run-id: 38011421948
+          github-token: ${{ github.token }}
+          path: previous
+      - name: Install repack and capture tools
+        run: sudo apt-get update && sudo apt-get install -y squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools dosfstools qemu-system-x86 ovmf python3-pil
+      - name: Add the browser-specific namespace profile
+        run: sudo bash browser-recovery/repack.sh
+      - name: Boot and recapture the affected actual windows
+        run: |
+          mkdir -p dist/gallery
+          cp previous/gallery/*.png dist/gallery/
+          sudo env GITM_GALLERY=1 python3 browser-recovery/boot.py
+      - name: Require an actual Falkon window and active screenshots
+        run: python3 browser-recovery/merge.py
+      - name: Prepare documented screenshot album
+        run: python3 browser-recovery/prepare-gallery.py
+      - name: Verify and split the new ISO
+        env:
+          BOOT_TEST_RUN: ${{ github.run_id }}
+        run: python3 browser-recovery/prepare-status.py
+      - name: Publish final corrected image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create gitm-os-3.3.0-layoutfix2 dist/*.part-* dist/*.sha256 dist/Join-ISO-Windows.cmd dist/release-manifest.json dist/bios.png dist/uefi.png dist/gallery.html dist/gallery.zip dist/gallery-overview.png --prerelease --title "GITM OS 3.3 — desktop correction and verified browser launch" --notes-file docs/browser-fix.md --target ${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-fixed-gallery
+          path: |
+            dist/gallery/
+            dist/gallery-overview.png
+            dist/release-manifest.json
+            dist/*.log
+            dist/bios.png
+            dist/uefi.png
+          retention-days: 90
