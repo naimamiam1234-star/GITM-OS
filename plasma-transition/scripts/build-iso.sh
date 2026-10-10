@@ -69,6 +69,7 @@ chmod 755 "$root/usr/local/bin/gitm-session" "$root/usr/local/bin/gitm-autodiag"
 chroot "$root" python3 -m venv /opt/gitm-venv
 chroot "$root" /opt/gitm-venv/bin/pip install PySide6==6.12.0 bleak==3.0.2 odxtools==11.6.2 python-can can-isotp udsoncan doipclient requests pyserial
 chroot "$root" /opt/gitm-venv/bin/pip freeze > "$project/dist/python-packages.txt"
+bash "$project/theme-integration/install-root.sh" "$root"
 chroot "$root" /usr/bin/env QT_QPA_PLATFORM=offscreen GITM_STATE=/tmp/gitm-smoke GITM_SCREENSHOT=/tmp/gitm-native.png /opt/gitm-venv/bin/python /opt/gitm/native.py --smoke
 cp "$root/tmp/gitm-native.png" "$project/dist/qt-smoke.png"
 cp "$project/scripts/check-split.py" "$root/tmp/check-split.py"
