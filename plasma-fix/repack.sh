@@ -21,6 +21,11 @@ p=Path(sys.argv[1]);s=p.read_text()
 s=s.replace('p=QProcess(self);p.setProgram(argv[0]);', "p=QProcess(self)\n  from PySide6.QtCore import QProcessEnvironment\n  env=QProcessEnvironment.systemEnvironment()\n  if argv[0]!=sys.executable:\n   env.remove('QT_STYLE_OVERRIDE');env.remove('QT_QPA_PLATFORMTHEME')\n  p.setProcessEnvironment(env);p.setProgram(argv[0]);")
 p.write_text(s)
 PY
+# Populate APT's AppStream catalogue after all desktop packages are installed.
+# Preserve these lists in the live image so Discover works on first launch.
+chroot "$work/root" apt-get update
+chroot "$work/root" appstreamcli refresh-cache --force
+chroot "$work/root" env LC_ALL=C appstreamcli status | python3 plasma-fix/check-catalog.py
 mksquashfs "$work/root" "$work/fixed.squashfs" -noappend -comp zstd -Xcompression-level 8 -processors 2
 mkdir -p dist
 xorriso -osirrox on -indev "$source" -extract / "$work/iso"

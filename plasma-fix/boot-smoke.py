@@ -43,7 +43,8 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
   if mode=='gallery':
    if 'GITM_GALLERY_DONE' not in text:raise RuntimeError('Gallery did not finish')
    if 'GITM_NETWORK_RELEASE_OK|resolute' not in text:raise RuntimeError('Gallery guest could not read the official Ubuntu repository')
-   (root/'gallery'/'guest-report.txt').write_text('\n'.join(x for x in text.splitlines() if 'GITM_GALLERY_' in x or 'GITM_BROWSER_POLICY' in x or 'GITM_NETWORK_' in x))
+   if 'GITM_CATALOG_OK' not in text:raise RuntimeError('Gallery guest has no populated Ubuntu application catalogue')
+   (root/'gallery'/'guest-report.txt').write_text('\n'.join(x for x in text.splitlines() if 'GITM_GALLERY_' in x or 'GITM_BROWSER_POLICY' in x or 'GITM_NETWORK_' in x or 'GITM_CATALOG_' in x))
   result=command({'execute':'screendump','arguments':{'filename':str(root/(mode+'.ppm'))}})
   if 'error' in result:raise RuntimeError(result)
   s.close()
