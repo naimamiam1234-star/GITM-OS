@@ -288,6 +288,27 @@ class Desktop(QWidget):
  def refresh(self):
   try:
    import configparser
+   from urllib.parse import urlparse,unquote
+   wallpaper_config=configparser.ConfigParser(strict=False);wallpaper_config.read(Path.home()/'.config/plasma-org.kde.plasma.desktop-appletsrc')
+   for section in wallpaper_config.sections():
+    if 'Wallpaper][org.kde.image][General' not in section:continue
+    image=wallpaper_config.get(section,'Image',fallback='')
+    parsed=urlparse(image)
+    if parsed.scheme not in ('','file'):continue
+    path=Path(unquote(parsed.path))
+    if str(path).startswith('/usr/share/wallpapers/GITM/'):continue
+    if path.is_dir():
+     candidates=list((path/'contents/images').glob('*'))
+     path=next((x for x in candidates if x.is_file()),path)
+    if not path.is_file() or getattr(self,'_native_wallpaper_path',None)==str(path):continue
+    pixmap=QPixmap(str(path))
+    if pixmap.isNull():continue
+    self._native_wallpaper_path=str(path);self.wallpaper=pixmap
+    STATE.mkdir(parents=True,exist_ok=True);(STATE/'wallpaper-path.txt').write_text(str(path))
+    self.update_background();self.update();break
+  except (OSError,ValueError):pass
+  try:
+   import configparser
    config=configparser.ConfigParser(strict=False);config.read(Path.home()/'.config/kdeglobals')
    background=config.get('Colors:Window','BackgroundNormal',fallback='').split(',')
    if len(background)==3:
