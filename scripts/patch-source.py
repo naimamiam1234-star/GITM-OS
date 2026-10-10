@@ -76,3 +76,6 @@ p.write_text(s)
 
 # AutoDiag application UI; leaves the operating-system shell unchanged.
 shutil.copy('patches/autodiag_theme.py',root/'visual_theme.py')
+
+# Avoid a QtPdf shutdown crash after opening a document.
+edit('workshop_tools.py',"view.setDocument(doc);view.setPageMode","view.setDocument(doc)\n # Release the PDF renderer before its widgets/application are destroyed.\n from PySide6.QtWidgets import QApplication\n from shiboken6 import isValid\n def release_pdf(*_):\n  if isValid(view):view.setDocument(None)\n  if isValid(doc):doc.close()\n window.pages.currentWidget().destroyed.connect(release_pdf)\n QApplication.instance().aboutToQuit.connect(release_pdf)\n view.setPageMode")
