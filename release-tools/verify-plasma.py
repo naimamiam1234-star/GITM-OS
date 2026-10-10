@@ -16,6 +16,7 @@ for mode in ('bios', 'uefi'):
 gallery = Path('download/gallery')
 report = (gallery / 'guest-report.txt').read_text()
 assert 'GITM_NETWORK_RELEASE_OK|resolute' in report, 'No verified Ubuntu repository connection'
+assert 'GITM_CATALOG_OK' in report, 'No populated Ubuntu application catalogue'
 assert 'GITM_GALLERY_DONE' in report
 assert 'GITM_GALLERY_ERROR|' not in report
 for name in ('desktop', 'app-files', 'app-browser', 'screen-power', 'accounts', 'system-updates'):
