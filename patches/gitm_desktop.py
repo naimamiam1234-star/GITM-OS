@@ -3,11 +3,13 @@ import os
 import sys
 import shutil
 import datetime
+import json
+import re
 from pathlib import Path
 from PySide6.QtCore import Qt, QSize, QTimer, QProcess, QIODevice, QRectF, QRect, QPoint
 from PySide6.QtGui import QIcon, QFontDatabase, QPainter, QColor, QLinearGradient, QPainterPath, QPixmap, QPen
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
- QGridLayout, QLabel, QPushButton, QLineEdit, QFrame, QDialog, QMessageBox, QScrollArea, QSlider, QProgressBar, QFileDialog, QLayout, QSizePolicy)
+ QGridLayout, QLabel, QPushButton, QLineEdit, QFrame, QDialog, QMessageBox, QScrollArea, QSlider, QProgressBar, QFileDialog, QLayout, QSizePolicy, QComboBox, QCheckBox)
 
 ROOT = Path(__file__).resolve().parent
 STATE = Path(os.environ.get('GITM_STATE', str(Path.home()/'.local/share/gitm')))
@@ -42,7 +44,12 @@ QSlider::groove:horizontal{height:7px;background:#2c3d51;border-radius:3px;}
 QSlider::sub-page:horizontal{background:#278aff;border-radius:3px;}
 QSlider::handle:horizontal{width:18px;margin:-5px 0;background:white;border-radius:9px;}
 QDialog,QMessageBox{background:#102238;}QToolTip{background:#132941;color:white;padding:8px;}
+QComboBox{background:#102238;color:#f0f5ff;border:1px solid #425572;border-radius:10px;padding:8px;}
+QComboBox QAbstractItemView{background:#102238;color:#f0f5ff;selection-background-color:#12518c;}
+QCheckBox{spacing:10px;}QCheckBox::indicator{width:20px;height:20px;border:1px solid #425572;border-radius:5px;background:#102238;}
+QCheckBox::indicator:checked{background:#278aff;border-color:#278aff;}
 '''
+STYLE+='QCheckBox::indicator:checked{image:url('+str(ROOT/'assets/desktop/check.svg')+');}'
 
 
 class GlassPanel(QFrame):
@@ -52,9 +59,10 @@ class GlassPanel(QFrame):
   p=QPainter(self);p.setRenderHint(QPainter.Antialiasing)
   bounds=QRectF(self.rect()).adjusted(.5,.5,-.5,-.5)
   clip=QPainterPath();clip.addRoundedRect(bounds,22,22);p.setClipPath(clip)
-  if not self.desktop.blurred.isNull():
+  light=self.desktop.appearance.get('mode')=='light'
+  if not self.desktop.appearance.get('performance') and not light and not self.desktop.blurred.isNull():
    pos=self.mapTo(self.desktop,QPoint(0,0));p.drawPixmap(self.rect(),self.desktop.blurred,QRect(pos,self.size()))
-  gradient=QLinearGradient(0,0,self.width(),self.height());gradient.setColorAt(0,QColor(16,29,47,218));gradient.setColorAt(1,QColor(8,17,28,227));p.fillRect(self.rect(),gradient)
+  gradient=QLinearGradient(0,0,self.width(),self.height());gradient.setColorAt(0,QColor('#f4f7fc' if light else '#101d2f'));gradient.setColorAt(1,QColor('#e8eef7' if light else '#08111c'));p.fillRect(self.rect(),gradient)
   p.setClipping(False);p.setPen(QPen(QColor(158,188,219,65),1));p.drawRoundedRect(bounds,22,22)
 
 
@@ -66,11 +74,12 @@ class UsageRing(QWidget):
  def paintEvent(self,event):
   p=QPainter(self);p.setRenderHint(QPainter.Antialiasing)
   side=min(self.width(),self.height())-18;r=QRectF((self.width()-side)/2,(self.height()-side)/2,side,side)
-  p.setPen(QPen(QColor('#29425f'),7));p.drawEllipse(r)
+  light=getattr(self.window(),'appearance',{}).get('mode')=='light'
+  p.setPen(QPen(QColor('#c4d3e5' if light else '#29425f'),7));p.drawEllipse(r)
   if self.value is not None:
    p.setPen(QPen(QColor('#339cff'),7,Qt.SolidLine,Qt.RoundCap));p.drawArc(r,90*16,-round(self.value*3.6*16))
-  p.setPen(QColor('#f0f5ff'));p.drawText(r.adjusted(0,10,0,-20),Qt.AlignCenter,self.title)
-  p.setPen(QColor('#91caff'));p.drawText(r.adjusted(0,35,0,0),Qt.AlignCenter,'—' if self.value is None else str(self.value)+'%')
+  p.setPen(QColor('#172b45' if light else '#f0f5ff'));p.drawText(r.adjusted(0,10,0,-20),Qt.AlignCenter,self.title)
+  p.setPen(QColor('#1853a3' if light else '#91caff'));p.drawText(r.adjusted(0,35,0,0),Qt.AlignCenter,'—' if self.value is None else str(self.value)+'%')
 
 class Desktop(QWidget):
  def __init__(self):
@@ -78,6 +87,12 @@ class Desktop(QWidget):
   self.setWindowTitle('GITM OS 3.3 · Desktop')
   self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|Qt.WindowStaysOnBottomHint)
   self.resize(1440,900);self.processes={};self.dialogs=[];self.tiles=[];self.app_buttons={};self.control_radios={};self.sync_phase=0
+  self.appearance={'mode':'dark','performance':False,'reduce_motion':False}
+  try:
+   saved=json.loads((STATE/'appearance.json').read_text())
+   if saved.get('mode') in ('dark','light'):self.appearance['mode']=saved['mode']
+   for key in ('performance','reduce_motion'):self.appearance[key]=saved.get(key) is True
+  except (OSError,ValueError,AttributeError):pass
   self.wallpaper=QPixmap(str(ROOT/'assets/desktop/wallpaper.png'));self.background=QPixmap();self.blurred=QPixmap()
   try:
    personal=QPixmap((STATE/'wallpaper-path.txt').read_text().strip())
@@ -97,7 +112,7 @@ class Desktop(QWidget):
   self.status_buttons['chevron'].setCheckable(True)
   self.battery_label=QLabel();self.battery_label.setStyleSheet('font-size:13px');top.addWidget(self.battery_label)
   self.clock=QLabel();self.clock.setStyleSheet('font-size:15px');top.addWidget(self.clock)
-  power=QPushButton();power.setIcon(self.icon('power'));power.setIconSize(QSize(24,24));power.setToolTip('الطاقة');power.setObjectName('nav');power.clicked.connect(self.power);top.addWidget(power);outer.addLayout(top)
+  power=QPushButton();self.power_button=power;power.setIcon(self.icon('power'));power.setIconSize(QSize(24,24));power.setToolTip('الطاقة');power.setObjectName('nav');power.clicked.connect(self.power);top.addWidget(power);outer.addLayout(top)
   content=QHBoxLayout();content.setSpacing(28)
   left=QVBoxLayout();left.setSpacing(12);content.addLayout(left,1)
   welcome=QHBoxLayout();words=QVBoxLayout();heading=QLabel('مرحبًا بك.');heading.setObjectName('title');words.addWidget(heading)
@@ -150,6 +165,36 @@ class Desktop(QWidget):
   self.refresh_radios()
   self.animation=QTimer(self);self.animation.timeout.connect(self.animate_status);self.animation.start(200)
   self.refresh();self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(5000)
+  self.apply_appearance()
+ def theme_css(self,css):
+  if self.appearance['mode']!='light':return css
+  colors={'#f0f5ff':'#172b45','#b6c5de':'#405978','#bccde7':'#405978','#c9d7eb':'#405978','#b3c4db':'#405978','#a9bbd2':'#405978','#bfcee1':'#405978','#b5c4d9':'#405978','#becce1':'#405978','#77859a':'#56657a','#36485f':'#aebed2','#425572':'#aebed2','#39526f':'#aebed2','#344054':'#aebed2','#455771':'#8497ae','#243246':'#d3dfed','#2c3d51':'#c0cfe0','#102238':'#eef3fa','#132941':'#e3ebf6','#12518c':'#bed9fb'}
+  css=re.sub(r'#[0-9a-fA-F]{6}',lambda m:colors.get(m.group().lower(),m.group()),css)
+  css=css.replace('color:white','color:#172b45')
+  css=re.sub(r'rgba\((22,39,62,195|20,39,61,200|13,26,45,215|25,38,56,155)\)','rgba(238,244,252,245)',css)
+  css=css.replace('rgba(42,74,110,225)','rgba(211,227,248,245)')
+  return css
+ def apply_appearance(self):
+  self.setStyleSheet(self.theme_css(STYLE))
+  for widget in self.findChildren(QWidget):
+   if not hasattr(widget,'_gitm_original_style'):widget._gitm_original_style=widget.styleSheet()
+   if widget._gitm_original_style:widget.setStyleSheet(self.theme_css(widget._gitm_original_style))
+  if self.appearance['performance']:self.blurred=QPixmap()
+  self.update_background();self.update()
+  for panel in self.findChildren(GlassPanel):panel.update()
+  for ring in self.stat_rows.values():ring.update()
+  self.refresh_radios()
+  for key in ('search','chevron'):self.status_buttons[key].setIcon(self.icon(key))
+  self.power_button.setIcon(self.icon('power'))
+ def save_appearance(self):
+  STATE.mkdir(parents=True,exist_ok=True)
+  temp=STATE/'appearance.json.tmp';temp.write_text(json.dumps(self.appearance));temp.replace(STATE/'appearance.json')
+  self.apply_appearance()
+ def keyPressEvent(self,event):
+  if event.key()==Qt.Key_Escape:
+   self.control.hide();self.status_buttons['chevron'].setChecked(False);self.search.clear();return
+  if event.key()==Qt.Key_F and event.modifiers() & Qt.ControlModifier:self.search.setFocus();return
+  super().keyPressEvent(event)
  def toggle_control(self):
   visible=not self.control.isVisible();self.control.setVisible(visible);self.status_buttons['chevron'].setChecked(visible)
   self.position_control();self.control.raise_()
@@ -158,22 +203,30 @@ class Desktop(QWidget):
  def refresh_radios(self):
   from desktop_radios import battery_info,state_icon
   for key,state in [('wifi',self.radios.wifi_state),('bluetooth',self.radios.bluetooth_state)]:
-   icon=state_icon(key,state);self.status_buttons[key].setIcon(icon)
+   icon=state_icon(key,dict(state,light=self.appearance['mode']=='light'));self.status_buttons[key].setIcon(icon)
    if key in self.control_radios:self.control_radios[key].setIcon(icon)
   self.status_buttons['wifi'].setToolTip('Wi-Fi · '+self.radios.wifi)
   self.status_buttons['bluetooth'].setToolTip('Bluetooth · '+self.radios.bluetooth)
-  info=battery_info();self.status_buttons['battery'].setIcon(state_icon('battery',info))
+  info=battery_info();self.status_buttons['battery'].setIcon(state_icon('battery',dict(info,light=self.appearance['mode']=='light')))
   self.battery_label.setText('' if not info['present'] else str(info['percent'])+'%')
   self.status_buttons['battery'].setToolTip(info['text'])
-  self.status_buttons['sync'].setIcon(state_icon('sync',{'busy':self.radios.busy,'phase':self.sync_phase}))
+  self.status_buttons['sync'].setIcon(state_icon('sync',{'busy':self.radios.busy,'phase':self.sync_phase,'light':self.appearance['mode']=='light'}))
  def animate_status(self):
+  if self.appearance['reduce_motion']:return
   self.sync_phase=(self.sync_phase+1)%12
-  if hasattr(self,'radios') and self.radios.busy:self.status_buttons['sync'].setIcon(__import__('desktop_radios').state_icon('sync',{'busy':True,'phase':self.sync_phase}))
+  if hasattr(self,'radios') and self.radios.busy:self.status_buttons['sync'].setIcon(__import__('desktop_radios').state_icon('sync',{'busy':True,'phase':self.sync_phase,'light':self.appearance['mode']=='light'}))
  def divider(self):
   line=QFrame();line.setFixedHeight(1);line.setStyleSheet('background:rgba(162,184,211,55)');return line
  def choose_appearance(self):
   d,v=self.panel('المظهر')
   note=QLabel('الخلفية الحالية مستوحاة من مرجعك. يمكنك اختيار خلفية شخصية.');note.setWordWrap(True);v.addWidget(note)
+  mode=QComboBox();mode.addItem('داكن','dark');mode.addItem('نهاري','light');mode.setCurrentIndex(1 if self.appearance['mode']=='light' else 0);mode.setAccessibleName('نمط المظهر');v.addWidget(mode)
+  def set_mode():self.appearance['mode']=mode.currentData();self.save_appearance()
+  mode.currentIndexChanged.connect(set_mode)
+  for key,title in [('performance','وضع الأداء — إيقاف ضبابية الخلفية'),('reduce_motion','تقليل الحركة')]:
+   option=QCheckBox(title);option.setChecked(self.appearance[key]);option.setAccessibleName(title);v.addWidget(option)
+   def change(value,k=key):self.appearance[k]=bool(value);self.save_appearance()
+   option.toggled.connect(change)
   b=QPushButton('اختيار خلفية');v.addWidget(b)
   def choose():
    path,_=QFileDialog.getOpenFileName(self,'الخلفية',str(Path.home()),'Images (*.png *.jpg *.jpeg)')
@@ -181,7 +234,7 @@ class Desktop(QWidget):
     image=QPixmap(path)
     if not image.isNull():
      STATE.mkdir(parents=True,exist_ok=True);(STATE/'wallpaper-path.txt').write_text(path);self.wallpaper=image;self.update_background();self.update()
-  b.clicked.connect(choose);d.show()
+  b.clicked.connect(choose);self.apply_appearance();d.show()
  def toggle_airplane(self):
   answer=QMessageBox.question(self,'وضع الطيران','تعطيل الاتصالات اللاسلكية؟ اختر لا لاستعادة الحالة السابقة.',QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
   if answer==QMessageBox.Cancel:return
@@ -194,7 +247,10 @@ class Desktop(QWidget):
   p=ROOT/'assets/desktop'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/'settings.svg'
-  return QIcon(str(p))
+  icon=QIcon(str(p))
+  if name in ('search','chevron','power') and self.appearance['mode']=='light':
+   pixmap=icon.pixmap(32,32);painter=QPainter(pixmap);painter.setCompositionMode(QPainter.CompositionMode_SourceIn);painter.fillRect(pixmap.rect(),QColor('#405978'));painter.end();return QIcon(pixmap)
+  return icon
  def resizeEvent(self,event):
   super().resizeEvent(event)
   if not hasattr(self,'app_grid'):return
@@ -208,14 +264,16 @@ class Desktop(QWidget):
   if self.wallpaper.isNull():return
   scaled=self.wallpaper.scaled(self.size(),Qt.KeepAspectRatioByExpanding,Qt.SmoothTransformation)
   self.background=scaled.copy((scaled.width()-self.width())//2,(scaled.height()-self.height())//2,self.width(),self.height())
-  tiny=self.background.scaled(max(1,self.width()//30),max(1,self.height()//30),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
-  self.blurred=tiny.scaled(self.size(),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+  if not self.appearance['performance'] and self.appearance['mode']=='dark':
+   tiny=self.background.scaled(max(1,self.width()//30),max(1,self.height()//30),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+   self.blurred=tiny.scaled(self.size(),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+  else:self.blurred=QPixmap()
   for panel in self.findChildren(GlassPanel):panel.update()
  def paintEvent(self,event):
   p=QPainter(self)
   if not self.background.isNull():p.drawPixmap(0,0,self.background)
   else:p.fillRect(self.rect(),QColor('#081a30'))
-  p.fillRect(self.rect(),QColor(3,10,22,40))
+  p.fillRect(self.rect(),QColor(245,248,253,235) if self.appearance['mode']=='light' else QColor(3,10,22,65))
  def filter_apps(self,text):
   for label,button in self.tiles: button.setVisible(text.casefold() in label.casefold())
  def refresh(self):
@@ -250,13 +308,19 @@ class Desktop(QWidget):
  def panel(self,title):
   d=QDialog(self);d.setWindowTitle(title);d.setMinimumWidth(560);d.setStyleSheet(STYLE);v=QVBoxLayout(d);v.setContentsMargins(24,24,24,24);v.setSpacing(14)
   h=QLabel(title);h.setStyleSheet('font-size:27px;font-weight:bold');v.addWidget(h)
-  self.dialogs.append(d);d.finished.connect(lambda _:self.dialogs.remove(d));return d,v
+  d._gitm_original_style=STYLE;d.setStyleSheet(self.theme_css(STYLE));self.dialogs.append(d);d.finished.connect(lambda _:self.dialogs.remove(d));return d,v
  def action(self,v,title,key,command):
   b=QPushButton(title);b.setEnabled(bool(shutil.which(command[0])));b.setToolTip(' '.join(command));b.clicked.connect(lambda:self.launch(key,command));v.addWidget(b);return b
  def settings(self):
   d,v=self.panel('مركز التحكم والإعدادات')
-  for title,key,cmd in [('Wi-Fi والشبكات','network',['nm-connection-editor']),('Bluetooth','bluetooth',['blueman-manager']),('الصوت','sound',['pavucontrol']),('الشاشة والسطوع والطاقة','power-settings',['systemsettings5']),('دقة الشاشة','display',['systemsettings5']),('لوحة المفاتيح على الشاشة','keyboard',['onboard']),('مراقبة العمليات','tasks',['plasma-systemmonitor'])]:self.action(v,title,key,cmd)
-  self.action(v,'الحسابات وكلمة المرور','password',['systemsettings5','kcm_users'])
+  search=QLineEdit();search.setPlaceholderText('ابحث في الإعدادات…');search.setAccessibleName('بحث الإعدادات');v.addWidget(search)
+  buttons=[]
+  for title,key,cmd in [('Wi-Fi والشبكات','network',['nm-connection-editor']),('Bluetooth','bluetooth',['blueman-manager']),('الصوت','sound',['pavucontrol']),('الشاشة والسطوع والطاقة','power-settings',['systemsettings5']),('دقة الشاشة','display',['systemsettings5']),('لوحة المفاتيح على الشاشة','keyboard',['onboard']),('مراقبة العمليات','tasks',['plasma-systemmonitor'])]:buttons.append(self.action(v,title,key,cmd))
+  buttons.append(self.action(v,'الحسابات وكلمة المرور','password',['systemsettings5','kcm_users']))
+  appearance=QPushButton('المظهر والتخصيص');appearance.clicked.connect(self.choose_appearance);v.addWidget(appearance);buttons.append(appearance)
+  def filter_settings(text):
+   for button in buttons:button.setVisible(text.casefold() in button.text().casefold())
+  search.textChanged.connect(filter_settings)
   d.show()
  def updates(self):
   d,v=self.panel('مركز التحديثات')
@@ -296,3 +360,4 @@ def main():
   QTimer.singleShot(4000,visible_marker)
  return app.exec()
 if __name__=='__main__':sys.exit(main())
+

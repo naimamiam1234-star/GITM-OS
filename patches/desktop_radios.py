@@ -33,11 +33,12 @@ def state_icon(name,state):
  from PySide6.QtCore import Qt,QRectF
  pix=QPixmap(44,44);pix.fill(Qt.transparent);p=QPainter(pix);p.setRenderHint(QPainter.Antialiasing)
  kind=state.get('kind','unknown');active=kind in ('connected','on')
- color=QColor('#42b7ff' if active else '#8998ad');p.setPen(QPen(color,2.5,Qt.SolidLine,Qt.RoundCap))
+ light=state.get('light',False)
+ color=QColor(('#0767af' if light else '#42b7ff') if active else ('#455c79' if light else '#8998ad'));p.setPen(QPen(color,2.5,Qt.SolidLine,Qt.RoundCap))
  if name=='wifi':
   strength=state.get('signal',0)
   for i,(threshold,rect) in enumerate([(0,QRectF(15,22,14,10)),(35,QRectF(9,14,26,20)),(70,QRectF(3,6,38,30))]):
-   p.setPen(QPen(QColor('#42b7ff' if kind=='connected' and strength>=threshold else '#65778e'),2.5,Qt.SolidLine,Qt.RoundCap));p.drawArc(rect,35*16,110*16)
+   p.setPen(QPen(QColor(('#0767af' if light else '#42b7ff') if kind=='connected' and strength>=threshold else '#65778e'),2.5,Qt.SolidLine,Qt.RoundCap));p.drawArc(rect,35*16,110*16)
   p.setBrush(color);p.drawEllipse(20,33,4,4)
  elif name=='bluetooth':
   p.drawLine(21,5,21,38);p.drawLine(21,5,32,16);p.drawLine(32,16,10,31);p.drawLine(10,12,32,27);p.drawLine(32,27,21,38)
@@ -45,7 +46,7 @@ def state_icon(name,state):
    p.setBrush(QColor('#55e5b0'));p.setPen(Qt.NoPen);p.drawEllipse(33,17,7,7)
  elif name=='battery':
   present=state.get('present',False);level=state.get('percent',0)
-  color=QColor('#ff5a66' if level<=15 and present else '#4fe0a5' if state.get('charging') else '#b8d8f9');p.setPen(QPen(color,2.5));p.setBrush(Qt.NoBrush)
+  color=QColor('#ff5a66' if level<=15 and present else '#087d57' if light and state.get('charging') else '#4fe0a5' if state.get('charging') else '#405978' if light else '#b8d8f9');p.setPen(QPen(color,2.5));p.setBrush(Qt.NoBrush)
   p.drawRoundedRect(QRectF(4,13,32,18),3,3);p.drawLine(39,19,39,25)
   if present:
    p.fillRect(QRectF(7,16,26*level/100,12),color)
@@ -53,7 +54,7 @@ def state_icon(name,state):
     p.setPen(QPen(QColor('#fff'),2));p.drawLine(23,10,16,22);p.drawLine(16,22,25,22);p.drawLine(25,22,19,35)
   else:kind='missing'
  elif name=='sync':
-  p.setPen(QPen(QColor('#42b7ff' if state.get('busy') else '#b8d8f9'),2.5))
+  p.setPen(QPen(QColor(('#0767af' if light else '#42b7ff') if state.get('busy') else '#405978' if light else '#b8d8f9'),2.5))
   if state.get('busy'):p.translate(22,22);p.rotate(state.get('phase',0)*30);p.translate(-22,-22)
   p.drawArc(QRectF(8,8,28,28),25*16,135*16);p.drawArc(QRectF(8,8,28,28),205*16,135*16)
   p.drawLine(8,8,8,18);p.drawLine(8,18,18,18);p.drawLine(36,36,36,26);p.drawLine(36,26,26,26)
@@ -151,3 +152,4 @@ class Radios(QObject):
      self.run(['bluetoothctl','devices','Connected'],lambda ok2,out2:result(True,out+'\n---connected---\n'+(out2 if ok2 else '')))
     self.run(['bluetoothctl','devices'],known)
   refresh.clicked.connect(scan);d.show();scan()
+
