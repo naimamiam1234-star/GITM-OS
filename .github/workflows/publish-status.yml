@@ -8,7 +8,7 @@ permissions:
   actions: read
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == '8fa73ce2508ad85285a3c6fbdc10a746e4a36410' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == '7d936a5e87d65ba30ece7818883a079b55c85cf4' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
