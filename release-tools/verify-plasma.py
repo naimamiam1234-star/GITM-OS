@@ -25,7 +25,8 @@ for name in ('desktop', 'app-files', 'app-browser', 'screen-power', 'accounts', 
         width, height = image.size
         content = image.crop((width // 4, height // 4, 3 * width // 4, 3 * height // 4)).convert('RGB')
         assert max(ImageStat.Stat(content).stddev) > 6, 'Empty central screenshot: ' + name
-assert any('GITM_GALLERY_WINDOW|screen-power|' in line and 'system settings' in line.lower() for line in report.splitlines()), 'No actual settings window recorded'
+assert any('GITM_GALLERY_WINDOW|screen-power|' in line and any(title in line.lower() for title in ('system settings','إعدادات النظام','إعدادات النّظام')) for line in report.splitlines()), 'No actual settings window recorded'
+assert 'GITM_SETTINGS_WINDOWS|1' in (root / 'gallery-serial.log').read_text(errors='replace'), 'Repeated activation did not verify a single settings window'
 assert len(list(gallery.glob('*.png'))) >= 60, 'Incomplete application gallery'
 packages = (root / 'packages.txt').read_text()
 assert any(line.startswith('plasma-workspace 4:6.') for line in packages.splitlines())

@@ -16,8 +16,8 @@ jobs:
     timeout-minutes: 30
     env:
       GH_TOKEN: ${{ github.token }}
-      SOURCE_RUN: '38075316494'
-      RELEASE_TAG: gitm-os-3.3.0-plasma2
+      SOURCE_RUN: '38089626681'
+      RELEASE_TAG: gitm-os-3.3.0-plasma3
     steps:
       - uses: actions/checkout@v4
       - name: Require successful source build
@@ -38,12 +38,20 @@ jobs:
       - name: Validate ISO and guest evidence
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pil
+          sudo apt-get install -y python3-pil qemu-system-x86 tesseract-ocr
           python3 release-tools/verify-plasma.py
+      - name: Verify actual desktop keyboard input
+        run: python3 release-tools/check-keyboard.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-Plasma6-input-validation
+          path: input-check/
       - name: Package verified preview
         run: |
           mkdir release-assets dist
           cp -a download/gallery dist/gallery
+          cp input-check/dock-revealed.png dist/gallery/
           python3 release-tools/prepare-gallery.py
           mv download/iso/GITM-OS-3.3.0-integration-amd64.iso release-assets/GITM-OS-Plasma6-amd64.iso
           cd release-assets
@@ -51,9 +59,10 @@ jobs:
           split -b 1500M -d -a 2 --numeric-suffixes=1 GITM-OS-Plasma6-amd64.iso GITM-OS-Plasma6-amd64.iso.part
           cp ../dist/gallery.zip GITM-Plasma6-gallery.zip
           cp ../dist/gallery.html ../dist/gallery-overview.png .
+          cp ../input-check/keyboard-search.png .
           sha256sum GITM-OS-Plasma6-amd64.iso.part* > parts.sha256
           SOURCE_SHA=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .head_sha) python3 ../release-tools/manifest-plasma.py
           rm GITM-OS-Plasma6-amd64.iso
       - name: Publish development preview
         run: |
-          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title 'GITM OS — Plasma 6 preview' --notes-file release-tools/plasma-notes.md release-assets/*
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title 'GITM OS — Native theme and floating dock preview' --notes-file release-tools/plasma-notes.md release-assets/*

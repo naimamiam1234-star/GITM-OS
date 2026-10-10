@@ -17,3 +17,7 @@ sha256sum -c GITM-OS-Plasma6-amd64.iso.sha256
 This revision populates and preserves the Ubuntu APT/AppStream application catalogue in the live image. Build and guest checks require a populated repository catalogue, separately from the network HTTPS check.
 
 The gallery ZIP contains screenshots captured from the running ISO guest. Opening the software centre does not validate installation of system updates or applications on physical hardware.
+
+This revision integrates pinned Klassy window decorations/application style, Papirus icons and Panel Colorizer. The bottom panel becomes a centered floating auto-hide dock with native icon tasks, without a repeated bottom clock/system tray. Settings entry points use native System Settings; repeated activation is checked for a single window. Native colour-scheme light/dark changes synchronize the GITM home screen. Desktop calculator launches KCalc; AutoDiag receives its launcher identity and application icon.
+
+Upstream sources/licences are retained in `/usr/share/doc/gitm-theme`. These guest checks do not establish every theme customization, touch interaction or physical-hardware behavior.
