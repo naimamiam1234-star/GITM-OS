@@ -53,12 +53,14 @@ class Gallery(QObject):
   name,fn=self.steps[self.index];self.index+=1
   if name not in {'appearance-light','desktop-light'} and self.w.appearance['mode']!='dark':
    self.w.appearance['mode']='dark';self.w.apply_appearance()
-  QTimer.singleShot(18000 if name.startswith('app-') or name in {'screen-power','processes','accounts','system-updates'} else 8000,lambda:self.capture(name))
+  QTimer.singleShot(10000 if name.startswith('app-') or name in {'screen-power','processes','accounts','system-updates'} else 4000,lambda:self.capture(name))
   try:fn()
   except Exception as e:emit('GITM_GALLERY_ERROR|'+name+'|'+str(e))
  def light_appearance(self):
   self.w.appearance['mode']='light';self.w.apply_appearance();self.w.choose_appearance()
  def capture(self,name):
+  if name=='app-browser' and not any('Falkon' in line for line in windows()):
+   emit('GITM_GALLERY_ERROR|app-browser|No actual Falkon window');self.done();return
   if name=='app-browser':
    process=self.w.processes.get('browser')
    if process and process.processId():
@@ -74,7 +76,7 @@ class Gallery(QObject):
    for line in file.read_text(errors='replace').splitlines()[-4:]:emit('GITM_GALLERY_APPLOG|'+name+'|'+file.name+'|'+line[:500])
   self.records.append({'name':name,'windows':windows()})
   emit('GITM_GALLERY_FRAME|'+name)
-  QTimer.singleShot(5000,self.next)
+  QTimer.singleShot(2000,self.next)
  def done(self,*args):
   emit('GITM_GALLERY_REPORT|'+json.dumps(self.records,ensure_ascii=True))
   emit('GITM_GALLERY_DONE')

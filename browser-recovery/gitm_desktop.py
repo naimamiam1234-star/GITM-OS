@@ -44,7 +44,12 @@ QSlider::groove:horizontal{height:7px;background:#2c3d51;border-radius:3px;}
 QSlider::sub-page:horizontal{background:#278aff;border-radius:3px;}
 QSlider::handle:horizontal{width:18px;margin:-5px 0;background:white;border-radius:9px;}
 QDialog,QMessageBox{background:#102238;}QToolTip{background:#132941;color:white;padding:8px;}
+QComboBox{background:#102238;color:#f0f5ff;border:1px solid #425572;border-radius:10px;padding:8px;}
+QComboBox QAbstractItemView{background:#102238;color:#f0f5ff;selection-background-color:#12518c;}
+QCheckBox{spacing:10px;}QCheckBox::indicator{width:20px;height:20px;border:1px solid #425572;border-radius:5px;background:#102238;}
+QCheckBox::indicator:checked{background:#278aff;border-color:#278aff;}
 '''
+STYLE+='QCheckBox::indicator:checked{image:url('+str(ROOT/'assets/desktop/check.svg')+');}'
 
 
 class GlassPanel(QFrame):
@@ -107,7 +112,7 @@ class Desktop(QWidget):
   self.status_buttons['chevron'].setCheckable(True)
   self.battery_label=QLabel();self.battery_label.setStyleSheet('font-size:13px');top.addWidget(self.battery_label)
   self.clock=QLabel();self.clock.setStyleSheet('font-size:15px');top.addWidget(self.clock)
-  power=QPushButton();power.setIcon(self.icon('power'));power.setIconSize(QSize(24,24));power.setToolTip('الطاقة');power.setObjectName('nav');power.clicked.connect(self.power);top.addWidget(power);outer.addLayout(top)
+  power=QPushButton();self.power_button=power;power.setIcon(self.icon('power'));power.setIconSize(QSize(24,24));power.setToolTip('الطاقة');power.setObjectName('nav');power.clicked.connect(self.power);top.addWidget(power);outer.addLayout(top)
   content=QHBoxLayout();content.setSpacing(28)
   left=QVBoxLayout();left.setSpacing(12);content.addLayout(left,1)
   welcome=QHBoxLayout();words=QVBoxLayout();heading=QLabel('مرحبًا بك.');heading.setObjectName('title');words.addWidget(heading)
@@ -180,6 +185,7 @@ class Desktop(QWidget):
   for ring in self.stat_rows.values():ring.update()
   self.refresh_radios()
   for key in ('search','chevron'):self.status_buttons[key].setIcon(self.icon(key))
+  self.power_button.setIcon(self.icon('power'))
  def save_appearance(self):
   STATE.mkdir(parents=True,exist_ok=True)
   temp=STATE/'appearance.json.tmp';temp.write_text(json.dumps(self.appearance));temp.replace(STATE/'appearance.json')
