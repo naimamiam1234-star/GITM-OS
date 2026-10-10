@@ -6,7 +6,7 @@ import datetime
 import json
 import re
 from pathlib import Path
-from PySide6.QtCore import Qt, QSize, QTimer, QProcess, QIODevice, QRectF, QRect, QPoint
+from PySide6.QtCore import Qt, QSize, QTimer, QProcess, QIODevice, QRectF, QRect, QPoint, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
 from PySide6.QtGui import QIcon, QFontDatabase, QPainter, QColor, QLinearGradient, QPainterPath, QPixmap, QPen
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
  QGridLayout, QLabel, QPushButton, QLineEdit, QFrame, QDialog, QMessageBox, QScrollArea, QSlider, QProgressBar, QFileDialog, QLayout, QSizePolicy, QComboBox, QCheckBox)
@@ -87,11 +87,13 @@ class Desktop(QWidget):
   self.setWindowTitle('GITM OS 3.3 · Desktop')
   self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|Qt.WindowStaysOnBottomHint)
   self.resize(1440,900);self.processes={};self.dialogs=[];self.tiles=[];self.app_buttons={};self.control_radios={};self.sync_phase=0
-  self.appearance={'mode':'dark','performance':False,'reduce_motion':False}
+  self.appearance={'mode':'dark','performance':False,'reduce_motion':False,'icon_size':64}
   try:
    saved=json.loads((STATE/'appearance.json').read_text())
    if saved.get('mode') in ('dark','light'):self.appearance['mode']=saved['mode']
    for key in ('performance','reduce_motion'):self.appearance[key]=saved.get(key) is True
+   size=saved.get('icon_size',64)
+   if type(size) is int and 48<=size<=68:self.appearance['icon_size']=size
   except (OSError,ValueError,AttributeError):pass
   self.wallpaper=QPixmap(str(ROOT/'assets/desktop/wallpaper.png'));self.background=QPixmap();self.blurred=QPixmap()
   try:
@@ -166,6 +168,16 @@ class Desktop(QWidget):
   self.animation=QTimer(self);self.animation.timeout.connect(self.animate_status);self.animation.start(200)
   self.refresh();self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(5000)
   self.apply_appearance()
+  for button in self.app_buttons.values():button.pressed.connect(lambda b=button:self.animate_icon(b))
+ def animate_icon(self,button):
+  if self.appearance['reduce_motion'] or self.appearance['performance']:return
+  previous=getattr(button,'_gitm_motion',None)
+  if previous:previous.stop()
+  group=QSequentialAnimationGroup(button)
+  size=self.appearance['icon_size']
+  for start,end,duration in [(size,size-7,80),(size-7,size,140)]:
+   animation=QPropertyAnimation(button,b'iconSize',group);animation.setStartValue(QSize(start,start));animation.setEndValue(QSize(end,end));animation.setDuration(duration);animation.setEasingCurve(QEasingCurve.OutCubic);group.addAnimation(animation)
+  button._gitm_motion=group;group.finished.connect(group.deleteLater);group.finished.connect(lambda:setattr(button,'_gitm_motion',None));group.start()
  def theme_css(self,css):
   if self.appearance['mode']!='light':return css
   colors={'#f0f5ff':'#172b45','#b6c5de':'#405978','#bccde7':'#405978','#c9d7eb':'#405978','#b3c4db':'#405978','#a9bbd2':'#405978','#bfcee1':'#405978','#b5c4d9':'#405978','#becce1':'#405978','#77859a':'#56657a','#36485f':'#aebed2','#425572':'#aebed2','#39526f':'#aebed2','#344054':'#aebed2','#455771':'#8497ae','#243246':'#d3dfed','#2c3d51':'#c0cfe0','#102238':'#eef3fa','#132941':'#e3ebf6','#12518c':'#bed9fb'}
@@ -176,6 +188,7 @@ class Desktop(QWidget):
   return css
  def apply_appearance(self):
   self.setStyleSheet(self.theme_css(STYLE))
+  for button in self.app_buttons.values():button.setIconSize(QSize(self.appearance['icon_size'],self.appearance['icon_size']))
   for widget in self.findChildren(QWidget):
    if not hasattr(widget,'_gitm_original_style'):widget._gitm_original_style=widget.styleSheet()
    if widget._gitm_original_style:widget.setStyleSheet(self.theme_css(widget._gitm_original_style))
@@ -198,6 +211,11 @@ class Desktop(QWidget):
  def toggle_control(self):
   visible=not self.control.isVisible();self.control.setVisible(visible);self.status_buttons['chevron'].setChecked(visible)
   self.position_control();self.control.raise_()
+  previous=getattr(self,'control_motion',None)
+  if previous:previous.stop()
+  if visible and not self.appearance['reduce_motion'] and not self.appearance['performance']:
+   end=self.control.pos();self.control.move(end+QPoint(0,-18))
+   self.control_motion=QPropertyAnimation(self.control,b'pos',self);self.control_motion.setDuration(180);self.control_motion.setStartValue(self.control.pos());self.control_motion.setEndValue(end);self.control_motion.setEasingCurve(QEasingCurve.OutCubic);self.control_motion.start()
  def position_control(self):
   self.control.setGeometry(max(8,self.width()-self.control.width()-28),68,self.control.width(),min(540,self.height()-86))
  def refresh_radios(self):
@@ -227,6 +245,10 @@ class Desktop(QWidget):
    option=QCheckBox(title);option.setChecked(self.appearance[key]);option.setAccessibleName(title);v.addWidget(option)
    def change(value,k=key):self.appearance[k]=bool(value);self.save_appearance()
    option.toggled.connect(change)
+  size_title=QLabel('حجم أيقونات التطبيقات');v.addWidget(size_title)
+  size=QSlider(Qt.Horizontal);size.setRange(48,68);size.setValue(self.appearance['icon_size']);size.setAccessibleName('حجم الأيقونات');v.addWidget(size)
+  def set_size():self.appearance['icon_size']=size.value();self.save_appearance()
+  size.sliderReleased.connect(set_size)
   b=QPushButton('اختيار خلفية');v.addWidget(b)
   def choose():
    path,_=QFileDialog.getOpenFileName(self,'الخلفية',str(Path.home()),'Images (*.png *.jpg *.jpeg)')
@@ -312,15 +334,63 @@ class Desktop(QWidget):
  def action(self,v,title,key,command):
   b=QPushButton(title);b.setEnabled(bool(shutil.which(command[0])));b.setToolTip(' '.join(command));b.clicked.connect(lambda:self.launch(key,command));v.addWidget(b);return b
  def settings(self):
-  d,v=self.panel('مركز التحكم والإعدادات')
+  d,v=self.panel('الإعدادات');d.resize(940,720);d.setLayoutDirection(Qt.RightToLeft)
   search=QLineEdit();search.setPlaceholderText('ابحث في الإعدادات…');search.setAccessibleName('بحث الإعدادات');v.addWidget(search)
-  buttons=[]
-  for title,key,cmd in [('Wi-Fi والشبكات','network',['nm-connection-editor']),('Bluetooth','bluetooth',['blueman-manager']),('الصوت','sound',['pavucontrol']),('الشاشة والسطوع والطاقة','power-settings',['systemsettings5']),('دقة الشاشة','display',['systemsettings5']),('لوحة المفاتيح على الشاشة','keyboard',['onboard']),('مراقبة العمليات','tasks',['plasma-systemmonitor'])]:buttons.append(self.action(v,title,key,cmd))
-  buttons.append(self.action(v,'الحسابات وكلمة المرور','password',['systemsettings5','kcm_users']))
-  appearance=QPushButton('المظهر والتخصيص');appearance.clicked.connect(self.choose_appearance);v.addWidget(appearance);buttons.append(appearance)
+  layout=QGridLayout();layout.setSpacing(16);v.addLayout(layout,1);buttons=[];groups=[]
+  catalog=[
+   ('الاتصالات',[
+    ('Wi-Fi','wifi',lambda:self.radios.show('wifi'),None),
+    ('Bluetooth','bluetooth',lambda:self.radios.show('bluetooth'),None),
+    ('الشبكات والاتصالات','network',lambda:self.launch('network',['nm-connection-editor']),'nm-connection-editor')]),
+   ('المظهر والتفاعل',[
+    ('المظهر والخلفية والحركة','appearance',self.choose_appearance,None),
+    ('الشاشة والسطوع','display',lambda:self.launch('display',['systemsettings5']),'systemsettings5'),
+    ('الصوت','volume',lambda:self.launch('sound',['pavucontrol']),'pavucontrol'),
+    ('لوحة المفاتيح على الشاشة','keyboard',lambda:self.launch('keyboard',['onboard']),'onboard')]),
+   ('النظام والأجهزة',[
+    ('البطارية والطاقة','battery',self.power,None),
+    ('RAM والتخزين','files',self.system_information,None),
+    ('مراقبة العمليات','performance',lambda:self.launch('tasks',['plasma-systemmonitor']),'plasma-systemmonitor'),
+    ('تحديثات النظام','update',self.updates,None)]),
+   ('الحسابات والمزيد',[
+    ('الحسابات وكلمة المرور','accounts',lambda:self.launch('password',['systemsettings5','kcm_users']),'systemsettings5'),
+    ('جميع إعدادات Ubuntu','settings',lambda:self.launch('all-settings',['systemsettings5']),'systemsettings5'),
+    ('حول GITM OS','reports',self.system_information,None)])]
+  for index,(title,entries) in enumerate(catalog):
+   card=GlassPanel(self,d);column=QVBoxLayout(card);column.setContentsMargins(18,14,18,14);column.setSpacing(7)
+   heading=QLabel(title);heading.setStyleSheet('font-size:15px;font-weight:bold;color:#b6c5de');column.addWidget(heading);members=[]
+   for label,icon,callback,program in entries:
+    button=QPushButton(label);button.setIcon(self.icon(icon));button.setIconSize(QSize(30,30));button.setMinimumHeight(48);button.setAccessibleName(label)
+    button.setStyleSheet('QPushButton{text-align:right;border:0;border-radius:12px;padding:8px 12px;}')
+    if program and not shutil.which(program):button.setEnabled(False);button.setToolTip('البرنامج غير مثبت')
+    button.clicked.connect(callback);column.addWidget(button);buttons.append(button);members.append(button)
+   column.addStretch();layout.addWidget(card,index//2,index%2);groups.append((card,title,members))
+  empty=QLabel('لا توجد إعدادات مطابقة');empty.setAlignment(Qt.AlignCenter);empty.hide();v.addWidget(empty)
   def filter_settings(text):
-   for button in buttons:button.setVisible(text.casefold() in button.text().casefold())
+   query=text.strip().casefold();found=False
+   for card,title,members in groups:
+    matching=False
+    for button in members:
+     show=query in (title+' '+button.text()).casefold();button.setVisible(show);matching|=show
+    card.setVisible(matching);found|=matching
+   empty.setVisible(not found)
   search.textChanged.connect(filter_settings)
+  self.apply_appearance();d.show()
+ def system_information(self):
+  d,v=self.panel('حول GITM OS');d.setLayoutDirection(Qt.RightToLeft)
+  from desktop_radios import battery_info
+  details=['GITM OS · Ubuntu Linux · x86_64']
+  try:
+   release=dict(line.split('=',1) for line in Path('/etc/os-release').read_text().splitlines() if '=' in line)
+   details.append(release.get('PRETTY_NAME','Linux').strip('"'))
+  except OSError:pass
+  details.append('النواة: '+os.uname().release)
+  try:
+   m=__import__('system_settings').metrics();g=1024**3
+   details.extend([f"RAM: {m['ram_total']/g:.1f} GB · متاحة {m['ram_available']/g:.1f} GB",f"التخزين: {m['disk_total']/g:.1f} GB · متاح {m['disk_free']/g:.1f} GB"])
+  except Exception:details.append('تعذرت قراءة الذاكرة أو التخزين')
+  details.extend(['Wi-Fi: '+self.radios.wifi,'Bluetooth: '+self.radios.bluetooth,'البطارية: '+battery_info()['text']])
+  label=QLabel('\n\n'.join(details));label.setWordWrap(True);label.setTextInteractionFlags(Qt.TextSelectableByMouse);v.addWidget(label)
   d.show()
  def updates(self):
   d,v=self.panel('مركز التحديثات')
@@ -360,4 +430,3 @@ def main():
   QTimer.singleShot(4000,visible_marker)
  return app.exec()
 if __name__=='__main__':sys.exit(main())
-
