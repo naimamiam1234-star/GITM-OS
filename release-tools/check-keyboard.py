@@ -47,7 +47,8 @@ try:
  width,height=Image.open(initial).size
  def move(x,y):
   command('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':round(x*32767/width)}},{'type':'abs','data':{'axis':'y','value':round(y*32767/height)}}]})
- move(width//2,height-1);time.sleep(.35);move(width//2,height-40);time.sleep(.35);screenshot('dock-revealed')
+ move(width//2,height-1);time.sleep(.35);move(width//2,height-40);time.sleep(.8);dock=screenshot('dock-revealed')
+ print('GITM_INPUT_DOCK_PNG '+base64.b64encode(dock.read_bytes()).decode(),flush=True)
  command('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':round(400*32767/width)}},{'type':'abs','data':{'axis':'y','value':round(203*32767/height)}}]})
  for down in (True,False):
   command('input-send-event',{'events':[{'type':'btn','data':{'down':down,'button':'left'}}]});time.sleep(.15)

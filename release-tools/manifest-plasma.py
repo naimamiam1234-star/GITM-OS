@@ -30,3 +30,5 @@ manifest = {'name': iso.name, 'size': iso.stat().st_size, 'sha256': digest(iso),
                         'url': base + gallery.name, 'overview_url': base + 'gallery-overview.png',
                         'capture_runs': [int(os.environ['SOURCE_RUN']), int(os.environ['GITHUB_RUN_ID'])]}}
 (root / 'plasma-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+
+print('GITM_RELEASE_MANIFEST '+json.dumps(manifest),flush=True)

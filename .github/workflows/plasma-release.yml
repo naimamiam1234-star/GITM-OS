@@ -16,12 +16,17 @@ jobs:
     timeout-minutes: 30
     env:
       GH_TOKEN: ${{ github.token }}
-      SOURCE_RUN: '38089626681'
+      SOURCE_RUN: '38091973062'
       RELEASE_TAG: gitm-os-3.3.0-plasma3
     steps:
       - uses: actions/checkout@v4
       - name: Require successful source build
         run: |
+          for attempt in $(seq 1 30); do
+            status=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .status)
+            test "$status" = completed && break
+            sleep 20
+          done
           test "$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .conclusion)" = success
       - uses: actions/download-artifact@v4
         with:
