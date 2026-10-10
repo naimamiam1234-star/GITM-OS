@@ -10,7 +10,7 @@ chroot "$root" dpkg-query -W -f='${binary:Package}\n' > "$root/var/tmp/gitm-them
 chroot "$root" env DEBIAN_FRONTEND=noninteractive bash <<'ROOT'
 set -Eeuo pipefail
 apt-get update
-apt-get install -y papirus-icon-theme language-pack-kde-ar language-pack-kde-fr cmake ninja-build g++ extra-cmake-modules qt6-base-dev qt6-svg-dev qt6-declarative-dev libkf6coreaddons-dev libkf6colorscheme-dev libkf6config-dev libkf6guiaddons-dev libkf6i18n-dev libkf6iconthemes-dev libkf6windowsystem-dev libkf6kcmutils-dev libkf6frameworkintegration-dev libkdecorations3-dev libplasma-dev
+apt-get install -y xdotool papirus-icon-theme language-pack-kde-ar language-pack-kde-fr cmake ninja-build g++ extra-cmake-modules qt6-base-dev qt6-svg-dev qt6-declarative-dev libkf6coreaddons-dev libkf6colorscheme-dev libkf6config-dev libkf6guiaddons-dev libkf6i18n-dev libkf6iconthemes-dev libkf6windowsystem-dev libkf6kcmutils-dev libkf6frameworkintegration-dev libkdecorations3-dev libplasma-dev
 cmake -S /var/tmp/gitm-theme-src/klassy-* -B /var/tmp/gitm-theme-src/klassy-build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DBUILD_QT5=OFF -DBUILD_TESTING=OFF -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
 cmake --build /var/tmp/gitm-theme-src/klassy-build -j2
 cmake --install /var/tmp/gitm-theme-src/klassy-build
@@ -27,6 +27,7 @@ install -D -m644 theme-integration/layout.js "$root/usr/share/plasma/look-and-fe
 mkdir -p "$root/etc/skel/.config"
 cat > "$root/etc/skel/.config/kdeglobals" <<'CFG'
 [KDE]
+LookAndFeelPackage=org.gitm.desktop
 widgetStyle=klassy
 [Icons]
 Theme=Papirus-Dark
