@@ -29,11 +29,20 @@ try:
   assert time.monotonic()<deadline,'No visible desktop'
   time.sleep(1)
  time.sleep(3)
+ print('GITM_INPUT_SERIAL_TAIL '+serial.read_text(errors='replace')[-14000:],flush=True)
+ print('GITM_INPUT_MICE '+repr(command('query-mice')),flush=True)
+ command('send-key',{'keys':[{'type':'qcode','data':'shift'}]})
  def screenshot(name):
   ppm=out/(name+'.ppm');png=ppm.with_suffix('.png')
   command('screendump',{'filename':str(ppm)})
   Image.open(ppm).save(png);ppm.unlink();return png
- initial=screenshot('desktop-before-input')
+ visual_deadline=time.monotonic()+120
+ while True:
+  initial=screenshot('desktop-before-input')
+  from PIL import ImageStat
+  if sum(ImageStat.Stat(Image.open(initial).convert('RGB')).mean)>30:break
+  assert time.monotonic()<visual_deadline,'Visible desktop marker emitted but framebuffer remains black'
+  command('send-key',{'keys':[{'type':'qcode','data':'shift'}]});time.sleep(5)
  print('GITM_INPUT_BEFORE_PNG '+base64.b64encode(initial.read_bytes()).decode(),flush=True)
  width,height=Image.open(initial).size
  def move(x,y):
