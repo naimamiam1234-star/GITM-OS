@@ -15,7 +15,7 @@ with p.open('rb') as f:
     b=f.read(min(4*1024*1024,chunk-written))
     if not b:break
     out.write(b);digest.update(b);written+=len(b)
-  parts.append({'name':name,'size':written,'sha256':digest.hexdigest(),'url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-statusfix1/'+name});index+=1
+  parts.append({'name':name,'size':written,'sha256':digest.hexdigest(),'url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix1/'+name});index+=1
 with p.open('rb') as f:
  f.seek(chunk-16);boundary=f.read(32).hex();f.seek(-32,2);tail=f.read(32).hex()
 m={'name':p.name,'size':p.stat().st_size,'sha256':expected,'parts':parts,'boundary_offset':chunk-16,'boundary_hex':boundary,'tail_hex':tail,'boot_test_run':int(os.environ['BOOT_TEST_RUN']),'bios':'passed','uefi':'passed'}

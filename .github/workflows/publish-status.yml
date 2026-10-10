@@ -8,7 +8,7 @@ permissions:
   actions: read
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == 'b65b17820e47152426d6bdfdba5295fe476a843e' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == '8fa73ce2508ad85285a3c6fbdc10a746e4a36410' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -19,6 +19,14 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
           path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-full-gallery
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: dist/gallery
+      - name: Prepare full screenshot album
+        run: python3 release/prepare-gallery.py
       - name: Verify and split the boot-tested ISO
         env:
           BOOT_TEST_RUN: ${{ github.event.workflow_run.id }}
@@ -26,4 +34,4 @@ jobs:
       - name: Publish immutable corrected image
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create gitm-os-3.3.0-statusfix1 dist/*.part-* dist/*.sha256 dist/Join-ISO-Windows.cmd dist/release-manifest.json dist/desktop-smoke.png dist/bios.png dist/uefi.png --prerelease --title "GITM OS 3.3 — connectivity and control-center fix" --notes-file docs/status-fix.md --target ${{ github.event.workflow_run.head_sha }}
+        run: gh release create gitm-os-3.3.0-layoutfix1 dist/*.part-* dist/*.sha256 dist/Join-ISO-Windows.cmd dist/release-manifest.json dist/desktop-smoke.png dist/bios.png dist/uefi.png dist/gallery.html dist/gallery.zip --prerelease --title "GITM OS 3.3 — no-scroll desktop, usage rings and dynamic status icons" --notes-file docs/layout-fix.md --target ${{ github.event.workflow_run.head_sha }}
