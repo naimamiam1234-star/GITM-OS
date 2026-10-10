@@ -4,7 +4,7 @@ root=pathlib.Path('dist');folder=root/'gallery';images=sorted(folder.glob('*.png
 if len(images)!=58:raise RuntimeError(f'Expected 58 actual guest captures, found {len(images)}')
 report=(folder/'guest-report.txt').read_text()
 if 'GITM_GALLERY_ERROR|' in report:raise RuntimeError('A gallery page failed: inspect guest-report.txt')
-order=re.findall(r'GITM_GALLERY_FRAME\\|([a-z0-9-]+)',report)
+order=[line.split('GITM_GALLERY_FRAME|',1)[1].strip().split()[0] for line in report.splitlines() if 'GITM_GALLERY_FRAME|' in line]
 positions={name:i for i,name in enumerate(order)}
 images.sort(key=lambda p:positions.get(p.stem,999))
 captions={'desktop':'سطح المكتب','control-center':'مركز التحكم','wifi':'شبكات Wi-Fi','bluetooth':'أجهزة Bluetooth','battery-power':'البطارية والطاقة','search':'البحث','sync':'تحديث الحالة','settings':'الإعدادات','updates':'التحديثات','appearance':'المظهر','app-files':'مدير الملفات','app-browser':'المتصفح','app-photos':'الصور','app-media':'الوسائط','app-calculator':'الحاسبة','app-install':'المثبت — الصفحة الأولى فقط','app-documents':'قارئ PDF','network':'إدارة الشبكات','bluetooth-manager':'مدير Bluetooth','audio':'الصوت','screen-power':'إعدادات الشاشة والطاقة','keyboard':'لوحة المفاتيح','processes':'مراقبة العمليات','accounts':'الحسابات','system-updates':'تحديث حزم Ubuntu','airplane-confirm':'وضع الطيران — تأكيد فقط','suspend-confirm':'التعليق — تأكيد فقط','reboot-confirm':'إعادة التشغيل — تأكيد فقط','shutdown-confirm':'إيقاف التشغيل — تأكيد فقط','autodiag-home':'الصفحة الرئيسية للتشخيص','split-screen':'تقسيم الشاشة'}
