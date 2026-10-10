@@ -285,6 +285,15 @@ class Desktop(QWidget):
  def filter_apps(self,text):
   for label,button in self.tiles: button.setVisible(text.casefold() in label.casefold())
  def refresh(self):
+  try:
+   import configparser
+   config=configparser.ConfigParser(strict=False);config.read(Path.home()/'.config/kdeglobals')
+   background=config.get('Colors:Window','BackgroundNormal',fallback='').split(',')
+   if len(background)==3:
+    mode='dark' if sum(int(x) for x in background)/3<128 else 'light'
+    if mode!=self.appearance['mode']:
+     self.appearance['mode']=mode;self._native_mode=mode;self.apply_appearance()
+  except (ValueError,OSError):pass
   self.clock.setText(datetime.datetime.now().strftime('%a %d %b  %H:%M'))
   if hasattr(self,'radios'):self.refresh_radios()
   try:
@@ -298,6 +307,11 @@ class Desktop(QWidget):
   if argv[0]=='systemsettings':key='settings'
   running=self.processes.get(key)
   if running and running.state()!=QProcess.NotRunning:
+   if argv[0]=='systemsettings' and len(argv)>1:
+    from PySide6.QtCore import QProcessEnvironment
+    env=QProcessEnvironment.systemEnvironment();env.remove('QT_STYLE_OVERRIDE');env.remove('QT_QPA_PLATFORMTHEME');env.insert('LANG','ar_MA.UTF-8')
+    request=QProcess(self);request.setProcessEnvironment(env);request.setProgram(argv[0]);request.setArguments(argv[1:]);request.startDetached()
+    return
    if shutil.which('wmctrl'):
     probe=QProcess(self);probe.setProgram('wmctrl');probe.setArguments(['-lp'])
     def raise_window():

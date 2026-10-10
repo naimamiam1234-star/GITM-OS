@@ -14,6 +14,7 @@ class FakeProcess:
  def setArguments(self,a):self.argv=a
  def setWorkingDirectory(self,p):pass
  def setStandardErrorFile(self,*a):pass
+ def startDetached(self):return True,42
  def start(self):self.running=1;calls.append((self.program,self.argv))
 host=types.SimpleNamespace(processes={})
 with patch.object(m,'QProcess',FakeProcess),patch.object(m.shutil,'which',side_effect=lambda name:None if name=='wmctrl' else '/usr/bin/'+name):

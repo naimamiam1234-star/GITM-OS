@@ -6,13 +6,23 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  actions: read
+  actions: write
+concurrency:
+  group: gitm-theme-integration
+  cancel-in-progress: true
 jobs:
   repair:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+      - name: Stop superseded builds from this integration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for run_id in 38087917743 38087604415; do
+            gh api -X POST repos/${{ github.repository }}/actions/runs/$run_id/cancel || true
+          done
       - uses: actions/download-artifact@v4
         with:
           name: GITM-Plasma6-preview-amd64
