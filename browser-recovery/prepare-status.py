@@ -15,14 +15,14 @@ with p.open('rb') as f:
     b=f.read(min(4*1024*1024,chunk-written))
     if not b:break
     out.write(b);digest.update(b);written+=len(b)
-  parts.append({'name':name,'size':written,'sha256':digest.hexdigest(),'url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix2/'+name});index+=1
+  parts.append({'name':name,'size':written,'sha256':digest.hexdigest(),'url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-design1/'+name});index+=1
 with p.open('rb') as f:
  f.seek(chunk-16);boundary=f.read(32).hex();f.seek(-32,2);tail=f.read(32).hex()
 m={'name':p.name,'size':p.stat().st_size,'sha256':expected,'parts':parts,'boundary_offset':chunk-16,'boundary_hex':boundary,'tail_hex':tail,'boot_test_run':int(os.environ['BOOT_TEST_RUN']),'bios':'passed','uefi':'passed'}
 gallery=root/'gallery.html'
 if not gallery.exists():raise RuntimeError('Missing verified screenshot album')
-m['gallery']={'images':58,'size':gallery.stat().st_size,'sha256':hashlib.sha256(gallery.read_bytes()).hexdigest(),'url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix2/gallery.html','overview_url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-layoutfix2/gallery-overview.png'}
-m['gallery']['capture_runs']=[38011421948,int(os.environ['BOOT_TEST_RUN'])]
+m['gallery']={'images':60,'size':gallery.stat().st_size,'sha256':hashlib.sha256(gallery.read_bytes()).hexdigest(),'url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-design1/gallery.html','overview_url':'https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-design1/gallery-overview.png'}
+m['gallery']['capture_runs']=[int(os.environ['BOOT_TEST_RUN'])]
 (root/'release-manifest.json').write_text(json.dumps(m,indent=2))
 cmd='@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\n'
 cmd+=f'if exist "{p.name}" goto verify\r\n'

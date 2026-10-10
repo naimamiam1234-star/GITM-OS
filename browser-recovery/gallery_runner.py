@@ -20,6 +20,7 @@ class Gallery(QObject):
    ('search',lambda:w.search.setFocus()),
    ('sync',lambda:w.status_buttons['sync'].click()),
    ('settings',w.settings),('updates',w.updates),('appearance',w.choose_appearance),
+   ('appearance-light',self.light_appearance),('desktop-light',lambda:None),
    ('airplane-confirm',w.toggle_airplane),
    ('suspend-confirm',lambda:w.confirm_power('suspend')),
    ('reboot-confirm',lambda:w.confirm_power('reboot')),
@@ -50,10 +51,19 @@ class Gallery(QObject):
    self.native=QProcess(self);self.native.setProgram(sys.executable);self.native.setArguments([str(Path(__file__).with_name('gallery_native.py'))])
    self.native.finished.connect(self.done);self.native.start();return
   name,fn=self.steps[self.index];self.index+=1
+  if name not in {'appearance-light','desktop-light'} and self.w.appearance['mode']!='dark':
+   self.w.appearance['mode']='dark';self.w.apply_appearance()
   QTimer.singleShot(18000 if name.startswith('app-') or name in {'screen-power','processes','accounts','system-updates'} else 8000,lambda:self.capture(name))
   try:fn()
   except Exception as e:emit('GITM_GALLERY_ERROR|'+name+'|'+str(e))
+ def light_appearance(self):
+  self.w.appearance['mode']='light';self.w.apply_appearance();self.w.choose_appearance()
  def capture(self,name):
+  if name=='app-browser':
+   process=self.w.processes.get('browser')
+   if process and process.processId():
+    try:emit('GITM_BROWSER_POLICY|'+Path('/proc/'+str(process.processId())+'/attr/current').read_text().strip())
+    except OSError as error:emit('GITM_BROWSER_POLICY_ERROR|'+str(error))
   if name=='keyboard':subprocess.run(['dbus-send','--session','--type=method_call','--dest=org.onboard.Onboard','/org/onboard/Onboard/Keyboard','org.onboard.Onboard.Keyboard.Show'],check=False)
   if name in {'app-browser','keyboard','system-updates'}:
    items=windows()
@@ -70,3 +80,4 @@ class Gallery(QObject):
   emit('GITM_GALLERY_DONE')
 def start(w):
  w.gallery=Gallery(w);w.gallery.next()
+

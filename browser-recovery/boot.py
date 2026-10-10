@@ -7,9 +7,9 @@ if gallery:
  subprocess.run(['xorriso','-osirrox','on','-indev',str(iso),'-extract','/casper/vmlinuz',str(root/'gallery-vmlinuz'),'-extract','/casper/initrd',str(root/'gallery-initrd')],check=True)
 for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
  qmp=root/(mode+'.qmp');serial=root/(mode+'-serial.log')
- args=['qemu-system-x86_64','-accel','tcg','-machine','q35','-m','4096','-smp','2','-cdrom',str(iso),'-boot','d','-display','none','-serial','file:'+str(serial),'-qmp','unix:'+str(qmp)+',server=on,wait=off','-device','virtio-vga']
+ args=['qemu-system-x86_64','-machine','q35,accel=kvm:tcg','-m','4096','-smp','2','-cdrom',str(iso),'-boot','d','-display','none','-serial','file:'+str(serial),'-qmp','unix:'+str(qmp)+',server=on,wait=off','-device','virtio-vga']
  if mode=='uefi':args+=['-drive','if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd']
- if mode=='gallery':args+=['-kernel',str(root/'gallery-vmlinuz'),'-initrd',str(root/'gallery-initrd'),'-append','boot=casper gitm.gallery=1 gitm.gallery.browser=1 console=tty0 console=ttyS0,115200 ---']
+ if mode=='gallery':args+=['-kernel',str(root/'gallery-vmlinuz'),'-initrd',str(root/'gallery-initrd'),'-append','boot=casper gitm.gallery=1 console=tty0 console=ttyS0,115200 ---']
  p=subprocess.Popen(args,stdout=subprocess.DEVNULL,stderr=(root/(mode+'-qemu.log')).open('w'))
  try:
   while not qmp.exists():
@@ -55,3 +55,4 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
   p.terminate()
   try:p.wait(timeout=10)
   except subprocess.TimeoutExpired:p.kill();p.wait()
+
