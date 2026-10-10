@@ -34,4 +34,4 @@ jobs:
       - name: Publish immutable corrected image
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create gitm-os-3.3.0-layoutfix1 dist/*.part-* dist/*.sha256 dist/Join-ISO-Windows.cmd dist/release-manifest.json dist/desktop-smoke.png dist/bios.png dist/uefi.png dist/gallery.html dist/gallery.zip --prerelease --title "GITM OS 3.3 — no-scroll desktop, usage rings and dynamic status icons" --notes-file docs/layout-fix.md --target ${{ github.event.workflow_run.head_sha }}
+        run: gh release create gitm-os-3.3.0-layoutfix1 dist/*.part-* dist/*.sha256 dist/Join-ISO-Windows.cmd dist/release-manifest.json dist/desktop-smoke.png dist/bios.png dist/uefi.png dist/gallery.html dist/gallery.zip dist/gallery-overview.png --prerelease --title "GITM OS 3.3 — no-scroll desktop, usage rings and dynamic status icons" --notes-file docs/layout-fix.md --target ${{ github.event.workflow_run.head_sha }}

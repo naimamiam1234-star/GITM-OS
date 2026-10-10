@@ -18,3 +18,12 @@ with zipfile.ZipFile(root/'gallery.zip','w',compression=zipfile.ZIP_DEFLATED) as
   if f.is_file():z.write(f,'gallery/'+f.name)
  z.write(root/'gallery.html','gallery.html')
 print(f'Published {len(images)} real screenshots')
+
+from PIL import Image,ImageDraw,ImageFont
+columns=6;cellw=360;cellh=250;rows=(len(images)+columns-1)//columns
+sheet=Image.new('RGB',(columns*cellw,rows*cellh),'#0c1b30');draw=ImageDraw.Draw(sheet)
+for i,image in enumerate(images):
+ thumb=Image.open(image).convert('RGB');thumb.thumbnail((350,218))
+ x=(i%columns)*cellw+5;y=(i//columns)*cellh+5
+ sheet.paste(thumb,(x,y));draw.text((x,y+222),image.stem,fill='#d8eaff')
+sheet.save(root/'gallery-overview.png')
