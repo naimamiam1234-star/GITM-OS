@@ -14,4 +14,7 @@ var tasks = dock.addWidget('org.kde.plasma.icontasks');
 tasks.currentConfigGroup = ['General'];
 tasks.writeConfig('launchers', ['applications:gitm-autodiag.desktop','applications:org.kde.dolphin.desktop','applications:org.kde.falkon.desktop','applications:org.kde.kcalc.desktop','applications:systemsettings.desktop']);
 tasks.writeConfig('showToolTips', true);
-dock.addWidget('luisbocanegra.panel.colorizer');
+var colorizer = dock.addWidget('luisbocanegra.panel.colorizer');
+colorizer.currentConfigGroup = ['General'];
+colorizer.writeConfig('hideWidget', true);
+colorizer.writeConfig('globalSettings', "{\"panel\": {\"normal\": {\"enabled\": true, \"blurBehind\": true, \"radius\": {\"enabled\": true, \"corner\": {\"topLeft\": 22, \"topRight\": 22, \"bottomLeft\": 22, \"bottomRight\": 22}}, \"backgroundColor\": {\"enabled\": true, \"sourceType\": 1, \"systemColor\": \"backgroundColor\", \"systemColorSet\": \"Window\", \"alpha\": 0.92}, \"margin\": {\"enabled\": true, \"side\": {\"left\": 4, \"right\": 4, \"top\": 4, \"bottom\": 4}}, \"padding\": {\"enabled\": true, \"side\": {\"left\": 10, \"right\": 10, \"top\": 4, \"bottom\": 4}}}}, \"nativePanel\": {\"background\": {\"enabled\": true, \"opacity\": 0, \"shadow\": false}, \"floatingDialogs\": false, \"floatingDialogsAllowOverride\": false}}");

@@ -86,6 +86,7 @@ class Desktop(QWidget):
   super().__init__()
   self.setWindowTitle('GITM OS 3.3 · Desktop')
   self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|Qt.WindowStaysOnBottomHint)
+  if os.environ.get('GITM_NATIVE_PLASMA')=='1':self.setAttribute(Qt.WA_X11NetWmWindowTypeDesktop,True)
   self.resize(1440,900);self.processes={};self.dialogs=[];self.tiles=[];self.app_buttons={};self.control_radios={};self.sync_phase=0
   self.appearance={'mode':'dark','performance':False,'reduce_motion':False,'icon_size':64}
   try:

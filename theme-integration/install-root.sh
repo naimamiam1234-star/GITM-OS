@@ -4,6 +4,9 @@ root=$1
 project=$PWD
 mkdir -p "$root/var/tmp/gitm-theme-src" "$root/usr/share/doc/gitm-theme"
 # Immutable upstream revisions; preserve source and licence notices in the release.
+if [[ -x "$root/usr/bin/klassy-settings" ]] && grep -q 9b788b2ea8d40c6a7af3b0130de9e891d41fbb30 "$root/usr/share/doc/gitm-theme/SOURCES" 2>/dev/null; then
+  echo 'Reusing verified pinned theme binaries'
+else
 curl -fL --retry 3 https://codeload.github.com/paulmcauley/klassy/tar.gz/9b788b2ea8d40c6a7af3b0130de9e891d41fbb30 | tar xz -C "$root/var/tmp/gitm-theme-src"
 curl -fL --retry 3 https://codeload.github.com/luisbocanegra/plasma-panel-colorizer/tar.gz/d0b1d4cab773f05cdcda2c1b2970093a5c367b54 | tar xz -C "$root/var/tmp/gitm-theme-src"
 chroot "$root" dpkg-query -W -f='${binary:Package}\n' > "$root/var/tmp/gitm-theme-existing"
@@ -21,6 +24,10 @@ ROOT
 cp -a "$root"/var/tmp/gitm-theme-src/klassy-9*/LICENSES "$root/usr/share/doc/gitm-theme/klassy-licenses"
 cp -a "$root"/var/tmp/gitm-theme-src/plasma-panel-colorizer-*/LICENSE* "$root/usr/share/doc/gitm-theme/"
 printf '%s\n' 'Klassy source: https://github.com/paulmcauley/klassy/tree/9b788b2ea8d40c6a7af3b0130de9e891d41fbb30' 'Panel Colorizer source: https://github.com/luisbocanegra/plasma-panel-colorizer/tree/d0b1d4cab773f05cdcda2c1b2970093a5c367b54' 'Papirus: Ubuntu papirus-icon-theme package, see /usr/share/doc/papirus-icon-theme' > "$root/usr/share/doc/gitm-theme/SOURCES"
+fi
+chmod 755 "$root/usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/tools/list_presets.sh" "$root/usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/tools/gdbus_get_signal.sh"
+sed -i 's|^Icon=.*|Icon=/opt/gitm/assets/desktop/engine.svg|' "$root/usr/share/applications/gitm-autodiag.desktop"
+printf '\nStartupWMClass=gitm-autodiag\n' >> "$root/usr/share/applications/gitm-autodiag.desktop"
 install -m644 plasma-transition/patches/gitm_desktop.py "$root/opt/gitm/gitm_desktop.py"
 install -D -m644 theme-integration/layout.js "$root/usr/share/plasma/look-and-feel/org.gitm.desktop/contents/layouts/org.kde.plasma.desktop-layout.js"
 # Seed matching native app style, decoration and icons, without upstream layout overrides.
@@ -57,6 +64,7 @@ from pathlib import Path
 import sys
 p=Path(sys.argv[1]);s=p.read_text().replace('systemsettings5','systemsettings')
 s=s.replace(" def cleanup(self):\n", " def cleanup(self):\n  subprocess.run(['xdotool','mousemove','640','80'],check=False)\n")
+s=s.replace("QTimer.singleShot(10000 if", "QTimer.singleShot(35000 if name=='system-updates' else 10000 if")
 s=s.replace(" def capture(self,name):\n", " def capture(self,name):\n  if name in {'desktop','desktop-light'}:subprocess.run(['xdotool','mousemove','640','799'],check=False)\n  if name=='settings':\n   self.w.settings();self.w.choose_appearance()\n   native=[line for line in windows() if 'System Settings' in line or 'إعدادات النظام' in line or 'إعدادات النّظام' in line]\n   emit('GITM_SETTINGS_WINDOWS|'+str(len(native)))\n   if len(native)!=1:emit('GITM_GALLERY_ERROR|settings|Expected one native settings window')\n")
 p.write_text(s)
 PY
@@ -70,6 +78,6 @@ from pathlib import Path
 import sys
 p=Path(sys.argv[1]);s=p.read_text()
 pos=s.index("        self.setWindowTitle(")
-s=s[:pos]+"        from PySide6.QtGui import QIcon\n        from pathlib import Path\n        QApplication.setDesktopFileName('gitm-autodiag')\n        self.setWindowIcon(QIcon(str(Path(__file__).parent/'assets/desktop/engine.svg')))\n"+s[pos:]
+s=s[:pos]+"        from PySide6.QtGui import QIcon\n        from pathlib import Path\n        QApplication.setDesktopFileName('gitm-autodiag')\n        QApplication.setApplicationName('gitm-autodiag')\n        self.setWindowIcon(QIcon(str(Path(__file__).parent/'assets/desktop/engine.svg')))\n"+s[pos:]
 p.write_text(s);compile(s,str(p),'exec')
 PY
