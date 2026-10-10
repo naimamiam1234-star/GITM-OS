@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 project=$PWD
 apt-get update
-apt-get install -y squashfs-tools xorriso qemu-system-x86 ovmf python3-pil
+apt-get install -y squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools qemu-system-x86 ovmf python3-pil
 work=$(mktemp -d /var/tmp/gitm-plasma-fix.XXXXXX)
 source=$(find input -name '*.iso' -print -quit)
 xorriso -osirrox on -indev "$source" -extract /casper/filesystem.squashfs "$work/original.squashfs"
@@ -19,7 +19,10 @@ p.write_text(s)
 PY
 mksquashfs "$work/root" "$work/fixed.squashfs" -noappend -comp zstd -Xcompression-level 8 -processors 2
 mkdir -p dist
-xorriso -indev "$source" -outdev dist/GITM-OS-3.3.0-integration-amd64.iso -boot_image any replay -map "$work/fixed.squashfs" /casper/filesystem.squashfs -commit
+xorriso -osirrox on -indev "$source" -extract / "$work/iso"
+mv "$work/fixed.squashfs" "$work/iso/casper/filesystem.squashfs"
+rm -f "$work/iso/boot.catalog"
+grub-mkrescue -o dist/GITM-OS-3.3.0-integration-amd64.iso "$work/iso" -- -volid GITM_OS_33
 cp input/*.txt dist/
 cd dist
 sha256sum GITM-OS-3.3.0-integration-amd64.iso > GITM-OS-3.3.0-integration-amd64.iso.sha256
