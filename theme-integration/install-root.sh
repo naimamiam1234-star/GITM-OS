@@ -87,6 +87,12 @@ ColorScheme=BreezeDark
 [Locale]
 Language=ar:fr:en_US
 CFG
+# Adaptive Breeze follows the system palette; breeze-dark was fixed in the base image.
+sed -i 's/^name=breeze-dark$/name=default/' "$root/usr/share/plasma/look-and-feel/org.gitm.desktop/contents/defaults"
+cat > "$root/etc/skel/.config/plasmarc" <<'CFG'
+[Theme]
+name=default
+CFG
 cat > "$root/etc/skel/.config/kwinrc" <<'CFG'
 [org.kde.kdecoration2]
 library=org.kde.klassy

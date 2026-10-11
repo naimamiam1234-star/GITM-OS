@@ -293,7 +293,9 @@ class Desktop(QWidget):
   p=QPainter(self)
   if not self.background.isNull():p.drawPixmap(0,0,self.background)
   else:p.fillRect(self.rect(),QColor('#081a30'))
-  p.fillRect(self.rect(),QColor(245,248,253,190) if self.appearance['mode']=='light' else QColor(3,10,22,65))
+  if self.appearance['mode']=='light':
+   surface=QLinearGradient(0,max(0,self.height()-72),0,self.height());surface.setColorAt(0,QColor(245,248,253,190));surface.setColorAt(1,QColor(245,248,253,0));p.fillRect(self.rect(),surface)
+  else:p.fillRect(self.rect(),QColor(3,10,22,65))
  def filter_apps(self,text):
   for label,button in self.tiles: button.setVisible(text.casefold() in label.casefold())
  def refresh(self):
