@@ -88,6 +88,7 @@ def show(w):
    for m in d.get('models',[]):
     id=m.get('id','')
     if m.get('free') is True:models.addItem(m.get('name',id),id)
+   if models.count():models.setCurrentIndex(0)
   run(lambda _:cloud_backend.request('/v1/models',token=w.cloud_token),loaded)
  def signin():
   if not email.text().strip() or not password.text():return
