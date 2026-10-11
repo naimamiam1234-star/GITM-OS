@@ -27,7 +27,7 @@ def show(w):
  # Keep the active workspace alive while its background thread streams.
  if getattr(w,'cloud_task',None) and w.cloud_task.isRunning():return
  l=w.page(t('مساعد GITM','Assistant GITM','GITM Assistant'))
- w.tool_pages['cloud-workspace']=w.pages.currentWidget()
+ cloud_page=w.pages.currentWidget()
  account=QHBoxLayout();l.addLayout(account)
  account.addWidget(QLabel(t('مفاتيح الخدمات محفوظة على خادم GITM','Clés conservées sur le serveur GITM','Provider keys stay on the GITM server')),1)
  toggle=QPushButton(t('اتصال الحساب','Connexion du compte','Account connection'));account.addWidget(toggle)
@@ -71,6 +71,7 @@ def show(w):
  recent.itemClicked.connect(select);refresh();display()
  def run(fn,done):
   if getattr(w,'cloud_task',None) and w.cloud_task.isRunning():return
+  w.tool_pages['cloud-workspace']=cloud_page
   task=Worker(fn);w.cloud_task=task;send.setEnabled(False);new.setEnabled(False);recent.setEnabled(False);stop.setEnabled(True)
   task.done.connect(done)
   task.error.connect(lambda e:feedback.setText(str(e)))
@@ -78,6 +79,7 @@ def show(w):
    state['stream']+=text;cursor=history.textCursor();cursor.movePosition(QTextCursor.End);cursor.insertText(text);history.setTextCursor(cursor)
   task.chunk.connect(chunk)
   def finish():
+   if w.tool_pages.get('cloud-workspace') is cloud_page:w.tool_pages.pop('cloud-workspace',None)
    if state['stream']:
     state['messages'].append({'role':'assistant','text':state['stream']});state['stream']='';persist();refresh()
    send.setEnabled(True);new.setEnabled(True);recent.setEnabled(True);stop.setEnabled(False)
