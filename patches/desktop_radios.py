@@ -107,7 +107,7 @@ class Radios(QObject):
    finally:p.deleteLater();self.next()
   p.finished.connect(finish)
   p.errorOccurred.connect(lambda error:finish(-1,None) if error==QProcess.FailedToStart else None)
-  timeout.start(12000);p.start(args[0],args[1:])
+  timeout.start(12000 if 'list' in args else 4000);p.start(args[0],args[1:])
  def refresh(self):
   if self.busy or self.pending:return
   def wifi(ok,out):
@@ -127,7 +127,7 @@ class Radios(QObject):
     def connections(ok2,out2):
      if ok2 and any(x.startswith('Device ') for x in out2.splitlines()):self.bluetooth_state={'kind':'connected'};self.bluetooth='متصل'
      self.changed.emit()
-    self.run(['bluetoothctl','devices','Connected'],connections)
+    self.run(['bluetoothctl','--timeout','2','devices','Connected'],connections)
   def volume(ok,out):
    values=re.findall(r'(\d+)%',out) if ok else []
    self.audio_state={'kind':'on' if values else 'missing','percent':int(values[0]) if values else 0,'mute':self.audio_state.get('mute',False)}
@@ -142,7 +142,7 @@ class Radios(QObject):
    self.wifi_enabled=out.strip()=='enabled' if ok else True
    self.run(['nmcli','-t','-f','TYPE,STATE,CONNECTION','device'],wifi)
   self.run(['nmcli','radio','wifi'],radio)
-  self.run(['bluetoothctl','show'],bluetooth)
+  self.run(['bluetoothctl','--timeout','2','show'],bluetooth)
  def show(self,kind):
   title='شبكات Wi-Fi' if kind=='wifi' else 'أجهزة Bluetooth'
   for existing in self.desktop.dialogs:
@@ -191,8 +191,8 @@ class Radios(QObject):
    else:
     def known(ok,out):
      if not ok:result(False,out);return
-     self.run(['bluetoothctl','devices','Connected'],lambda ok2,out2:result(True,out+'\n---connected---\n'+(out2 if ok2 else '')))
-    self.run(['bluetoothctl','devices'],known)
+     self.run(['bluetoothctl','--timeout','2','devices','Connected'],lambda ok2,out2:result(True,out+'\n---connected---\n'+(out2 if ok2 else '')))
+    self.run(['bluetoothctl','--timeout','2','devices'],known)
   refresh.clicked.connect(scan);d.show();scan()
 
 

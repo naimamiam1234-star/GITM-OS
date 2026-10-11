@@ -29,7 +29,7 @@ fi
 chroot "$root" env DEBIAN_FRONTEND=noninteractive bash <<'FIREFOX'
 set -Eeuo pipefail
 apt-get update
-apt-get install -y ca-certificates curl gnupg pavucontrol pulseaudio-utils
+apt-get install -y ca-certificates curl gnupg pavucontrol pulseaudio-utils bluedevil plasma-nm x11-utils
 install -d -m755 /etc/apt/keyrings
 curl -fL --retry 3 https://packages.mozilla.org/apt/repo-signing-key.gpg -o /etc/apt/keyrings/packages.mozilla.org.asc
 fingerprint=$(gpg --batch --show-keys --with-colons /etc/apt/keyrings/packages.mozilla.org.asc | awk -F: '$1=="fpr" {print $10;exit}')
@@ -60,6 +60,7 @@ test "$(dpkg-query -W -f='${Installed-Size}' firefox)" -gt 50000
 FIREFOX
 install -m644 patches/desktop_radios.py "$root/opt/gitm/desktop_radios.py"
 install -m644 "$root/usr/share/icons/Papirus/64x64/apps/firefox.svg" "$root/opt/gitm/assets/desktop/browser.svg"
+for icon in suspend reboot; do install -m644 "theme-integration/$icon.svg" "$root/opt/gitm/assets/desktop/$icon.svg"; done
 install -m644 theme-integration/install.svg "$root/opt/gitm/assets/desktop/install.svg"
 mkdir -p "$root/etc/skel/.config"
 cat > "$root/etc/skel/.config/mimeapps.list" <<'MIME'
@@ -108,6 +109,18 @@ Icon=gitm-more
 NoDisplay=true
 StartupWMClass=gitm-desktop
 DESKTOP
+# Give auxiliary dialogs their own native desktop identity and titlebar icon.
+for entry in 'wifi:network-wireless' 'bluetooth:bluetooth' 'power:system-shutdown' 'update:system-software-update'; do
+ name=${entry%%:*}; icon=${entry#*:}
+ cat > "$root/usr/share/applications/gitm-$name.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=GITM $name
+Exec=gitm-desktop
+Icon=$icon
+NoDisplay=true
+DESKTOP
+done
 # Native calculator from desktop; AutoDiag retains its clearly scoped workshop calculator.
 install -m644 patches/gallery_runner.py "$root/opt/gitm/gallery_runner.py"
 python3 - "$root/opt/gitm/gallery_runner.py" <<'PY'

@@ -95,6 +95,8 @@ class Desktop(QWidget):
    size=saved.get('icon_size',64)
    if type(size) is int and 48<=size<=68:self.appearance['icon_size']=size
   except (OSError,ValueError,AttributeError):pass
+  QIcon.setThemeSearchPaths(QIcon.themeSearchPaths()+['/usr/share/icons'])
+  QIcon.setThemeName('Papirus' if self.appearance['mode']=='light' else 'Papirus-Dark')
   self.wallpaper=QPixmap(str(ROOT/'assets/desktop/wallpaper.png'));self.background=QPixmap();self.blurred=QPixmap()
   try:
    personal=QPixmap((STATE/'wallpaper-path.txt').read_text().strip())
@@ -111,7 +113,7 @@ class Desktop(QWidget):
    b=QPushButton(title);b.setObjectName('nav');b.clicked.connect(fn);top.addWidget(b)
   top.addStretch()
   self.status_buttons={}
-  for key,title,fn in [('volume','الصوت',lambda:self.launch('audio',['pavucontrol'])),('wifi','Wi-Fi',lambda:self.radios.show('wifi')),('bluetooth','Bluetooth',lambda:self.radios.show('bluetooth')),('battery','البطارية',self.power),('sync','تحديث الحالة',lambda:self.radios.refresh()),('search','بحث',lambda:self.search.setFocus()),('chevron','مركز التحكم',self.toggle_control)]:
+  for key,title,fn in [('volume','الصوت',lambda:self.launch('audio',['pavucontrol'])),('wifi','Wi-Fi',lambda:self.radios.show('wifi')),('bluetooth','Bluetooth',self.bluetooth),('battery','البطارية',self.power),('sync','تحديث الحالة',lambda:self.radios.refresh()),('search','بحث',lambda:self.search.setFocus()),('chevron','مركز التحكم',self.toggle_control)]:
    b=QPushButton();b.setIcon(self.icon(key));b.setIconSize(QSize(24,24));b.setFixedSize(42,40);b.setObjectName('nav');b.setToolTip(title);b.setAccessibleName(title);b.clicked.connect(fn);top.addWidget(b);self.status_buttons[key]=b
   self.status_buttons['chevron'].setCheckable(True)
   self.battery_label=QLabel();self.battery_label.setStyleSheet('font-size:13px');top.addWidget(self.battery_label)
@@ -135,7 +137,7 @@ class Desktop(QWidget):
   self.control=GlassPanel(self,self);self.control.setFixedWidth(340);right=QVBoxLayout(self.control);right.setContentsMargins(20,20,20,20);right.setSpacing(15)
   control_title=QLabel('مركز التحكم');control_title.setStyleSheet('font-size:17px;font-weight:bold;color:#a9bbd2');right.addWidget(control_title)
   radios=QGridLayout();right.addLayout(radios)
-  for i,(title,icon,fn) in enumerate([('Wi-Fi','wifi',lambda:self.radios.show('wifi')),('Bluetooth','bluetooth',lambda:self.radios.show('bluetooth')),('المظهر','settings',self.choose_appearance),('وضع الطيران','airplane',self.toggle_airplane)]):
+  for i,(title,icon,fn) in enumerate([('Wi-Fi','wifi',lambda:self.radios.show('wifi')),('Bluetooth','bluetooth',self.bluetooth),('المظهر','settings',self.choose_appearance),('وضع الطيران','airplane',self.toggle_airplane)]):
    v=QVBoxLayout();b=QPushButton();b.setIcon(self.icon(icon));b.setIconSize(QSize(40,40));b.setFixedSize(60,60);b.setObjectName('radio');self.control_radios[icon]=b;b.clicked.connect(fn);b.setAccessibleName(title);v.addWidget(b,0,Qt.AlignCenter)
    label=QLabel(title);label.setAlignment(Qt.AlignCenter);label.setStyleSheet('font-size:13px');v.addWidget(label);radios.addLayout(v,0,i)
   right.addWidget(self.divider())
@@ -190,6 +192,7 @@ class Desktop(QWidget):
   return css
  def apply_appearance(self):
   mode=self.appearance['mode']
+  QIcon.setThemeName('Papirus' if mode=='light' else 'Papirus-Dark')
   if getattr(self,'_native_mode',None)!=mode and shutil.which('plasma-apply-colorscheme'):
    self._native_mode=mode
    QProcess.startDetached('plasma-apply-colorscheme',['BreezeLight' if mode=='light' else 'BreezeDark'])
@@ -264,7 +267,7 @@ class Desktop(QWidget):
   if not p.exists():p=ROOT/'assets/tools'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/'settings.svg'
   icon=QIcon(str(p))
-  if name in ('search','chevron','power','volume') and self.appearance['mode']=='light':
+  if name in ('search','chevron','power','volume','suspend','reboot') and self.appearance['mode']=='light':
    pixmap=icon.pixmap(32,32);painter=QPainter(pixmap);painter.setCompositionMode(QPainter.CompositionMode_SourceIn);painter.fillRect(pixmap.rect(),QColor('#405978'));painter.end();return QIcon(pixmap)
   return icon
  def resizeEvent(self,event):
@@ -379,10 +382,15 @@ class Desktop(QWidget):
    item=next(x for x in APPS if x[0]==key);self.launch(key,item[4])
  def panel(self,title):
   d=QDialog(self);d.setWindowIcon(self.icon({'شبكات Wi-Fi':'wifi','أجهزة Bluetooth':'bluetooth','مركز التحديثات':'update','خيارات الطاقة':'power'}.get(title,'settings')));d.setWindowTitle(title);d.setMinimumWidth(560);d.setStyleSheet(STYLE);v=QVBoxLayout(d);v.setContentsMargins(24,24,24,24);v.setSpacing(14)
+  identity={'شبكات Wi-Fi':'gitm-wifi','أجهزة Bluetooth':'gitm-bluetooth','مركز التحديثات':'gitm-update','خيارات الطاقة':'gitm-power'}.get(title)
+  if identity and shutil.which('xprop'):QTimer.singleShot(150,lambda:QProcess.startDetached('xprop',['-id',hex(int(d.winId())),'-f','_KDE_NET_WM_DESKTOP_FILE','8s','-set','_KDE_NET_WM_DESKTOP_FILE',identity]))
   h=QLabel(title);h.setStyleSheet('font-size:27px;font-weight:bold');v.addWidget(h)
   d._gitm_original_style=STYLE;d.setStyleSheet(self.theme_css(STYLE));self.dialogs.append(d);d.finished.connect(lambda _:self.dialogs.remove(d));return d,v
  def action(self,v,title,key,command):
   b=QPushButton(title);b.setEnabled(bool(shutil.which(command[0])));b.setToolTip(' '.join(command));b.clicked.connect(lambda:self.launch(key,command));v.addWidget(b);return b
+ def bluetooth(self):
+  self.control.hide();self.status_buttons['chevron'].setChecked(False)
+  self.launch('settings',['systemsettings','kcm_bluetooth'])
  def settings(self):
   self.control.hide();self.status_buttons['chevron'].setChecked(False)
   self.launch('settings',['systemsettings'])
@@ -413,7 +421,7 @@ class Desktop(QWidget):
    if existing.windowTitle()=='خيارات الطاقة':existing.showNormal();existing.raise_();existing.activateWindow();return
   d,v=self.panel('خيارات الطاقة');d.setWindowIcon(self.icon('power'))
   for label,action in [('تعليق الجهاز','suspend'),('إعادة التشغيل','reboot'),('إيقاف التشغيل','poweroff')]:
-   b=QPushButton(label);b.setIcon(QIcon.fromTheme({'suspend':'system-suspend','reboot':'system-reboot','poweroff':'system-shutdown'}[action],self.icon('power')));b.setIconSize(QSize(28,28));b.clicked.connect(lambda checked=False,a=action:self.confirm_power(a));v.addWidget(b)
+   b=QPushButton(label);b.setIcon(self.icon({'suspend':'suspend','reboot':'reboot','poweroff':'power'}[action]));b.setIconSize(QSize(28,28));b.clicked.connect(lambda checked=False,a=action:self.confirm_power(a));v.addWidget(b)
   d.show()
  def confirm_power(self,action):
   label={'suspend':'تعليق الجهاز','reboot':'إعادة التشغيل','poweroff':'إيقاف التشغيل'}[action]
