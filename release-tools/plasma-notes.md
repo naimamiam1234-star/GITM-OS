@@ -8,3 +8,5 @@ Verification: installed-module test suite, real loopback TCP ELM transport inclu
 
 Known limits: no physical vehicle, serial/Bluetooth/BLE adapter, OEM coverage, flash/coding/active test, 41 maintenance, TPMS/ADAS/key/EV-specific function validation. No OEM ECU definitions bundled. Cross-packet UDS P2* pending wait not implemented. Generic OBD is emissions scope only. Requires SSSE3/SSE4.1/SSE4.2/POPCNT CPU features for bundled Qt. This is a development preview, not proof of universal diagnostic coverage.
 
+
+Readability: localized acquisition states, unsupported monitors never claim completion, readable UTC times and fitted static table columns.

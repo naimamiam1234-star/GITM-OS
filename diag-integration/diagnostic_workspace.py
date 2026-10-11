@@ -74,7 +74,8 @@ class Workspace(QWidget):
  def rows(self,table,rows):
   table.setRowCount(len(rows))
   for i,row in enumerate(rows):
-   for j,value in enumerate(row):table.setItem(i,j,QTableWidgetItem(str(value)))
+   for j,value in enumerate(row):
+    item=QTableWidgetItem(str(value));item.setToolTip(str(value));table.setItem(i,j,item)
  def connection_key(self):
   info=transport.LINK.info();return (id(transport.LINK),getattr(transport.LINK,'generation',0),info.get('connected'),info.get('transport'),info.get('target'),info.get('adapter'))
  def refresh_connection(self):
@@ -128,6 +129,7 @@ class Workspace(QWidget):
    for m in r.get('monitors',[]):ready.append([eid,display_bool(r.get('MIL')),r.get('stored_dtc_count','—'),m.get('name'),display_bool(m.get('supported')),t('unsupported') if m.get('complete') is None else display_bool(m.get('complete'))])
    for v in f.get('values',[]):freeze.append([eid,f.get('frame'),', '.join(f.get('trigger_dtc',[])),v.get('pid'),v.get('name'),v.get('value'),v.get('unit')])
   self.rows(self.dtc,dtc);self.rows(self.ready,ready);self.rows(self.freeze,freeze)
+  for table in (self.dtc,self.ready,self.freeze):table.resizeColumnsToContents()
   vehicle=report.get('vehicle') or {};adapter=report.get('adapter') or {}
   compact=lambda data:' · '.join(str(v) for v in data.values() if v not in (None,'',False)) if isinstance(data,dict) else str(data)
   status=report.get('status','unknown');status=t(status) if status in WORDS else str(status)
