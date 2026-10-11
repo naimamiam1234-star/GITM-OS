@@ -1,5 +1,5 @@
 """Asynchronous, measured desktop connectivity. No synthetic online states."""
-import os, shutil
+import os, shutil, re
 from pathlib import Path
 from PySide6.QtCore import QObject, QProcess, QTimer, Signal
 from PySide6.QtWidgets import QLabel,QPushButton,QLineEdit,QListWidget,QListWidgetItem,QHBoxLayout
@@ -44,6 +44,13 @@ def state_icon(name,state):
   p.drawLine(21,5,21,38);p.drawLine(21,5,32,16);p.drawLine(32,16,10,31);p.drawLine(10,12,32,27);p.drawLine(32,27,21,38)
   if kind=='connected':
    p.setBrush(QColor('#55e5b0'));p.setPen(Qt.NoPen);p.drawEllipse(33,17,7,7)
+ elif name=='volume':
+  p.drawLine(5,17,12,17);p.drawLine(12,17,23,8);p.drawLine(23,8,23,36);p.drawLine(23,36,12,27);p.drawLine(12,27,5,27);p.drawLine(5,27,5,17)
+  if state.get('mute'):
+   p.drawLine(29,17,38,27);p.drawLine(38,17,29,27)
+  elif kind=='on':
+   p.drawArc(QRectF(18,12,17,20),-65*16,130*16)
+   if state.get('percent',0)>50:p.drawArc(QRectF(16,6,26,32),-65*16,130*16)
  elif name=='battery':
   present=state.get('present',False);level=state.get('percent',0)
   color=QColor('#ff5a66' if level<=15 and present else '#087d57' if light and state.get('charging') else '#4fe0a5' if state.get('charging') else '#405978' if light else '#b8d8f9');p.setPen(QPen(color,2.5));p.setBrush(Qt.NoBrush)
@@ -59,7 +66,7 @@ def state_icon(name,state):
   p.drawArc(QRectF(8,8,28,28),25*16,135*16);p.drawArc(QRectF(8,8,28,28),205*16,135*16)
   p.drawLine(8,8,8,18);p.drawLine(8,18,18,18);p.drawLine(36,36,36,26);p.drawLine(36,26,26,26)
  if kind=='missing':
-  p.setPen(QPen(QColor('#ff4355'),3.5,Qt.SolidLine,Qt.RoundCap));p.drawLine(29,5,39,15);p.drawLine(39,5,29,15)
+  p.setPen(QPen(QColor('#ff4355' if name=='battery' else '#455c79' if light else '#8998ad'),3.5,Qt.SolidLine,Qt.RoundCap));p.drawLine(14,12,30,30);p.drawLine(30,12,14,30)
  elif kind=='off':
   p.setPen(QPen(QColor('#c0c8d4'),2.5));p.drawLine(7,37,36,7)
  p.end();return QIcon(pix)
@@ -68,7 +75,7 @@ class Radios(QObject):
  changed=Signal()
  def __init__(self,desktop):
   super().__init__(desktop);self.desktop=desktop;self.pending=[];self.busy=False
-  self.wifi='غير معروف';self.bluetooth='غير معروف';self.networks=[];self.devices=[];self.wifi_state={'kind':'unknown','signal':0};self.bluetooth_state={'kind':'unknown'}
+  self.audio_state={'kind':'unknown'};self.wifi='غير معروف';self.bluetooth='غير معروف';self.networks=[];self.devices=[];self.wifi_state={'kind':'unknown','signal':0};self.bluetooth_state={'kind':'unknown'}
   self.timer=QTimer(self);self.timer.timeout.connect(self.refresh);self.timer.start(15000)
   self.refresh()
  def run(self,args,done):
@@ -80,10 +87,16 @@ class Radios(QObject):
   self.busy=True;self.changed.emit();p=QProcess(self);self.process=p
   env=p.processEnvironment();env=__import__('PySide6.QtCore',fromlist=['QProcessEnvironment']).QProcessEnvironment.systemEnvironment();env.insert('LC_ALL','C');p.setProcessEnvironment(env)
   timeout=QTimer(p);timeout.setSingleShot(True);timeout.timeout.connect(p.kill)
+  completed=False
   def finish(code,status):
+   nonlocal completed
+   if completed:return
+   completed=True
    timeout.stop();out=bytes(p.readAllStandardOutput()).decode(errors='replace');err=bytes(p.readAllStandardError()).decode(errors='replace')
    self.busy=False;self.changed.emit();done(code==0,out if code==0 else err or 'تعذر تنفيذ العملية');p.deleteLater();self.next()
-  p.finished.connect(finish);p.start(args[0],args[1:]);timeout.start(12000)
+  p.finished.connect(finish)
+  p.errorOccurred.connect(lambda error:finish(-1,None) if error==QProcess.FailedToStart else None)
+  timeout.start(12000);p.start(args[0],args[1:])
  def refresh(self):
   if self.busy or self.pending:return
   def wifi(ok,out):
@@ -107,9 +120,23 @@ class Radios(QObject):
      if ok2 and any(x.startswith('Device ') for x in out2.splitlines()):self.bluetooth_state={'kind':'connected'};self.bluetooth='متصل'
      self.changed.emit()
     self.run(['bluetoothctl','devices','Connected'],connections)
+  def volume(ok,out):
+   values=re.findall(r'(\d+)%',out) if ok else []
+   self.audio_state={'kind':'on' if values else 'missing','percent':int(values[0]) if values else 0,'mute':False}
+   self.changed.emit()
+   if values:
+    def mute(ok2,out2):
+     if ok2:self.audio_state['mute']='yes' in out2
+     self.changed.emit()
+    self.run(['pactl','get-sink-mute','@DEFAULT_SINK@'],mute)
+  self.run(['pactl','get-sink-volume','@DEFAULT_SINK@'],volume)
   self.run(['nmcli','-t','-f','TYPE,STATE,CONNECTION','device'],wifi)
   self.run(['bluetoothctl','show'],bluetooth)
  def show(self,kind):
+  title='شبكات Wi-Fi' if kind=='wifi' else 'أجهزة Bluetooth'
+  for existing in self.desktop.dialogs:
+   if existing.windowTitle()==title:existing.showNormal();existing.raise_();existing.activateWindow();return
+  self.desktop.control.hide();self.desktop.status_buttons['chevron'].setChecked(False)
   d,v=self.desktop.panel('شبكات Wi-Fi' if kind=='wifi' else 'أجهزة Bluetooth')
   search=QLineEdit();search.setPlaceholderText('بحث في النتائج…');v.addWidget(search)
   status=QLabel('');status.setWordWrap(True);v.addWidget(status)
@@ -123,7 +150,7 @@ class Radios(QObject):
   search.textChanged.connect(filter_rows)
   def result(ok,out):
    refresh.setEnabled(True);listing.clear()
-   if not ok:status.setText(out);return
+   if not ok:status.setText('تعذر قراءة الحالة: '+out);listing.addItem('تحقق من خدمة الاتصال أو افتح إدارة الاتصال.');return
    if kind=='wifi':
     rows=[fields(x) for x in out.splitlines()]
     for x in rows:
@@ -144,12 +171,16 @@ class Radios(QObject):
    filter_rows(search.text())
   def scan():
    refresh.setEnabled(False);status.setText('جارٍ قراءة الحالة الفعلية…')
+   state=self.wifi_state if kind=='wifi' else self.bluetooth_state
+   if state['kind']=='missing':
+    refresh.setEnabled(True);listing.clear();status.setText('لا يوجد محول Wi-Fi متاح.' if kind=='wifi' else 'لا يوجد محول Bluetooth متاح.');return
    if kind=='wifi':
-    self.run(['nmcli','-t','-f','IN-USE,SSID,SIGNAL,SECURITY','device','wifi','list','--rescan','yes'],result)
+    self.run(['nmcli','--wait','8','-t','-f','IN-USE,SSID,SIGNAL,SECURITY','device','wifi','list','--rescan','yes'],result)
    else:
     def known(ok,out):
      if not ok:result(False,out);return
      self.run(['bluetoothctl','devices','Connected'],lambda ok2,out2:result(True,out+'\n---connected---\n'+(out2 if ok2 else '')))
     self.run(['bluetoothctl','devices'],known)
   refresh.clicked.connect(scan);d.show();scan()
+
 

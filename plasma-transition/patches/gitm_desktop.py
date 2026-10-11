@@ -16,13 +16,13 @@ STATE = Path(os.environ.get('GITM_STATE', str(Path.home()/'.local/share/gitm')))
 APPS = [
  ('autodiag','GITM AutoDiag','تشخيص السيارات','engine',None),
  ('files','الملفات','المجلدات والمستندات','files',['dolphin']),
- ('browser','المتصفح','الإنترنت والمراجع','browser',['falkon']),
+ ('browser','المتصفح','الإنترنت والمراجع','browser',['firefox']),
  ('settings','الإعدادات','الشبكة والشاشة والصوت','settings',None),
  ('updates','التحديثات','النظام وبرنامج التشخيص','update',None),
  ('photos','الصور','مكتبة الصور','camera',['gwenview']),
  ('media','الوسائط','الموسيقى والفيديو','music',['vlc']),
  ('calculator','الحاسبة','حساباتك اليومية','calculator',['kcalc']),
- ('install','تثبيت GITM OS','التثبيت على القرص','update',['gitm-install']),
+ ('install','تثبيت GITM OS','التثبيت على القرص','install',['gitm-install']),
  ('documents','المستندات','قراءة ملفات PDF','reports',['okular']),
 ]
 STYLE = '''
@@ -111,7 +111,7 @@ class Desktop(QWidget):
    b=QPushButton(title);b.setObjectName('nav');b.clicked.connect(fn);top.addWidget(b)
   top.addStretch()
   self.status_buttons={}
-  for key,title,fn in [('wifi','Wi-Fi',lambda:self.radios.show('wifi')),('bluetooth','Bluetooth',lambda:self.radios.show('bluetooth')),('battery','البطارية',self.power),('sync','تحديث الحالة',lambda:self.radios.refresh()),('search','بحث',lambda:self.search.setFocus()),('chevron','مركز التحكم',self.toggle_control)]:
+  for key,title,fn in [('volume','الصوت',lambda:self.launch('audio',['pavucontrol'])),('wifi','Wi-Fi',lambda:self.radios.show('wifi')),('bluetooth','Bluetooth',lambda:self.radios.show('bluetooth')),('battery','البطارية',self.power),('sync','تحديث الحالة',lambda:self.radios.refresh()),('search','بحث',lambda:self.search.setFocus()),('chevron','مركز التحكم',self.toggle_control)]:
    b=QPushButton();b.setIcon(self.icon(key));b.setIconSize(QSize(24,24));b.setFixedSize(42,40);b.setObjectName('nav');b.setToolTip(title);b.setAccessibleName(title);b.clicked.connect(fn);top.addWidget(b);self.status_buttons[key]=b
   self.status_buttons['chevron'].setCheckable(True)
   self.battery_label=QLabel();self.battery_label.setStyleSheet('font-size:13px');top.addWidget(self.battery_label)
@@ -182,7 +182,7 @@ class Desktop(QWidget):
   button._gitm_motion=group;group.finished.connect(group.deleteLater);group.finished.connect(lambda:setattr(button,'_gitm_motion',None));group.start()
  def theme_css(self,css):
   if self.appearance['mode']!='light':return css
-  colors={'#f0f5ff':'#172b45','#b6c5de':'#405978','#bccde7':'#405978','#c9d7eb':'#405978','#b3c4db':'#405978','#a9bbd2':'#405978','#bfcee1':'#405978','#b5c4d9':'#405978','#becce1':'#405978','#77859a':'#56657a','#36485f':'#aebed2','#425572':'#aebed2','#39526f':'#aebed2','#344054':'#aebed2','#455771':'#8497ae','#243246':'#d3dfed','#2c3d51':'#c0cfe0','#102238':'#eef3fa','#132941':'#e3ebf6','#12518c':'#bed9fb'}
+  colors={'#f0f5ff':'#172b45','#b6c5de':'#405978','#bccde7':'#405978','#c9d7eb':'#405978','#b3c4db':'#405978','#a9bbd2':'#405978','#bfcee1':'#405978','#b5c4d9':'#405978','#becce1':'#405978','#91caff':'#1853a3','#b8d8f9':'#405978','#77859a':'#56657a','#36485f':'#aebed2','#425572':'#aebed2','#39526f':'#aebed2','#344054':'#aebed2','#455771':'#8497ae','#243246':'#d3dfed','#2c3d51':'#c0cfe0','#102238':'#eef3fa','#132941':'#e3ebf6','#12518c':'#bed9fb'}
   css=re.sub(r'#[0-9a-fA-F]{6}',lambda m:colors.get(m.group().lower(),m.group()),css)
   css=css.replace('color:white','color:#172b45')
   css=re.sub(r'rgba\((22,39,62,195|20,39,61,200|13,26,45,215|25,38,56,155)\)','rgba(238,244,252,245)',css)
@@ -196,6 +196,9 @@ class Desktop(QWidget):
   self.setStyleSheet(self.theme_css(STYLE))
   for button in self.app_buttons.values():button.setIconSize(QSize(self.appearance['icon_size'],self.appearance['icon_size']))
   for widget in self.findChildren(QWidget):
+   if isinstance(widget,QLabel) and '<span' in widget.text():
+    if not hasattr(widget,'_gitm_original_text'):widget._gitm_original_text=widget.text()
+    widget.setText(self.theme_css(widget._gitm_original_text))
    if not hasattr(widget,'_gitm_original_style'):widget._gitm_original_style=widget.styleSheet()
    if widget._gitm_original_style:widget.setStyleSheet(self.theme_css(widget._gitm_original_style))
   if self.appearance['performance']:self.blurred=QPixmap()
@@ -226,9 +229,11 @@ class Desktop(QWidget):
   self.control.setGeometry(max(8,self.width()-self.control.width()-28),68,self.control.width(),min(540,self.height()-86))
  def refresh_radios(self):
   from desktop_radios import battery_info,state_icon
-  for key,state in [('wifi',self.radios.wifi_state),('bluetooth',self.radios.bluetooth_state)]:
+  for key,state in [('volume',self.radios.audio_state),('wifi',self.radios.wifi_state),('bluetooth',self.radios.bluetooth_state)]:
    icon=state_icon(key,dict(state,light=self.appearance['mode']=='light'));self.status_buttons[key].setIcon(icon)
    if key in self.control_radios:self.control_radios[key].setIcon(icon)
+  audio=self.radios.audio_state
+  self.status_buttons['volume'].setToolTip('الصوت · '+('مكتوم' if audio.get('mute') else str(audio['percent'])+'%' if audio.get('kind')=='on' else 'غير متاح'))
   self.status_buttons['wifi'].setToolTip('Wi-Fi · '+self.radios.wifi)
   self.status_buttons['bluetooth'].setToolTip('Bluetooth · '+self.radios.bluetooth)
   info=battery_info();self.status_buttons['battery'].setIcon(state_icon('battery',dict(info,light=self.appearance['mode']=='light')))
@@ -244,7 +249,9 @@ class Desktop(QWidget):
  def choose_appearance(self):
   self.launch('settings',['systemsettings','kcm_colors'])
  def toggle_airplane(self):
-  answer=QMessageBox.question(self,'وضع الطيران','تعطيل الاتصالات اللاسلكية؟ اختر لا لاستعادة الحالة السابقة.',QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+  box=QMessageBox(self);box.setWindowTitle('وضع الطيران');box.setText('اختر حالة الاتصالات اللاسلكية.');box.setStandardButtons(QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+  for role,label in [(QMessageBox.Yes,'تعطيل الاتصالات'),(QMessageBox.No,'تفعيل الاتصالات'),(QMessageBox.Cancel,'إلغاء')]:box.button(role).setText(label);box.button(role).setIcon(QIcon())
+  answer=box.exec()
   if answer==QMessageBox.Cancel:return
   try:__import__('system_settings').radio('airplane',answer==QMessageBox.Yes)
   except Exception as e:QMessageBox.warning(self,'GITM',str(e))
@@ -252,11 +259,12 @@ class Desktop(QWidget):
   try:__import__('system_settings').set_brightness(self.brightness.value())
   except Exception as e:QMessageBox.warning(self,'GITM',str(e))
  def icon(self,name):
+  if name=='browser' and QIcon.hasThemeIcon('firefox'):return QIcon.fromTheme('firefox')
   p=ROOT/'assets/desktop'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/'settings.svg'
   icon=QIcon(str(p))
-  if name in ('search','chevron','power') and self.appearance['mode']=='light':
+  if name in ('search','chevron','power','volume') and self.appearance['mode']=='light':
    pixmap=icon.pixmap(32,32);painter=QPainter(pixmap);painter.setCompositionMode(QPainter.CompositionMode_SourceIn);painter.fillRect(pixmap.rect(),QColor('#405978'));painter.end();return QIcon(pixmap)
   return icon
  def resizeEvent(self,event):
@@ -285,7 +293,7 @@ class Desktop(QWidget):
   p=QPainter(self)
   if not self.background.isNull():p.drawPixmap(0,0,self.background)
   else:p.fillRect(self.rect(),QColor('#081a30'))
-  p.fillRect(self.rect(),QColor(245,248,253,235) if self.appearance['mode']=='light' else QColor(3,10,22,65))
+  p.fillRect(self.rect(),QColor(245,248,253,190) if self.appearance['mode']=='light' else QColor(3,10,22,65))
  def filter_apps(self,text):
   for label,button in self.tiles: button.setVisible(text.casefold() in label.casefold())
  def refresh(self):
@@ -368,7 +376,7 @@ class Desktop(QWidget):
   else:
    item=next(x for x in APPS if x[0]==key);self.launch(key,item[4])
  def panel(self,title):
-  d=QDialog(self);d.setWindowIcon(self.icon('settings'));d.setWindowTitle(title);d.setMinimumWidth(560);d.setStyleSheet(STYLE);v=QVBoxLayout(d);v.setContentsMargins(24,24,24,24);v.setSpacing(14)
+  d=QDialog(self);d.setWindowIcon(self.icon({'شبكات Wi-Fi':'wifi','أجهزة Bluetooth':'bluetooth','مركز التحديثات':'update','خيارات الطاقة':'power'}.get(title,'settings')));d.setWindowTitle(title);d.setMinimumWidth(560);d.setStyleSheet(STYLE);v=QVBoxLayout(d);v.setContentsMargins(24,24,24,24);v.setSpacing(14)
   h=QLabel(title);h.setStyleSheet('font-size:27px;font-weight:bold');v.addWidget(h)
   d._gitm_original_style=STYLE;d.setStyleSheet(self.theme_css(STYLE));self.dialogs.append(d);d.finished.connect(lambda _:self.dialogs.remove(d));return d,v
  def action(self,v,title,key,command):
@@ -399,12 +407,16 @@ class Desktop(QWidget):
   b=QPushButton('فتح تحديثات AutoDiag الموقعة');b.clicked.connect(lambda:self.launch('autodiag',[sys.executable,str(ROOT/'start_release.py'),'--windowed','--skip-intro','--tool','update']));v.addWidget(b)
   d.show()
  def power(self):
-  d,v=self.panel('خيارات الطاقة')
+  for existing in self.dialogs:
+   if existing.windowTitle()=='خيارات الطاقة':existing.showNormal();existing.raise_();existing.activateWindow();return
+  d,v=self.panel('خيارات الطاقة');d.setWindowIcon(self.icon('power'))
   for label,action in [('تعليق الجهاز','suspend'),('إعادة التشغيل','reboot'),('إيقاف التشغيل','poweroff')]:
-   b=QPushButton(label);b.clicked.connect(lambda checked=False,a=action:self.confirm_power(a));v.addWidget(b)
+   b=QPushButton(label);b.setIcon(QIcon.fromTheme({'suspend':'system-suspend','reboot':'system-reboot','poweroff':'system-shutdown'}[action],self.icon('power')));b.setIconSize(QSize(28,28));b.clicked.connect(lambda checked=False,a=action:self.confirm_power(a));v.addWidget(b)
   d.show()
  def confirm_power(self,action):
-  if QMessageBox.question(self,'GITM','تنفيذ '+action+'؟ احفظ عملك أولًا.')==QMessageBox.Yes:self.launch('power',['systemctl',action])
+  label={'suspend':'تعليق الجهاز','reboot':'إعادة التشغيل','poweroff':'إيقاف التشغيل'}[action]
+  box=QMessageBox(self);box.setWindowTitle(label);box.setText(label+'؟ احفظ عملك أولًا.');box.setStandardButtons(QMessageBox.Yes|QMessageBox.Cancel);box.button(QMessageBox.Yes).setText(label);box.button(QMessageBox.Cancel).setText('إلغاء');box.setDefaultButton(QMessageBox.Cancel)
+  if box.exec()==QMessageBox.Yes:self.launch('power',['systemctl',action])
  def closeEvent(self,event):
   if any(p.state()!=QProcess.NotRunning for p in self.processes.values()):
    QMessageBox.information(self,'GITM','أغلق التطبيقات المفتوحة قبل إنهاء الجلسة.');event.ignore()
@@ -441,4 +453,5 @@ def main():
   QTimer.singleShot(4000,visible_marker)
  return app.exec()
 if __name__=='__main__':sys.exit(main())
+
 
