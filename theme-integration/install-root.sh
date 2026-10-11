@@ -59,6 +59,7 @@ test -f /usr/share/applications/firefox.desktop
 test "$(dpkg-query -W -f='${Installed-Size}' firefox)" -gt 50000
 FIREFOX
 install -m644 patches/desktop_radios.py "$root/opt/gitm/desktop_radios.py"
+install -m644 "$root/usr/share/icons/Papirus/64x64/apps/firefox.svg" "$root/opt/gitm/assets/desktop/browser.svg"
 install -m644 theme-integration/install.svg "$root/opt/gitm/assets/desktop/install.svg"
 mkdir -p "$root/etc/skel/.config"
 cat > "$root/etc/skel/.config/mimeapps.list" <<'MIME'
