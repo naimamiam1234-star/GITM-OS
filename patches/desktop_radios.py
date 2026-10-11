@@ -14,6 +14,15 @@ def fields(line):
  result.append(current)
  return result
 
+def classify_wifi(out,ok,enabled):
+ if not ok:return 'تعذر قراءة الخدمة',{'kind':'error','signal':0}
+ rows=[fields(x) for x in out.splitlines()]
+ hardware=[x for x in rows if len(x)>=3 and x[0]=='wifi']
+ connected=[x for x in hardware if x[1]=='connected']
+ if connected:return connected[0][2],{'kind':'connected','signal':0}
+ if not hardware:return 'غير متوفر',{'kind':'missing','signal':0}
+ return ('مفعّل · غير متصل',{'kind':'on','signal':0}) if enabled else ('متوقف',{'kind':'off','signal':0})
+
 def battery_info(root=Path('/sys/class/power_supply')):
  for p in sorted(root.glob('*')):
   try:
@@ -49,7 +58,7 @@ def state_icon(name,state):
   if state.get('mute'):
    p.drawLine(29,17,38,27);p.drawLine(38,17,29,27)
   elif kind=='on':
-   p.drawArc(QRectF(18,12,17,20),-65*16,130*16)
+   if state.get('percent',0)>0:p.drawArc(QRectF(18,12,17,20),-65*16,130*16)
    if state.get('percent',0)>50:p.drawArc(QRectF(16,6,26,32),-65*16,130*16)
  elif name=='battery':
   present=state.get('present',False);level=state.get('percent',0)
@@ -93,18 +102,17 @@ class Radios(QObject):
    if completed:return
    completed=True
    timeout.stop();out=bytes(p.readAllStandardOutput()).decode(errors='replace');err=bytes(p.readAllStandardError()).decode(errors='replace')
-   self.busy=False;self.changed.emit();done(code==0,out if code==0 else err or 'تعذر تنفيذ العملية');p.deleteLater();self.next()
+   self.busy=False;self.changed.emit()
+   try:done(code==0,out if code==0 else err or 'تعذر تنفيذ العملية')
+   finally:p.deleteLater();self.next()
   p.finished.connect(finish)
   p.errorOccurred.connect(lambda error:finish(-1,None) if error==QProcess.FailedToStart else None)
   timeout.start(12000);p.start(args[0],args[1:])
  def refresh(self):
   if self.busy or self.pending:return
   def wifi(ok,out):
-   rows=[fields(x) for x in out.splitlines()] if ok else []
-   hardware=[x for x in rows if len(x)>=3 and x[0]=='wifi']
-   connected=[x for x in hardware if x[1]=='connected']
-   self.wifi=connected[0][2] if connected else 'غير متصل' if hardware else 'غير متوفر'
-   self.wifi_state={'kind':'connected' if connected else 'off' if hardware else 'missing','signal':0};self.changed.emit()
+   self.wifi,self.wifi_state=classify_wifi(out,ok,getattr(self,'wifi_enabled',True));self.changed.emit()
+   connected=self.wifi_state['kind']=='connected'
    if connected:
     def signal(ok2,out2):
      signals=[fields(x) for x in out2.splitlines()] if ok2 else []
@@ -113,8 +121,8 @@ class Radios(QObject):
     self.run(['nmcli','-t','-f','IN-USE,SIGNAL','device','wifi','list','--rescan','no'],signal)
   def bluetooth(ok,out):
    on=ok and 'Powered: yes' in out
-   self.bluetooth='مفعّل' if on else 'متوقف' if ok else 'غير متوفر'
-   self.bluetooth_state={'kind':'on' if on else 'off' if ok else 'missing'};self.changed.emit()
+   self.bluetooth='مفعّل' if on else 'متوقف' if ok and 'Controller ' in out else 'غير متوفر' if ok else 'تعذر قراءة الخدمة'
+   self.bluetooth_state={'kind':'on' if on else 'off' if ok and 'Controller ' in out else 'missing' if ok else 'error'};self.changed.emit()
    if on:
     def connections(ok2,out2):
      if ok2 and any(x.startswith('Device ') for x in out2.splitlines()):self.bluetooth_state={'kind':'connected'};self.bluetooth='متصل'
@@ -122,7 +130,7 @@ class Radios(QObject):
     self.run(['bluetoothctl','devices','Connected'],connections)
   def volume(ok,out):
    values=re.findall(r'(\d+)%',out) if ok else []
-   self.audio_state={'kind':'on' if values else 'missing','percent':int(values[0]) if values else 0,'mute':False}
+   self.audio_state={'kind':'on' if values else 'missing','percent':int(values[0]) if values else 0,'mute':self.audio_state.get('mute',False)}
    self.changed.emit()
    if values:
     def mute(ok2,out2):
@@ -130,7 +138,10 @@ class Radios(QObject):
      self.changed.emit()
     self.run(['pactl','get-sink-mute','@DEFAULT_SINK@'],mute)
   self.run(['pactl','get-sink-volume','@DEFAULT_SINK@'],volume)
-  self.run(['nmcli','-t','-f','TYPE,STATE,CONNECTION','device'],wifi)
+  def radio(ok,out):
+   self.wifi_enabled=out.strip()=='enabled' if ok else True
+   self.run(['nmcli','-t','-f','TYPE,STATE,CONNECTION','device'],wifi)
+  self.run(['nmcli','radio','wifi'],radio)
   self.run(['bluetoothctl','show'],bluetooth)
  def show(self,kind):
   title='شبكات Wi-Fi' if kind=='wifi' else 'أجهزة Bluetooth'
@@ -149,6 +160,7 @@ class Radios(QObject):
    for i in range(listing.count()):listing.item(i).setHidden(text.casefold() not in listing.item(i).text().casefold())
   search.textChanged.connect(filter_rows)
   def result(ok,out):
+   if not d.isVisible():return
    refresh.setEnabled(True);listing.clear()
    if not ok:status.setText('تعذر قراءة الحالة: '+out);listing.addItem('تحقق من خدمة الاتصال أو افتح إدارة الاتصال.');return
    if kind=='wifi':

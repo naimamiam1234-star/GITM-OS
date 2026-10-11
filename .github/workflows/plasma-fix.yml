@@ -2,7 +2,7 @@ name: Integrate GITM native theme and dock
 on:
   push:
     branches: [main]
-    paths: ['plasma-fix/**', 'theme-integration/**', 'plasma-transition/patches/**', '.github/workflows/plasma-fix.yml']
+    paths: ['plasma-fix/**', 'theme-integration/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-fix.yml']
   workflow_dispatch:
 permissions:
   contents: read

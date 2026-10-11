@@ -54,6 +54,9 @@ apt-get update
 apt-get install -y firefox firefox-l10n-ar firefox-l10n-fr
 apt-get purge -y falkon
 command -v firefox
+test -x /usr/lib/firefox/firefox
+test -f /usr/share/applications/firefox.desktop
+test "$(dpkg-query -W -f='${Installed-Size}' firefox)" -gt 50000
 FIREFOX
 install -m644 patches/desktop_radios.py "$root/opt/gitm/desktop_radios.py"
 install -m644 theme-integration/install.svg "$root/opt/gitm/assets/desktop/install.svg"
@@ -66,6 +69,7 @@ text/html=firefox.desktop;
 MIME
 chmod 755 "$root/usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/tools/list_presets.sh" "$root/usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/tools/gdbus_get_signal.sh"
 sed -i 's|^Icon=.*|Icon=/opt/gitm/assets/desktop/engine.svg|' "$root/usr/share/applications/gitm-autodiag.desktop"
+sed -i '/^StartupWMClass=/d' "$root/usr/share/applications/gitm-autodiag.desktop"
 printf '\nStartupWMClass=gitm-autodiag\n' >> "$root/usr/share/applications/gitm-autodiag.desktop"
 install -m644 plasma-transition/patches/gitm_desktop.py "$root/opt/gitm/gitm_desktop.py"
 install -D -m644 theme-integration/layout.js "$root/usr/share/plasma/look-and-feel/org.gitm.desktop/contents/layouts/org.kde.plasma.desktop-layout.js"
@@ -98,6 +102,7 @@ NoDisplay=true
 StartupWMClass=gitm-desktop
 DESKTOP
 # Native calculator from desktop; AutoDiag retains its clearly scoped workshop calculator.
+install -m644 patches/gallery_runner.py "$root/opt/gitm/gallery_runner.py"
 python3 - "$root/opt/gitm/gallery_runner.py" <<'PY'
 from pathlib import Path
 import sys
@@ -117,7 +122,7 @@ from pathlib import Path
 import sys
 p=Path(sys.argv[1]);s=p.read_text()
 pos=s.index("        self.setWindowTitle(")
-s=s[:pos]+"        from PySide6.QtGui import QIcon\n        from pathlib import Path\n        QApplication.setDesktopFileName('gitm-autodiag')\n        QApplication.setApplicationName('gitm-autodiag')\n        self.setWindowIcon(QIcon(str(Path(__file__).parent/'assets/desktop/engine.svg')))\n"+s[pos:]
+s=s if "QApplication.setApplicationName('gitm-autodiag')" in s else s[:pos]+"        from PySide6.QtGui import QIcon\n        from pathlib import Path\n        QApplication.setDesktopFileName('gitm-autodiag')\n        QApplication.setApplicationName('gitm-autodiag')\n        self.setWindowIcon(QIcon(str(Path(__file__).parent/'assets/desktop/engine.svg')))\n"+s[pos:]
 p.write_text(s);compile(s,str(p),'exec')
 PY
 
