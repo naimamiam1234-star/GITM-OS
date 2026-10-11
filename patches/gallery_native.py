@@ -14,6 +14,8 @@ for name in ['customers','invoices','invoice_history','camera','pdf','media','ca
 if hasattr(w,'split_page'):steps.append(('split-screen',w.split_page))
 index=0
 def emit(s):subprocess.run(['logger','-t','gitm-gallery',s],check=False)
+import gallery_bench
+gallery_bench.setup(w,steps,emit)
 def next():
  global index
  if index==len(steps):
@@ -21,8 +23,9 @@ def next():
  name,fn=steps[index];index+=1
  try:w.go_home();fn()
  except Exception as e:emit('GITM_GALLERY_ERROR|'+name+'|'+str(e))
- QTimer.singleShot(4000,lambda:capture(name))
+ QTimer.singleShot(10000 if name=='diag-bench-summary' else 6000 if name=='diag-bench-live' else 4000,lambda:capture(name))
 def capture(name):
  for cmd in [['xset','s','off'],['xset','-dpms'],['xset','s','reset']]:subprocess.run(cmd,check=False)
  emit('GITM_GALLERY_FRAME|'+name);QTimer.singleShot(2000,next)
 QTimer.singleShot(4000,next);sys.exit(app.exec())
+

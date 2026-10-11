@@ -17,7 +17,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       SOURCE_RUN: 'auto'
-      RELEASE_TAG: gitm-os-3.3.0-plasma8
+      RELEASE_TAG: gitm-os-3.3.0-plasma9
     steps:
       - uses: actions/checkout@v4
       - name: Require successful source build
@@ -76,5 +76,6 @@ jobs:
           rm GITM-OS-Plasma6-amd64.iso
       - name: Publish development preview
         run: |
-          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title 'GITM OS — Anchored quick settings preview' --notes-file release-tools/plasma-notes.md release-assets/*
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title 'GITM OS — Validated AutoDiag workspace preview' --notes-file release-tools/plasma-notes.md release-assets/*
+
 

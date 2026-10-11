@@ -149,3 +149,17 @@ p.write_text(s);compile(s,str(p),'exec')
 PY
 
 
+
+# Tested native diagnosis overlay. Run tests against installed modules, not repo copies.
+python3 diag-integration/install.py "$root/opt/gitm"
+install -m644 diag-integration/gallery-bench.py "$root/opt/gitm/gallery_bench.py"
+install -m644 patches/gallery_native.py "$root/opt/gitm/gallery_native.py"
+mkdir -p "$root/var/tmp/gitm-diag-tests"
+cp -a diag-integration/tests "$root/var/tmp/gitm-diag-tests/"
+cp diag-integration/run-tests.py "$root/var/tmp/gitm-diag-tests/"
+cp diag-integration/install.py "$root/var/tmp/gitm-diag-tests/"
+mkdir -p dist
+chroot "$root" env QT_QPA_PLATFORM=offscreen QT_STYLE_OVERRIDE=Fusion QT_QPA_PLATFORMTHEME=generic PYTHONPATH=/opt/gitm GITM_STATE=/tmp/gitm-diag-test /opt/gitm-venv/bin/python /var/tmp/gitm-diag-tests/run-tests.py 2>&1 | tee dist/diagnostic-tests.txt
+grep -q 'GITM_DIAGNOSTIC_TESTS_PASS|' dist/diagnostic-tests.txt
+rm -rf "$root/var/tmp/gitm-diag-tests" "$root/tmp/gitm-diag-test"
+

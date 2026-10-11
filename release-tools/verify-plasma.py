@@ -31,3 +31,10 @@ assert len(list(gallery.glob('*.png'))) >= 60, 'Incomplete application gallery'
 packages = (root / 'packages.txt').read_text()
 assert any(line.startswith('plasma-workspace 4:6.') for line in packages.splitlines())
 print('ISO checksum, BIOS/UEFI Plasma 6 session, and full guest gallery verified.')
+
+assert 'GITM_DIAGNOSTIC_TESTS_PASS|' in (root/'diagnostic-tests.txt').read_text(), 'Installed diagnostic tests did not pass'
+assert 'GITM_GALLERY_DIAG_BENCH|PASS|SIMULATOR|' in report, 'No actual guest simulator scan/live/export evidence'
+for name in ('summary','dtc','live','readiness','freeze','report'):
+    assert (gallery/('diag-bench-'+name+'.png')).is_file(), 'Missing measured simulator workspace screenshot'
+print('Installed diagnostic suite and actual guest simulator session verified; physical vehicles untested.')
+

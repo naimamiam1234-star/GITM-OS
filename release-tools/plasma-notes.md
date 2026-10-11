@@ -1,17 +1,10 @@
-# GITM OS — anchored quick settings preview
+# GITM OS — AutoDiag diagnostic workspace preview
 
-Ubuntu 26.04 amd64 with native Plasma 6.6.6 / KWin, pinned Klassy decoration and Panel Colorizer, Papirus icons, Firefox, and the separate GITM AutoDiag application.
+Built on Ubuntu with native Plasma/KWin, keeping AutoDiag separate. Includes the verified popup controls from preview8.
 
-Top-bar Wi-Fi, Bluetooth, audio and power icons open frameless dropdown cards under their anchors. Cards close with Escape or outside click; only one is open at a time. Full settings use explicit secondary buttons.
+New native AutoDiag workspace: CAN OBD per-responder scan, stored/pending/permanent DTC, VIN, readiness, freeze frame00, 27 numeric PID decoders, live graph and bounded CSV recording, offline HTML/JSON exports, local scan persistence. Documented ECU profile reads are now accessible in the native app with exact make/model/year/engine gates. UDS response validation and adapter cleanup corrected.
 
-Quick Settings includes Wi-Fi/Bluetooth status, airplane mode, day/night appearance, screenshot and lock shortcuts, hardware-supported brightness, sound level and power actions. Power actions require a second explicit confirmation inside the dropdown. Missing adapters and audio outputs show unavailable status.
+Verification: installed-module test suite, real loopback TCP ELM transport including11/29-bit CAN and repeated addressed reads, actual ISO guest simulator scan/live/export, BIOS/UEFI visible Plasma session, keyboard/popups and full public download SHA256/range tests. Screenshot gallery includes explicitly labeled simulator data.
 
-Validation: BIOS and UEFI desktop boot, guest repository/catalogue evidence, actual application screenshots, and physical QMP input for search and popup dismissal. Manifest and public download checks refer to this source commit.
+Known limits: no physical vehicle, serial/Bluetooth/BLE adapter, OEM coverage, flash/coding/active test, 41 maintenance, TPMS/ADAS/key/EV-specific function validation. No OEM ECU definitions bundled. Cross-packet UDS P2* pending wait not implemented. Generic OBD is emissions scope only. Requires SSSE3/SSE4.1/SSE4.2/POPCNT CPU features for bundled Qt. This is a development preview, not proof of universal diagnostic coverage.
 
-Development preview: physical installation, update installation, wireless discovery/connection/pairing, screen lock, brightness, and suspend/power commands need compatible real-hardware validation. VM screenshots without adapters do not prove wireless support. OEM vehicle functions require adapter/vehicle-specific implementation and verification.
-
-CPU: SSSE3, SSE4.1, SSE4.2 and POPCNT required by bundled Qt. Live changes require persistence or installation to survive reboot. Native dock is visible by default; optional auto-hide is not validated.
-
-ISO parts have per-part and whole-image SHA-256. The preview service streams the joined ISO with resume support; gallery images are actual guest captures.
-
-Screenshot utility comes from Ubuntu kde-spectacle. Status-bar presses are routed explicitly during an active popup to support one-click switching on X11.
