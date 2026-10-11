@@ -1,32 +1,32 @@
 {
   "name": "GITM-OS-Plasma6-amd64.iso",
-  "size": 3313645568,
-  "sha256": "6f21d51e1c1461b0eae9b5727c20f613057188a58c6762168fa0cd8db6be8ac9",
+  "size": 3435251712,
+  "sha256": "7c7fa7b3eaef106c229d8f801522cbc075fd86fdc8e28a8bb6307fd063ad2824",
   "parts": [
     {
       "name": "GITM-OS-Plasma6-amd64.iso.part01",
       "size": 1572864000,
-      "sha256": "4c44d7398ee4780536193bd2624fe78f3eeaca1fe2f76bcdea4662b5b1edca41",
-      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma5/GITM-OS-Plasma6-amd64.iso.part01"
+      "sha256": "a65c7329fff35923929f240d7ed4c080f798e2d6479c1e3a68293844f73a3919",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma7/GITM-OS-Plasma6-amd64.iso.part01"
     },
     {
       "name": "GITM-OS-Plasma6-amd64.iso.part02",
       "size": 1572864000,
-      "sha256": "1694a060fe277da0f89fc28a3887d2a1aa2be339a2824e301d91dbe7e23756a9",
-      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma5/GITM-OS-Plasma6-amd64.iso.part02"
+      "sha256": "d25b02af75b95911fdec1081490139c53322044b56441defcf9591e14b546a45",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma7/GITM-OS-Plasma6-amd64.iso.part02"
     },
     {
       "name": "GITM-OS-Plasma6-amd64.iso.part03",
-      "size": 167917568,
-      "sha256": "473852d5dbe5b2650591c07d3da5a0e57aadc2e6868c872d7cdc65280dac443b",
-      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma5/GITM-OS-Plasma6-amd64.iso.part03"
+      "size": 289523712,
+      "sha256": "22da1d3a04c6719b228719725ab9affb723f5693f09d1438dfa8380e47f4593a",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma7/GITM-OS-Plasma6-amd64.iso.part03"
     }
   ],
   "boundary_offset": 1572863984,
-  "boundary_hex": "7ec8c5e4892cf1fe7abee25a8feeec14aedc6748ad2c9474bd546ace7c630427",
+  "boundary_hex": "d74e1957f8008191221e58b49ffe76ba23faf1306234afef672de08611226c42",
   "tail_hex": "0000000000000000000000000000000000000000000000000000000000000000",
-  "build_commit": "54f3d38f1097f46a420744495b269c9248be6931",
-  "boot_test_run": 38094790367,
+  "build_commit": "1ba2307f358eede9f8cf142dbc83b82c2f9b6dcc",
+  "boot_test_run": 38140205081,
   "bios": "passed",
   "uefi": "passed",
   "settings_single_window": "verified",
@@ -50,13 +50,13 @@
   ],
   "gallery": {
     "images": 61,
-    "size": 39079315,
-    "sha256": "263030ae9dee3b88b4c2ca9347b27a823df6e87f74899d81dd82890927aa093a",
-    "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma5/gallery.html",
-    "overview_url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma5/gallery-overview.png",
+    "size": 39153983,
+    "sha256": "4d0339ce048c5f5834e2f2bd5f2aa17410590e78765e247000efc0ac01dfb521",
+    "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma7/gallery.html",
+    "overview_url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma7/gallery-overview.png",
     "capture_runs": [
-      38094790367,
-      38094959169
+      38140205081,
+      38140205119
     ]
   }
 }
