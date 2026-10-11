@@ -57,85 +57,125 @@ def icon(key):
     painter=QPainter(pixmap);QSvgRenderer(svg.encode()).render(painter);painter.end()
     return QIcon(pixmap)
 
+
 def setup(w):
-    for f in (ROOT/'assets').glob('Tajawal-*.ttf'):QFontDatabase.addApplicationFont(str(f))
+    from PySide6.QtCore import QTimer
+    from PySide6.QtWidgets import QFrame,QButtonGroup,QApplication
+    from workshop_tools import t
+    import workshop_tools as wt,transport,store
     from autodiag_experience import install
     install(w)
-    import workshop_tools
+    QApplication.instance().setLayoutDirection(Qt.RightToLeft if language()=="ar" else Qt.LeftToRight)
+    for f in (ROOT/'assets').glob('Tajawal-*.ttf'):QFontDatabase.addApplicationFont(str(f))
     w.design_scale=1
     texts=[]
-    def label(key,obj=''):
-        q=QLabel(word(key));q.setObjectName(obj);q.setWordWrap(True);texts.append((q,key));return q
-    header=QWidget();header.setObjectName('appHeader')
-    h=QHBoxLayout(header);h.setContentsMargins(24,16,24,16);h.setSpacing(14)
-    brand=QLabel('GITM  AUTODIAG');brand.setObjectName('brand');brand.setLayoutDirection(Qt.LeftToRight);h.addWidget(brand);h.addStretch()
-    w.language_picker=QComboBox();w.language_picker.addItems(['العربية','Français','English']);w.language_picker.setMinimumWidth(135)
-    w.language_picker.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);h.addWidget(w.language_picker)
+    def label(text,name='',wrap=True):
+        q=QLabel(text);q.setObjectName(name);q.setWordWrap(wrap);return q
+    def translated(key,name=''):
+        q=label(word(key),name);texts.append((q,key));return q
+    def frame(name):q=QFrame();q.setObjectName(name);return q
+    header=frame('header');h=QHBoxLayout(header);h.setContentsMargins(24,15,24,15)
+    brand=label('GITM  /  AUTODIAG','brand',False);brand.setLayoutDirection(Qt.LeftToRight);h.addWidget(brand)
+    h.addStretch();w.session_label=label('','session',False);h.addWidget(w.session_label)
+    w.language_picker=QComboBox();w.language_picker.addItems(['العربية','Français','English']);w.language_picker.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);w.language_picker.setFixedWidth(135);h.addWidget(w.language_picker)
     w.layout.addWidget(header)
-    nav=QWidget();nav.setObjectName('appNav');n=QHBoxLayout(nav);n.setContentsMargins(24,8,24,8)
-    for key,callback in [('home',w.go_home),('vehicle',w.vehicle_page),('diagnosis',w.diagnosis_page),('assistant',w.ai_page),('tools',lambda:workshop_tools.customers(w)),('invoice',lambda:workshop_tools.invoices(w))]:
-        b=QPushButton(word(key));b.setObjectName('navButton');b.clicked.connect(callback);texts.append((b,key));n.addWidget(b)
-    n.addStretch();w.layout.addWidget(nav)
-    w.pages=QStackedWidget();w.layout.addWidget(w.pages,1)
+    workspace=QWidget();horizontal=QHBoxLayout(workspace);horizontal.setContentsMargins(0,0,0,0);horizontal.setSpacing(0)
+    side=frame('sidebar');side.setMinimumWidth(184);sl=QVBoxLayout(side);sl.setContentsMargins(14,24,14,20);sl.setSpacing(7)
+    sl.addWidget(label('AUTODIAG WORKSPACE','sideCaption'))
+    group=QButtonGroup(w);group.setExclusive(True);w.navigation_buttons=[]
+    entries=[('home','smart',w.go_home),('vehicle','car',w.vehicle_page),('diagnosis','vci',w.diagnosis_page),('assistant','ai',w.ai_page),('tools','history',lambda:wt.customers(w)),('invoice','reports',lambda:wt.invoices(w))]
+    for key,art,callback in entries:
+        b=QPushButton(word(key));b.setObjectName('navButton');b.setIcon(icon(art));b.setIconSize(QSize(25,25));b.setCheckable(True);group.addButton(b);sl.addWidget(b);texts.append((b,key));w.navigation_buttons.append(b)
+        def open_page(checked=False,fn=callback,button=b):fn();button.setChecked(True)
+        b.clicked.connect(open_page)
+    w.navigation_buttons[0].setChecked(True)
+    sl.addSpacing(20);sl.addWidget(label(t('أدوات الفحص','Outils diagnostic','Diagnostic tools'),'sideCaption'))
+    for text,art,fn in [(t('مرجع الأعطال','Codes défaut','Fault reference'),'dtc',w.dtc_page),(t('الصيانة','Entretien','Maintenance'),'tools',w.service_page),(t('كاميرا الفحص','Caméra','Inspection camera'),'vci',lambda:wt.camera(w)),(t('المراجع','Références','References'),'reports',w.sources_page)]:
+        b=QPushButton(text);b.setObjectName('sideTool');b.setIcon(icon(art));b.setIconSize(QSize(23,23));b.clicked.connect(fn);sl.addWidget(b)
+    sl.addStretch();sl.addWidget(label('GITM EXPERIENCE\nAPPLICATION PREVIEW','sideCaption'))
+    side_scroll=QScrollArea();side_scroll.setObjectName("sideScroll");side_scroll.setWidgetResizable(True);side_scroll.setFixedWidth(202);side_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff);side_scroll.setFrameShape(QScrollArea.NoFrame);side_scroll.setWidget(side)
+    horizontal.addWidget(side_scroll)
+    class PageStack(QStackedWidget):
+        def minimumSizeHint(self):
+            q=self.currentWidget();return q.minimumSizeHint() if q else QSize(0,0)
+    w.pages=PageStack();w.pages.currentChanged.connect(w.pages.updateGeometry);horizontal.addWidget(w.pages,1);w.layout.addWidget(workspace,1)
     scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setFrameShape(QScrollArea.NoFrame)
-    home=QWidget();home.setObjectName('home');body=QVBoxLayout(home);body.setContentsMargins(28,24,28,28);body.setSpacing(16)
-    body.addWidget(label('workspace','welcome'));body.addWidget(label('intro','subtle'))
-    entries=[
-      ('اختيار السيارة','car',w.vehicle_page,'select'),
-      ('التشخيص الذكي','smart',w.diagnosis_page,'scan'),
-      ('التشخيص المحلي','vci',w.adapter_page,'adapter'),
-      ('المساعد الذكي','ai',w.ai_page,'ai'),
-      ('سجل التشخيص','history',w.reports_page,'records'),
-      ('وظائف الصيانة','tools',w.service_page,'maintenance'),
-      ('قاعدة أكواد الأعطال','dtc',w.dtc_page,'dtc'),
-      ('التغطية','coverage',w.engines_page,'coverage'),
-      ('مراجع الإصلاح','reports',w.sources_page,'references'),
-      ('أوسيلوسكوب','live',w.scope_page,'scope'),
-      ('OBDII والبيانات الحية','live',w.diagnosis_page,'scan'),
-      ('مخطط ربط VCI','vci',w.wiring_page,'adapter')]
-    grid=QGridLayout();grid.setSpacing(16);body.addLayout(grid);w.home_cards=[]
-    for i,(name,key,fn,desc) in enumerate(entries):
-        card=QPushButton();card.setObjectName('card');card.setAccessibleName(tr(name));card.clicked.connect(fn)
-        card.setMinimumHeight(132);card.setMinimumWidth(210);card.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Preferred)
-        box=QVBoxLayout(card);box.setContentsMargins(20,18,20,18);box.setSpacing(8)
-        row=QHBoxLayout();im=QLabel();im.setStyleSheet("background:transparent");im.setPixmap(icon(key).pixmap(36,36));im.setFixedSize(40,40);row.addWidget(im)
-        title=label('live_title' if name=='OBDII والبيانات الحية' else 'wiring_title') if name in ('OBDII والبيانات الحية','مخطط ربط VCI') else QLabel(tr(name));title.setObjectName('cardlabel');title.setWordWrap(True);row.addWidget(title,1);box.addLayout(row)
-        caption=label(desc,'subtle');box.addWidget(caption)
-        for q in card.findChildren(QLabel):q.setAttribute(Qt.WA_TransparentForMouseEvents)
-        grid.addWidget(card,i//3,i%3);w.home_cards.append(card)
-    for col in range(3):grid.setColumnStretch(col,1)
-    body.addWidget(label('hint','subtle'));body.addStretch();scroll.setWidget(home);w.pages.addWidget(scroll)
-    footer=QWidget();footer.setObjectName('appFooter');f=QHBoxLayout(footer);f.setContentsMargins(24,10,24,10)
-    w.status=label('offline','connection');w.status.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Preferred);f.addWidget(w.status)
-    brand_footer=QLabel('GITM AutoDiag');brand_footer.setStyleSheet('background:transparent');f.addWidget(brand_footer);w.layout.addWidget(footer)
+    home=QWidget();body=QVBoxLayout(home);body.setContentsMargins(28,28,28,28);body.setSpacing(20)
+    body.addWidget(translated('workspace','welcome'));body.addWidget(translated('intro','subtle'))
+    hero=frame('hero');hl=QVBoxLayout(hero);hl.setContentsMargins(24,22,24,22);hl.setSpacing(12)
+    hl.addWidget(label(t('جلسة الفحص الحالية','Session diagnostic','Current diagnostic session'),'heroCaption'))
+    w.vehicle_summary=label('','heroTitle');hl.addWidget(w.vehicle_summary)
+    hl.addWidget(label(t('ابدأ بهوية المركبة واتصال VCI؛ النتائج مرتبطة بجلستك.','Identifiez le véhicule et connectez le VCI.','Identify the vehicle and connect VCI; results belong to your session.'),'heroText'))
+    row=QHBoxLayout();hl.addLayout(row)
+    for text,fn in [(t('اختيار السيارة','Choisir le véhicule','Select vehicle'),w.vehicle_page),(t('اتصال VCI','Connexion VCI','Connect VCI'),w.adapter_page)]:
+        b=QPushButton(text);b.setObjectName('heroAction');b.clicked.connect(fn);row.addWidget(b)
+    row.addStretch();body.addWidget(hero)
+    metrics=QHBoxLayout();body.addLayout(metrics)
+    for title,key in [(t('المحول','VCI','Adapter'),'adapter'),(t('تقارير محفوظة','Rapports enregistrés','Saved reports'),'reports'),(t('عملاء الورشة','Clients atelier','Workshop customers'),'customers')]:
+        f=frame('metric');layout=QVBoxLayout(f);layout.setContentsMargins(18,14,18,14);layout.addWidget(label(title,'subtle'));value=label('—','metricValue');layout.addWidget(value);setattr(w,'metric_'+key,value);metrics.addWidget(f)
+    body.addWidget(label(t('وصول سريع','Accès rapide','Quick access'),'sectionTitle'))
+    grid=QGridLayout();grid.setSpacing(14);body.addLayout(grid);w.home_cards=[]
+    cards=[('التشخيص الذكي','smart',w.diagnosis_page,'scan'),('المساعد الذكي','ai',w.ai_page,'ai'),('وظائف الصيانة','tools',w.service_page,'maintenance'),('قاعدة أكواد الأعطال','dtc',w.dtc_page,'dtc'),('سجل التشخيص','history',w.reports_page,'records'),('أوسيلوسكوب','live',w.scope_page,'scope')]
+    for i,(name,art,fn,desc) in enumerate(cards):
+        b=QPushButton();b.setObjectName('card');b.setMinimumHeight(120);b.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Preferred);b.clicked.connect(fn)
+        layout=QVBoxLayout(b);layout.setContentsMargins(18,17,18,17);layout.setSpacing(8)
+        top=QHBoxLayout();layout.addLayout(top);im=label('');im.setPixmap(icon(art).pixmap(36,36));im.setFixedSize(40,40);top.addWidget(im)
+        title=label(tr(name),'cardlabel');top.addWidget(title,1);layout.addWidget(translated(desc,'subtle'))
+        for q in b.findChildren(QLabel):q.setAttribute(Qt.WA_TransparentForMouseEvents)
+        grid.addWidget(b,i//2,i%2);w.home_cards.append(b)
+    for col in range(2):grid.setColumnStretch(col,1)
+    body.addWidget(translated('hint','subtle'));body.addStretch();scroll.setWidget(home);w.pages.addWidget(scroll)
+    footer=frame('footer');fl=QHBoxLayout(footer);fl.setContentsMargins(24,9,24,9);w.status=translated('offline','connection');fl.addWidget(w.status,1);fl.addWidget(label('GITM · PREVIEW','subtle'));w.layout.addWidget(footer)
+    def state():
+        v=w.vehicle;title=' · '.join(str(v.get(k,'')) for k in ['make','model','year'] if v.get(k))
+        w.vehicle_summary.setText(title or t('لم تُحدد مركبة بعد','Aucun véhicule sélectionné','No vehicle selected yet'));w.session_label.setText(title or t('جلسة جديدة','Nouvelle session','New session'))
+        connected=bool(transport.LINK.info().get('connected'));w.metric_adapter.setText(t('متصل','Connecté','Connected') if connected else t('غير متصل','Déconnecté','Disconnected'))
+        try:
+            with store.db() as c:w.metric_reports.setText(str(c.execute('SELECT count(*) FROM reports').fetchone()[0]))
+            with wt.database() as c:w.metric_customers.setText(str(c.execute('SELECT count(*) FROM customers').fetchone()[0]))
+        except Exception:w.metric_reports.setText('—');w.metric_customers.setText('—')
+    w.session_timer=QTimer(w);w.session_timer.timeout.connect(state);w.session_timer.start(2500);state()
     def switch(index):
         change_language(['ar','fr','en'][index],w)
-        for widget,key in texts:
-            # Preserve real connection/task state when changing language.
-            if widget is not w.status:widget.setText(word(key))
+        for q,key in texts:
+            if q is not w.status:q.setText(word(key))
+        state()
     w.language_picker.currentIndexChanged.connect(switch)
     w.setStyleSheet('''
-      QWidget {background:#f3f5f9;color:#15243b;font-family:Tajawal;font-size:16px;}
-      QWidget#appHeader {background:#10243a;} #appHeader QLabel {background:transparent;color:#f7faff;}
-      QLabel#brand {font-family:DejaVu Sans;font-size:23px;font-weight:700;}
-      QWidget#appNav,QWidget#appFooter {background:#ffffff;border-bottom:1px solid #e2e8f0;}
-      QLabel#welcome {font-size:30px;font-weight:700;} QLabel#heading {font-size:26px;font-weight:700;}
-      QLabel#subtle {color:#596b82;background:transparent;font-size:15px;}
-      QLabel#connection {background:transparent;color:#596b82;}
-      QPushButton {background:#1468ba;color:#ffffff;border:1px solid #1468ba;border-radius:9px;padding:10px 16px;min-height:24px;}
-      QPushButton:hover {background:#0d559b;border-color:#0d559b;}
-      QPushButton:pressed {background:#0a427a;}
-      QPushButton:focus {border:2px solid #319ad9;}
-      QPushButton:disabled {background:#e4e9ef;color:#65748a;border-color:#d9e0e8;}
-      QPushButton#navButton {background:transparent;color:#344860;border:1px solid transparent;}
-      QPushButton#navButton:hover {background:#e9f2fb;color:#105b9d;}
-      QPushButton#card {background:#ffffff;color:#15243b;border:1px solid #dce4ed;border-radius:14px;padding:0;}
-      QPushButton#card:hover {background:#f7fbff;border:1px solid #70a8d6;}
-      QPushButton#card:pressed {background:#eaf3fc;}
-      QPushButton#card:focus {border:2px solid #1468ba;}
-      QLabel#cardlabel {background:transparent;font-size:19px;font-weight:700;}
-      QLineEdit,QTextEdit,QTextBrowser,QComboBox,QListWidget {background:#ffffff;color:#15243b;border:1px solid #c9d5e2;border-radius:8px;padding:9px;selection-background-color:#1468ba;}
-      QLineEdit:focus,QTextEdit:focus {border-color:#1468ba;}
-      QComboBox::drop-down {border:0;width:24px;}
-      QScrollArea {border:0;} QToolTip {background:#10243a;color:white;padding:8px;border:0;}
+      QWidget {background:#f1f4f8;color:#182b43;font-family:Tajawal;font-size:15px;}
+      QLabel {background:transparent;}
+      QFrame#header,QFrame#footer {background:#ffffff;border-bottom:1px solid #dfe5ed;}
+      QLabel#brand {color:#102d48;font-family:DejaVu Sans;font-size:20px;font-weight:700;}
+      QLabel#session {color:#60728a;font-size:14px;}
+      QFrame#sidebar,QScrollArea#sideScroll {background:#10263d;}
+      QLabel#sideCaption {color:#93a8bf;font-size:11px;letter-spacing:1px;}
+      QPushButton#navButton,QPushButton#sideTool {text-align:left;background:transparent;color:#c9d6e6;border:0;border-radius:9px;padding:10px 8px;min-height:26px;}
+      QPushButton#navButton:hover,QPushButton#sideTool:hover {background:#203c58;color:#ffffff;}
+      QPushButton#navButton:checked {background:#245581;color:#ffffff;}
+      QLabel#welcome {font-size:28px;font-weight:700;}
+      QLabel#heading {font-size:26px;font-weight:700;}
+      QLabel#subtle,QLabel#connection {color:#65768b;font-size:14px;}
+      QLabel#sectionTitle {font-size:19px;font-weight:700;}
+      QFrame#hero {background:#163955;border-radius:15px;}
+      QLabel#heroCaption {color:#9fbed7;font-size:13px;}
+      QLabel#heroTitle {color:#ffffff;font-size:25px;font-weight:700;}
+      QLabel#heroText {color:#bfd2e4;font-size:14px;}
+      QPushButton#heroAction {background:#ffffff;color:#164367;border:0;}
+      QFrame#metric {background:#ffffff;border:1px solid #e1e7ef;border-radius:12px;}
+      QLabel#metricValue {font-size:22px;font-weight:700;color:#173955;}
+      QPushButton {background:#186ab5;color:#ffffff;border:1px solid #186ab5;border-radius:8px;padding:9px 14px;min-height:24px;}
+      QPushButton:hover {background:#12548f;}
+      QPushButton:pressed {background:#103f6c;}
+      QPushButton:disabled {background:#e8edf3;color:#77879a;border-color:#dde4ec;}
+      QPushButton#card {background:#ffffff;color:#182b43;border:1px solid #e0e7ef;border-radius:12px;padding:0;}
+      QPushButton#card:hover {background:#f8fbff;border:1px solid #81b0d8;}
+      QLabel#cardlabel {font-size:18px;font-weight:700;}
+      QLineEdit,QTextEdit,QTextBrowser,QComboBox,QListWidget {background:#ffffff;color:#182b43;border:1px solid #d8e1eb;border-radius:8px;padding:9px;selection-background-color:#186ab5;}
+      QTableWidget {background:#ffffff;alternate-background-color:#f5f8fb;gridline-color:#e9eef4;border:1px solid #dce4ed;border-radius:8px;selection-background-color:#dcecff;selection-color:#163955;}
+      QHeaderView::section {background:#eaf0f6;border:0;border-bottom:1px solid #dce4ed;padding:10px;color:#4c6179;font-weight:700;}
+      QTableWidget::item {padding:9px;}
+      QComboBox::drop-down {border:0;width:22px;}
+      QScrollArea {border:0;background:transparent;}
+      QScrollBar:vertical {background:#e8edf3;width:8px;border:0;} QScrollBar::handle:vertical {background:#b8c7d7;border-radius:4px;min-height:30px;}
+      QToolTip {background:#10263d;color:white;padding:8px;border:0;}
     ''')
