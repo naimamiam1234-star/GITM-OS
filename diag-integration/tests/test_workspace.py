@@ -67,6 +67,13 @@ class WorkspaceTests(unittest.TestCase):
   def launch(fn,done):done(result)
   with patch('diagnostic_workspace.QMessageBox.question',return_value=QMessageBox.Yes),patch.object(self.ui,'launch',side_effect=launch):self.ui.clear()
   self.assertEqual(self.ui.report['status'],'partial');self.assertIn('permanent DTC not cleared',self.ui.report['clear_action']['scope']);self.assertEqual(self.ui.report['clear_action']['before_id'],'before');self.assertIn('Missing 7E9 acknowledgement',self.ui.summary.toPlainText());self.assertEqual(self.ui.report['errors'][0]['section'],'clear-operation')
+ def test_localized_acquisition_readiness_and_readable_times(self):
+  from unittest.mock import patch
+  report={'status':'complete','started_at':'2026-10-11T12:34:56.123456+00:00','adapter':{'connected':True,'adapter':'elm','target':'127.0.0.1:35000'},'ecus':[{'id':'7E8','supported_pids':[12],'dtc':{'stored':{'status':'ok','codes':['P0100']}},'readiness':{'MIL':False,'monitors':[{'name':'Catalyst','supported':False,'complete':None}]}}]}
+  with patch('diagnostic_workspace.language',return_value='ar'):
+   self.ui.display(report);self.assertEqual(self.ui.dtc.item(0,1).text(),'مخزن');self.assertEqual(self.ui.dtc.item(0,2).text(),'قراءة ناجحة');self.assertEqual(self.ui.ready.item(0,1).text(),'لا');self.assertEqual(self.ui.ready.item(0,5).text(),'غير مدعوم')
+   self.ui.live_result([{'ecu':'7E8','pid':12,'value':1000,'at':'2026-10-11T12:34:56.123456+00:00'}]);self.assertEqual(self.ui.live_table.item(0,0).text(),'12:34:56 UTC');self.assertEqual(self.ui.samples[-1]['at'],'2026-10-11T12:34:56.123456+00:00')
+  summary=self.ui.summary.toPlainText();self.assertNotIn('True',summary);self.assertIn('2026-10-11 12:34:56 UTC',summary)
  def test_recorded_csv_export(self):
   import tempfile,csv,io
   from unittest.mock import patch

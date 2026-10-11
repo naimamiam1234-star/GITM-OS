@@ -26,7 +26,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: GITM-Plasma6-preview-amd64
-          run-id: '38147123388'
+          run-id: '38169660608'
           github-token: ${{ github.token }}
           path: input
       - name: Repack existing Ubuntu 26.04 image

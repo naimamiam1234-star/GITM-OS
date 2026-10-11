@@ -30,6 +30,14 @@ class Frames(unittest.TestCase):
   self.assertEqual(r['engine_type'],'compression_ignition')
   self.assertFalse(next(m for m in r['monitors'] if m['name']=='Exhaust gas sensor')['complete'])
 
+ def test_unsupported_readiness_is_not_reported_complete(self):
+  for raw in ('00000000','00080000'):
+   r=readiness(bytes.fromhex(raw))
+   self.assertTrue(r['monitors'])
+   for monitor in r['monitors']:
+    self.assertFalse(monitor['supported'])
+    self.assertIsNone(monitor['complete'])
+
 class TCP(unittest.TestCase):
  def setUp(self):
   self.server=Simulator();self.server.start();self.link=Link();self.link.connect('wifi',f'127.0.0.1:{self.server.port}',family='elm');self.session=Session(self.link)

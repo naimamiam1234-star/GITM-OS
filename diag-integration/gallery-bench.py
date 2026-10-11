@@ -1,6 +1,10 @@
 """Extend actual guest gallery with clearly identified simulator results."""
 def setup(w,steps,emit):
     import transport
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QApplication
+    from i18n import language
+    QApplication.instance().setLayoutDirection(Qt.RightToLeft if language()=="ar" else Qt.LeftToRight)
     from obd_simulator import Simulator
     def scan():
         w.fixture=Simulator().start()

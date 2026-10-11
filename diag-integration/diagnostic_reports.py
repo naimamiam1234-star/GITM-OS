@@ -26,7 +26,7 @@ def html_report(report):
    for code in result.get('codes',[]) or ['None reported' if result.get('status')=='ok' else 'Unavailable']:dtcs.append([kind,result.get('status'),code,result.get('error','')])
   sections.append('<h3>Diagnostic trouble codes</h3>'+table(['Class','Acquisition','Code','Error'],dtcs))
   ready=ecu.get('readiness') or {}
-  sections.append('<h3>Readiness</h3><p>MIL: '+e(ready.get('MIL'))+' · Stored DTC count: '+e(ready.get('stored_dtc_count'))+' · Engine type: '+e(ready.get('engine_type'))+'</p>'+table(['Monitor','Supported','Complete'],[[m.get('name'),m.get('supported'),m.get('complete')] for m in ready.get('monitors',[])]))
+  sections.append('<h3>Readiness</h3><p>MIL: '+e(ready.get('MIL'))+' · Stored DTC count: '+e(ready.get('stored_dtc_count'))+' · Engine type: '+e(ready.get('engine_type'))+'</p>'+table(['Monitor','Supported','Complete'],[[m.get('name'),'Yes' if m.get('supported') else 'No','Not supported' if m.get('supported') is False else m.get('complete')] for m in ready.get('monitors',[])]))
   frame=ecu.get('freeze') or {}
   sections.append('<h3>Freeze frame '+e(frame.get('frame'))+'</h3><p>Trigger DTC: '+e(', '.join(frame.get('trigger_dtc',[])))+'</p>'+table(['PID','Parameter','Value','Unit'],[[v.get('pid'),v.get('name'),v.get('value'),v.get('unit')] for v in frame.get('values',[])]))
   if ecu.get('errors'):sections.append('<h3>ECU acquisition errors</h3><ul>'+''.join('<li>'+e(error)+'</li>' for error in ecu['errors'])+'</ul>')

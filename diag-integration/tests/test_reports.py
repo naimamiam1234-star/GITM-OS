@@ -12,6 +12,10 @@ class Reports(unittest.TestCase):
  def test_html_includes_live_samples(self):
   text=html_report({'live':[{'session_id':'session-A','evidence':'simulator','ecu':'7E8','pid':12,'name':'unique_parameter','value':9876,'unit':'rpm'}]})
   self.assertIn('unique_parameter',text);self.assertIn('9876',text);self.assertIn('session-A',text)
+ def test_unsupported_monitor_has_no_completion_claim(self):
+  text=html_report({'ecus':[{'id':'7E8','readiness':{'monitors':[{'name':'Unsupported fixture','supported':False,'complete':None}]}}]})
+  self.assertIn('Not supported',text)
+  self.assertIn('Unsupported fixture',text)
  def test_csv(self):
   text=export_csv([{'ecu':'7E8','pid':12,'name':'RPM','value':900,'unit':'rpm','at':'now'},{'ecu':'7E8','pid':13,'error':'No data'}])
   self.assertIn('900',text);self.assertIn('No data',text)

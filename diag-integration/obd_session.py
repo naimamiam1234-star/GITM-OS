@@ -82,9 +82,9 @@ def decode_pid(pid,data):
 def readiness(data):
     if len(data)!=4:raise ValueError('Readiness requires four bytes')
     a,b,c,d=data; diesel=bool(b&8)
-    monitors=[{'name':name,'supported':bool(b&(1<<i)),'complete':not bool(b&(1<<(i+4)))} for i,name in enumerate(('Misfire','Fuel system','Components'))]
+    monitors=[{'name':name,'supported':bool(b&(1<<i)),'complete':not bool(b&(1<<(i+4))) if b&(1<<i) else None} for i,name in enumerate(('Misfire','Fuel system','Components'))]
     names=('NMHC catalyst','NOx/SCR',None,'Boost pressure',None,'Exhaust gas sensor','Particulate filter','EGR/VVT') if diesel else ('Catalyst','Heated catalyst','Evaporative system','Secondary air','A/C refrigerant','Oxygen sensor','Oxygen heater','EGR/VVT')
-    monitors.extend({'name':name,'supported':bool(c&(1<<i)),'complete':not bool(d&(1<<i))} for i,name in enumerate(names) if name)
+    monitors.extend({'name':name,'supported':bool(c&(1<<i)),'complete':not bool(d&(1<<i)) if c&(1<<i) else None} for i,name in enumerate(names) if name)
     return {'MIL':bool(a&128),'stored_dtc_count':a&127,'engine_type':'compression_ignition' if diesel else 'spark_ignition','monitors':monitors,'raw':data.hex().upper()}
 
 def codes(data):
