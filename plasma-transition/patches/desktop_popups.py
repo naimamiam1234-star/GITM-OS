@@ -1,8 +1,8 @@
 """Anchored status popups backed by NetworkManager, BlueZ and PipeWire."""
 import time
-from PySide6.QtCore import Qt,QPoint,QSize,QTimer
+from PySide6.QtCore import Qt,QPoint,QSize,QTimer,QObject,QEvent
 from PySide6.QtGui import QPainter,QPainterPath,QColor,QPen
-from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,QSlider,QListWidget,QListWidgetItem,QLineEdit
+from PySide6.QtWidgets import QApplication,QDialog,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,QSlider,QListWidget,QListWidgetItem,QLineEdit
 from desktop_radios import fields,battery_info
 
 class StatusPopup(QDialog):
@@ -25,10 +25,29 @@ class StatusPopup(QDialog):
   if event.key()==Qt.Key_Escape:self.hide();return
   super().keyPressEvent(event)
 
-class Popups:
+class Popups(QObject):
  def __init__(self,desktop):
+  super().__init__(desktop)
   self.desktop=desktop;self.panels={};self.current=None
+  QApplication.instance().installEventFilter(self)
   self.control=self.create('control','مركز التحكم');self.build_control(self.control)
+ def eventFilter(self,receiver,event):
+  # X11 does not replay every outside popup click to the desktop below it.
+  # Route status-bar presses explicitly, while leaving ordinary outside clicks to Qt.
+  if event.type()!=QEvent.MouseButtonPress:return False
+  active=QApplication.activePopupWidget()
+  if not isinstance(active,StatusPopup) or active.owner is not self:return False
+  point=event.globalPosition().toPoint()
+  if active.geometry().contains(point):return False
+  anchors=[(key,self.desktop.status_buttons[key]) for key in ('volume','wifi','bluetooth')]
+  anchors += [('power',self.desktop.status_buttons['battery']),('control',self.desktop.status_buttons['chevron']),('power',self.desktop.power_button)]
+  for key,anchor in anchors:
+   local=anchor.mapFromGlobal(point)
+   if not anchor.rect().contains(local):continue
+   same=active.key==key;self.close()
+   if not same:QTimer.singleShot(0,lambda k=key,a=anchor:self.show(k,a,toggle=False))
+   return True
+  return False
  def create(self,key,title):
   p=StatusPopup(self,key);self.panels[key]=p
   h=QHBoxLayout();label=QLabel(title);label.setAlignment(Qt.AlignRight|Qt.AlignVCenter);label.setStyleSheet('font-size:21px;font-weight:bold');h.addWidget(label,1)
@@ -202,6 +221,7 @@ class Popups:
   def sync():
    from desktop_radios import state_icon
    light=self.desktop.appearance['mode']=='light'
+   for key in ('settings','camera','lock','volume','power','airplane'):self.tiles[key].setIcon(self.desktop.icon(key))
    for key,state in [('wifi',self.desktop.radios.wifi_state),('bluetooth',self.desktop.radios.bluetooth_state)]:
     on=state['kind'] in ('on','connected');self.tiles[key].setText(('Wi-Fi' if key=='wifi' else 'Bluetooth')+'\n'+('متصل' if state['kind']=='connected' else 'مفعّل' if on else 'غير متاح' if state['kind']=='missing' else 'متوقف' if state['kind']=='off' else 'جارٍ القراءة'))
     self.tiles[key].setIcon(state_icon(key,dict(state,light=light)))

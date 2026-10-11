@@ -4,7 +4,8 @@ from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path[:0]=[str(Path.cwd()/'plasma-transition/patches'),str(Path.cwd()/'patches')]
 from PySide6.QtWidgets import QApplication,QPushButton
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt,QEvent,QPointF
+from PySide6.QtGui import QMouseEvent
 from PySide6.QtTest import QTest
 from gitm_desktop import Desktop
 app=QApplication([]);w=Desktop();w.resize(1280,800);w.show();app.processEvents()
@@ -30,6 +31,12 @@ assert any(b.text()=='إلغاء' for b in app.activePopupWidget().findChildren(
 QTest.keyClick(app.activePopupWidget(),Qt.Key_Escape);app.processEvents();assert not launched
 w.toggle_control();app.processEvents();assert app.activePopupWidget()==w.control
 w.status_buttons['volume'].click();app.processEvents();assert not w.control.isVisible(),'Two panels remain open'
+assert sum(p.isVisible() for p in w.popups.panels.values())==1
+# Exercise the outside-press route that failed in the actual X11 guest.
+anchor=w.status_buttons['bluetooth'];position=anchor.mapToGlobal(anchor.rect().center())
+event=QMouseEvent(QEvent.MouseButtonPress,QPointF(0,0),QPointF(position),Qt.LeftButton,Qt.LeftButton,Qt.NoModifier)
+assert w.popups.eventFilter(app.activePopupWidget(),event)
+app.processEvents();assert app.activePopupWidget().key=='bluetooth'
 assert sum(p.isVisible() for p in w.popups.panels.values())==1
 app.activePopupWidget().hide();w.appearance['mode']='light';w.apply_appearance();w.toggle_control();app.processEvents()
 assert w.control.isVisible();assert 'لقطة شاشة' in [b.text() for b in w.control.findChildren(QPushButton)]

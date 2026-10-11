@@ -14,4 +14,4 @@ CPU: SSSE3, SSE4.1, SSE4.2 and POPCNT required by bundled Qt. Live changes requi
 
 ISO parts have per-part and whole-image SHA-256. The preview service streams the joined ISO with resume support; gallery images are actual guest captures.
 
-Screenshot tool: Ubuntu's kde-spectacle package supplies /usr/bin/spectacle.
+Screenshot utility comes from Ubuntu kde-spectacle. Status-bar presses are routed explicitly during an active popup to support one-click switching on X11.
