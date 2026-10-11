@@ -1,7 +1,7 @@
 """Boot the exact release ISO and exercise real mouse/keyboard input via QMP."""
 import base64,json,socket,subprocess,time
 from pathlib import Path
-from PIL import Image,ImageOps
+from PIL import Image,ImageOps,ImageChops,ImageStat
 
 iso=next(Path('download/iso').glob('*.iso')).resolve()
 out=Path('input-check').resolve();out.mkdir(exist_ok=True)
@@ -44,12 +44,10 @@ try:
   if sum(ImageStat.Stat(Image.open(initial).convert('RGB')).mean)>30:break
   assert time.monotonic()<visual_deadline,'Visible desktop marker emitted but framebuffer remains black'
   command('send-key',{'keys':[{'type':'qcode','data':'shift'}]});time.sleep(5)
- print('GITM_INPUT_BEFORE_PNG '+base64.b64encode(initial.read_bytes()).decode(),flush=True)
  width,height=Image.open(initial).size
  def move(x,y):
   command('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':round(x*32767/(width-1))}},{'type':'abs','data':{'axis':'y','value':round(y*32767/(height-1))}}]})
  move(width//2,height-1);time.sleep(2);move(width//2,height-40);time.sleep(1);dock=screenshot('dock-revealed')
- print('GITM_INPUT_DOCK_PNG '+base64.b64encode(dock.read_bytes()).decode(),flush=True)
  print('GITM_NATIVE_DOCK_CAPTURED',flush=True)
  command('input-send-event',{'events':[{'type':'abs','data':{'axis':'x','value':round(400*32767/width)}},{'type':'abs','data':{'axis':'y','value':round(203*32767/height)}}]})
  for down in (True,False):
@@ -60,7 +58,6 @@ try:
  for letter in 'calculator':key(letter)
  time.sleep(2)
  png=screenshot('keyboard-search')
- print('GITM_INPUT_AFTER_PNG '+base64.b64encode(png.read_bytes()).decode(),flush=True)
  crop=Image.open(png).crop((35,177,min(960,width-30),230)).convert('RGB')
  crop=ImageOps.grayscale(crop).resize((crop.width*3,crop.height*3));crop.save(out/'search-text.png')
  result=subprocess.run(['tesseract',str(out/'search-text.png'),'stdout','--psm','7','-l','eng'],capture_output=True,text=True,check=True)
@@ -68,9 +65,32 @@ try:
  assert 'calculator' in ''.join(c for c in result.stdout.casefold() if c.isalpha()),'Keyboard text not present in the actual search field: '+repr(result.stdout)
  print('GITM_KEYBOARD_SEARCH_OK',flush=True)
  key('esc');time.sleep(1);screenshot('escape-cleared-search')
+ def click(x,y):
+  move(x,y)
+  for down in (True,False):
+   command('input-send-event',{'events':[{'type':'btn','data':{'down':down,'button':'left'}}]});time.sleep(.15)
+ # Target the recorded 1280x800 desktop. Exclude clock, RAM ring and native dock.
+ assert (width,height)==(1280,800),'Update popup input coordinates for the actual framebuffer'
+ box=(420,80,1250,700)
+ baseline=Image.open(screenshot('popup-baseline')).crop(box).convert('RGB')
+ def difference(name):
+  image=Image.open(screenshot(name)).crop(box).convert('RGB')
+  return sum(ImageStat.Stat(ImageChops.difference(baseline,image)).mean)
+ for name,x in [('volume',693),('wifi',748),('bluetooth',803),('power',1226),('control',1028)]:
+  click(x,40);time.sleep(2)
+  assert difference('popup-'+name)>3,name+' icon did not visibly open its popup'
+  key('esc');time.sleep(.5)
+  assert difference('popup-'+name+'-escape')<3,name+' popup did not close on Escape'
+ click(693,40);time.sleep(1);click(803,40);time.sleep(1)
+ assert difference('popup-switched-bluetooth')>3,'A single click did not switch between status icons'
+ key('esc');time.sleep(.5)
+ click(803,40);time.sleep(1);click(450,690);time.sleep(.5)
+ assert difference('popup-outside-closed')<3,'Bluetooth popup did not close on outside click'
+ print('GITM_POPUP_MOUSE_ESCAPE_OUTSIDE_OK',flush=True)
  (out/'result.txt').write_text('Actual release ISO booted; mouse focused the home search; physical scancodes entered calculator; OCR verified its rendered text. Escape screenshot captured for visual review.\n')
 finally:
  print('GITM_INPUT_QEMU_LOG '+(out/'qemu.log').read_text(errors='replace'),flush=True)
  p.terminate()
  try:p.wait(timeout=10)
  except subprocess.TimeoutExpired:p.kill();p.wait()
+

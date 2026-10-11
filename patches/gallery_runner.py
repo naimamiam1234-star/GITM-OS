@@ -1,7 +1,7 @@
 """Opt-in gallery of actual desktop actions inside a disposable boot-test guest."""
 import json,subprocess,sys
 from pathlib import Path
-from PySide6.QtCore import QObject,QTimer,QProcess
+from PySide6.QtCore import QObject,QTimer,QProcess,Qt
 from PySide6.QtWidgets import QApplication,QMessageBox
 def emit(value):
  subprocess.run(['logger','-t','gitm-gallery',value],check=False)
@@ -16,12 +16,13 @@ class Gallery(QObject):
    ('control-center',w.toggle_control),
    ('wifi',lambda:w.status_buttons['wifi'].click()),
    ('bluetooth',lambda:w.status_buttons['bluetooth'].click()),
+   ('volume-popup',w.audio),
    ('battery-power',lambda:w.status_buttons['battery'].click()),
    ('search',lambda:w.search.setFocus()),
    ('sync',lambda:w.status_buttons['sync'].click()),
    ('settings',w.settings),('updates',w.updates),('appearance',w.choose_appearance),
    ('appearance-light',self.light_appearance),('desktop-light',lambda:None),
-   ('airplane-confirm',w.toggle_airplane),
+   ('control-center-light',self.light_control),
    ('suspend-confirm',lambda:w.confirm_power('suspend')),
    ('reboot-confirm',lambda:w.confirm_power('reboot')),
    ('shutdown-confirm',lambda:w.confirm_power('poweroff')),
@@ -32,6 +33,7 @@ class Gallery(QObject):
    self.steps.append((key,lambda k=key,c=cmd:w.launch(k,c)))
   if self.focused:self.steps=[step for step in self.steps if step[0] in {'desktop','app-browser','keyboard','system-updates'}]
  def cleanup(self):
+  self.w.popups.close()
   for dialog in list(self.w.dialogs):dialog.reject()
   for dialog in QApplication.topLevelWidgets():
    if isinstance(dialog,QMessageBox):
@@ -51,14 +53,22 @@ class Gallery(QObject):
    self.native=QProcess(self);self.native.setProgram(sys.executable);self.native.setArguments([str(Path(__file__).with_name('gallery_native.py'))])
    self.native.finished.connect(self.done);self.native.start();return
   name,fn=self.steps[self.index];self.index+=1
-  if name not in {'appearance-light','desktop-light'} and self.w.appearance['mode']!='dark':
+  if name not in {'appearance-light','desktop-light','control-center-light'} and self.w.appearance['mode']!='dark':
    self.w.appearance['mode']='dark';self.w.apply_appearance()
   QTimer.singleShot(10000 if name.startswith('app-') or name in {'screen-power','processes','accounts','system-updates'} else 4000,lambda:self.capture(name))
   try:fn()
   except Exception as e:emit('GITM_GALLERY_ERROR|'+name+'|'+str(e))
  def light_appearance(self):
   self.w.appearance['mode']='light';self.w.apply_appearance();self.w.choose_appearance()
+ def light_control(self):
+  self.w.appearance['mode']='light';self.w.apply_appearance();self.w.toggle_control()
  def capture(self,name):
+  popup_keys={'control-center':'control','control-center-light':'control','wifi':'wifi','bluetooth':'bluetooth','volume-popup':'volume','battery-power':'power','suspend-confirm':'power','reboot-confirm':'power','shutdown-confirm':'power'}
+  if name in popup_keys:
+   p=QApplication.activePopupWidget()
+   valid=p is not None and p.isVisible() and p.key==popup_keys[name] and bool(p.windowFlags() & Qt.FramelessWindowHint)
+   emit('GITM_POPUP|'+name+'|'+('PASS' if valid else 'FAIL'))
+   if not valid:emit('GITM_GALLERY_ERROR|'+name+'|Expected one frameless status popup')
   if name=='app-browser' and not any('Falkon' in line for line in windows()):
    emit('GITM_GALLERY_ERROR|app-browser|No actual Falkon window');self.done();return
   if name=='app-browser':
@@ -82,4 +92,5 @@ class Gallery(QObject):
   emit('GITM_GALLERY_DONE')
 def start(w):
  w.gallery=Gallery(w);w.gallery.next()
+
 

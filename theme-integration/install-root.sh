@@ -60,7 +60,7 @@ test "$(dpkg-query -W -f='${Installed-Size}' firefox)" -gt 50000
 FIREFOX
 install -m644 patches/desktop_radios.py "$root/opt/gitm/desktop_radios.py"
 install -m644 "$root/usr/share/icons/Papirus/64x64/apps/firefox.svg" "$root/opt/gitm/assets/desktop/browser.svg"
-for icon in suspend reboot; do install -m644 "theme-integration/$icon.svg" "$root/opt/gitm/assets/desktop/$icon.svg"; done
+for icon in suspend reboot lock; do install -m644 "theme-integration/$icon.svg" "$root/opt/gitm/assets/desktop/$icon.svg"; done
 install -m644 theme-integration/install.svg "$root/opt/gitm/assets/desktop/install.svg"
 mkdir -p "$root/etc/skel/.config"
 cat > "$root/etc/skel/.config/mimeapps.list" <<'MIME'
@@ -74,6 +74,7 @@ sed -i 's|^Icon=.*|Icon=/opt/gitm/assets/desktop/engine.svg|' "$root/usr/share/a
 sed -i '/^StartupWMClass=/d' "$root/usr/share/applications/gitm-autodiag.desktop"
 printf '\nStartupWMClass=gitm-autodiag\n' >> "$root/usr/share/applications/gitm-autodiag.desktop"
 install -m644 plasma-transition/patches/gitm_desktop.py "$root/opt/gitm/gitm_desktop.py"
+install -m644 plasma-transition/patches/desktop_popups.py "$root/opt/gitm/desktop_popups.py"
 install -D -m644 theme-integration/layout.js "$root/usr/share/plasma/look-and-feel/org.gitm.desktop/contents/layouts/org.kde.plasma.desktop-layout.js"
 # Seed matching native app style, decoration and icons, without upstream layout overrides.
 mkdir -p "$root/etc/skel/.config"
@@ -145,4 +146,5 @@ pos=s.index("        self.setWindowTitle(")
 s=s if "QApplication.setApplicationName('gitm-autodiag')" in s else s[:pos]+"        from PySide6.QtGui import QIcon\n        from pathlib import Path\n        QApplication.setDesktopFileName('gitm-autodiag')\n        QApplication.setApplicationName('gitm-autodiag')\n        self.setWindowIcon(QIcon(str(Path(__file__).parent/'assets/desktop/engine.svg')))\n"+s[pos:]
 p.write_text(s);compile(s,str(p),'exec')
 PY
+
 

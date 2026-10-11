@@ -107,7 +107,8 @@ class Radios(QObject):
    finally:p.deleteLater();self.next()
   p.finished.connect(finish)
   p.errorOccurred.connect(lambda error:finish(-1,None) if error==QProcess.FailedToStart else None)
-  timeout.start(12000 if 'list' in args else 4000);p.start(args[0],args[1:])
+  seconds=int(args[args.index('--timeout')+1]) if '--timeout' in args else 0
+  timeout.start(max(12000 if 'list' in args else 4000,(seconds+2)*1000));p.start(args[0],args[1:])
  def refresh(self):
   if self.busy or self.pending:return
   def wifi(ok,out):
@@ -142,8 +143,11 @@ class Radios(QObject):
    self.wifi_enabled=out.strip()=='enabled' if ok else True
    self.run(['nmcli','-t','-f','TYPE,STATE,CONNECTION','device'],wifi)
   self.run(['nmcli','radio','wifi'],radio)
-  self.run(['bluetoothctl','--timeout','2','show'],bluetooth)
+  if any(Path('/sys/class/bluetooth').glob('hci*')):self.run(['bluetoothctl','--timeout','2','show'],bluetooth)
+  else:self.bluetooth='غير متوفر';self.bluetooth_state={'kind':'missing'};self.changed.emit()
  def show(self,kind):
+  if hasattr(self.desktop,'popups'):
+   self.desktop.popups.show(kind);return
   title='شبكات Wi-Fi' if kind=='wifi' else 'أجهزة Bluetooth'
   for existing in self.desktop.dialogs:
    if existing.windowTitle()==title:existing.showNormal();existing.raise_();existing.activateWindow();return
@@ -194,5 +198,3 @@ class Radios(QObject):
      self.run(['bluetoothctl','--timeout','2','devices','Connected'],lambda ok2,out2:result(True,out+'\n---connected---\n'+(out2 if ok2 else '')))
     self.run(['bluetoothctl','--timeout','2','devices'],known)
   refresh.clicked.connect(scan);d.show();scan()
-
-

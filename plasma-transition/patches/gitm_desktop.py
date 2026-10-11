@@ -113,7 +113,7 @@ class Desktop(QWidget):
    b=QPushButton(title);b.setObjectName('nav');b.clicked.connect(fn);top.addWidget(b)
   top.addStretch()
   self.status_buttons={}
-  for key,title,fn in [('volume','الصوت',lambda:self.launch('audio',['pavucontrol'])),('wifi','Wi-Fi',lambda:self.radios.show('wifi')),('bluetooth','Bluetooth',self.bluetooth),('battery','البطارية',self.power),('sync','تحديث الحالة',lambda:self.radios.refresh()),('search','بحث',lambda:self.search.setFocus()),('chevron','مركز التحكم',self.toggle_control)]:
+  for key,title,fn in [('volume','الصوت',self.audio),('wifi','Wi-Fi',lambda:self.radios.show('wifi')),('bluetooth','Bluetooth',self.bluetooth),('battery','البطارية',self.power),('sync','تحديث الحالة',lambda:self.radios.refresh()),('search','بحث',lambda:self.search.setFocus()),('chevron','مركز التحكم',self.toggle_control)]:
    b=QPushButton();b.setIcon(self.icon(key));b.setIconSize(QSize(24,24));b.setFixedSize(42,40);b.setObjectName('nav');b.setToolTip(title);b.setAccessibleName(title);b.clicked.connect(fn);top.addWidget(b);self.status_buttons[key]=b
   self.status_buttons['chevron'].setCheckable(True)
   self.battery_label=QLabel();self.battery_label.setStyleSheet('font-size:13px');top.addWidget(self.battery_label)
@@ -134,22 +134,8 @@ class Desktop(QWidget):
    label=QLabel(name);label.setAlignment(Qt.AlignCenter);label.setWordWrap(True);label.setStyleSheet('font-weight:bold;font-size:16px');v.addWidget(label)
    grid.addWidget(card,i//5,i%5);self.tiles.append((name+' '+desc+' '+key,card))
   left.addWidget(container,1)
-  self.control=GlassPanel(self,self);self.control.setFixedWidth(340);right=QVBoxLayout(self.control);right.setContentsMargins(20,20,20,20);right.setSpacing(15)
-  control_title=QLabel('مركز التحكم');control_title.setStyleSheet('font-size:17px;font-weight:bold;color:#a9bbd2');right.addWidget(control_title)
-  radios=QGridLayout();right.addLayout(radios)
-  for i,(title,icon,fn) in enumerate([('Wi-Fi','wifi',lambda:self.radios.show('wifi')),('Bluetooth','bluetooth',self.bluetooth),('المظهر','settings',self.choose_appearance),('وضع الطيران','airplane',self.toggle_airplane)]):
-   v=QVBoxLayout();b=QPushButton();b.setIcon(self.icon(icon));b.setIconSize(QSize(40,40));b.setFixedSize(60,60);b.setObjectName('radio');self.control_radios[icon]=b;b.clicked.connect(fn);b.setAccessibleName(title);v.addWidget(b,0,Qt.AlignCenter)
-   label=QLabel(title);label.setAlignment(Qt.AlignCenter);label.setStyleSheet('font-size:13px');v.addWidget(label);radios.addLayout(v,0,i)
-  right.addWidget(self.divider())
-  light=QHBoxLayout();light.addWidget(QLabel('☀'));self.brightness=QSlider(Qt.Horizontal);self.brightness.setRange(5,100);self.brightness.setValue(70)
-  import system_settings
-  self.brightness.setEnabled(bool(system_settings.brightness_devices()));self.brightness.setToolTip('السطوع' if self.brightness.isEnabled() else 'العتاد لا يوفر تحكمًا بالسطوع');self.brightness.sliderReleased.connect(self.apply_brightness);light.addWidget(self.brightness);light.addWidget(QLabel('☀'));right.addLayout(light)
-  tools=QGridLayout();right.addLayout(tools)
-  for i,(label,icon,key,cmd) in enumerate([('الشاشة','display','display',['systemsettings','kcm_kscreen']),('الصوت','volume','sound',['systemsettings','kcm_pulseaudio']),('لوحة المفاتيح','keyboard','keyboard',['onboard']),('الطاقة','battery','power-settings',['systemsettings','kcm_powerdevilprofilesconfig'])]):
-   b=QPushButton(label);b.setIcon(self.icon(icon));b.setIconSize(QSize(24,24));b.setMinimumHeight(60);b.setStyleSheet('padding:8px;font-size:13px;background:rgba(25,38,56,155);border:1px solid #344054;border-radius:12px');b.clicked.connect(lambda checked=False,k=key,c=cmd:self.launch(k,c));tools.addWidget(b,i//2,i%2)
-  right.addWidget(self.divider())
-  self.settings_button=QPushButton('كل الإعدادات  ›');self.settings_button.clicked.connect(self.settings);right.addWidget(self.settings_button);right.addStretch()
-  self.control.hide()
+  from desktop_popups import Popups
+  self.popups=Popups(self);self.control=self.popups.control
   outer.addLayout(content,1)
   self.system_panel=GlassPanel(self);self.system_panel.setFixedSize(260,260)
   sl=QVBoxLayout(self.system_panel);sl.setContentsMargins(16,16,16,16);sl.setSpacing(12)
@@ -217,24 +203,19 @@ class Desktop(QWidget):
   self.apply_appearance()
  def keyPressEvent(self,event):
   if event.key()==Qt.Key_Escape:
-   self.control.hide();self.status_buttons['chevron'].setChecked(False);self.search.clear();return
+   self.popups.close();self.search.clear();return
   if event.key()==Qt.Key_F and event.modifiers() & Qt.ControlModifier:self.search.setFocus();return
   super().keyPressEvent(event)
  def toggle_control(self):
-  visible=not self.control.isVisible();self.control.setVisible(visible);self.status_buttons['chevron'].setChecked(visible)
-  self.position_control();self.control.raise_()
-  previous=getattr(self,'control_motion',None)
-  if previous:previous.stop()
-  if visible and not self.appearance['reduce_motion'] and not self.appearance['performance']:
-   end=self.control.pos();self.control.move(end+QPoint(0,-18))
-   self.control_motion=QPropertyAnimation(self.control,b'pos',self);self.control_motion.setDuration(180);self.control_motion.setStartValue(self.control.pos());self.control_motion.setEndValue(end);self.control_motion.setEasingCurve(QEasingCurve.OutCubic);self.control_motion.start()
+  self.popups.show('control')
  def position_control(self):
-  self.control.setGeometry(max(8,self.width()-self.control.width()-28),68,self.control.width(),min(540,self.height()-86))
+  if hasattr(self,'popups') and self.control.isVisible():self.popups.place(self.control,self.status_buttons['chevron'])
  def refresh_radios(self):
   from desktop_radios import battery_info,state_icon
   for key,state in [('volume',self.radios.audio_state),('wifi',self.radios.wifi_state),('bluetooth',self.radios.bluetooth_state)]:
    icon=state_icon(key,dict(state,light=self.appearance['mode']=='light'));self.status_buttons[key].setIcon(icon)
    if key in self.control_radios:self.control_radios[key].setIcon(icon)
+  if hasattr(self,'popups'):self.popups.refresh()
   audio=self.radios.audio_state
   self.status_buttons['volume'].setToolTip('الصوت · '+('مكتوم' if audio.get('mute') else str(audio['percent'])+'%' if audio.get('kind')=='on' else 'غير متاح'))
   self.status_buttons['wifi'].setToolTip('Wi-Fi · '+self.radios.wifi)
@@ -267,7 +248,7 @@ class Desktop(QWidget):
   if not p.exists():p=ROOT/'assets/tools'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/'settings.svg'
   icon=QIcon(str(p))
-  if name in ('search','chevron','power','volume','suspend','reboot') and self.appearance['mode']=='light':
+  if name in ('search','chevron','power','volume','suspend','reboot','lock') and self.appearance['mode']=='light':
    pixmap=icon.pixmap(32,32);painter=QPainter(pixmap);painter.setCompositionMode(QPainter.CompositionMode_SourceIn);painter.fillRect(pixmap.rect(),QColor('#405978'));painter.end();return QIcon(pixmap)
   return icon
  def resizeEvent(self,event):
@@ -389,10 +370,11 @@ class Desktop(QWidget):
  def action(self,v,title,key,command):
   b=QPushButton(title);b.setEnabled(bool(shutil.which(command[0])));b.setToolTip(' '.join(command));b.clicked.connect(lambda:self.launch(key,command));v.addWidget(b);return b
  def bluetooth(self):
-  self.control.hide();self.status_buttons['chevron'].setChecked(False)
-  self.launch('settings',['systemsettings','kcm_bluetooth'])
+  self.popups.show('bluetooth')
+ def audio(self):
+  self.popups.show('volume')
  def settings(self):
-  self.control.hide();self.status_buttons['chevron'].setChecked(False)
+  self.popups.close()
   self.launch('settings',['systemsettings'])
  def system_information(self):
   d,v=self.panel('حول GITM OS');d.setLayoutDirection(Qt.RightToLeft)
@@ -417,16 +399,9 @@ class Desktop(QWidget):
   b=QPushButton('فتح تحديثات AutoDiag الموقعة');b.clicked.connect(lambda:self.launch('autodiag',[sys.executable,str(ROOT/'start_release.py'),'--windowed','--skip-intro','--tool','update']));v.addWidget(b)
   d.show()
  def power(self):
-  for existing in self.dialogs:
-   if existing.windowTitle()=='خيارات الطاقة':existing.showNormal();existing.raise_();existing.activateWindow();return
-  d,v=self.panel('خيارات الطاقة');d.setWindowIcon(self.icon('power'))
-  for label,action in [('تعليق الجهاز','suspend'),('إعادة التشغيل','reboot'),('إيقاف التشغيل','poweroff')]:
-   b=QPushButton(label);b.setIcon(self.icon({'suspend':'suspend','reboot':'reboot','poweroff':'power'}[action]));b.setIconSize(QSize(28,28));b.clicked.connect(lambda checked=False,a=action:self.confirm_power(a));v.addWidget(b)
-  d.show()
+  self.popups.show('power')
  def confirm_power(self,action):
-  label={'suspend':'تعليق الجهاز','reboot':'إعادة التشغيل','poweroff':'إيقاف التشغيل'}[action]
-  box=QMessageBox(self);box.setWindowTitle(label);box.setText(label+'؟ احفظ عملك أولًا.');box.setStandardButtons(QMessageBox.Yes|QMessageBox.Cancel);box.button(QMessageBox.Yes).setText(label);box.button(QMessageBox.Cancel).setText('إلغاء');box.setDefaultButton(QMessageBox.Cancel)
-  if box.exec()==QMessageBox.Yes:self.launch('power',['systemctl',action])
+  self.popups.confirm_power(action)
  def closeEvent(self,event):
   if any(p.state()!=QProcess.NotRunning for p in self.processes.values()):
    QMessageBox.information(self,'GITM','أغلق التطبيقات المفتوحة قبل إنهاء الجلسة.');event.ignore()
