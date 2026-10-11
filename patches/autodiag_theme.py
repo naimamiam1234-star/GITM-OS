@@ -16,7 +16,8 @@ WORDS={
  'diagnosis':('التشخيص','Diagnostic','Diagnostics'),
  'assistant':('المساعد','Assistant','Assistant'),
  'settings':('الإعدادات','Réglages','Settings'),
- 'tools':('أدوات الورشة','Outils atelier','Workshop tools'),
+ 'tools':('العملاء','Clients','Customers'),
+ 'invoice':('الفواتير','Factures','Invoices'),
  'connect':('الاتصال بالمحول','Connexion VCI','Connect VCI'),
  'offline':('المحول غير متصل','VCI déconnecté','VCI disconnected'),
  'hint':('تُحدَّد الوظائف حسب السيارة والمحول والتعريفات المتاحة.','Les fonctions dépendent du véhicule, du VCI et des définitions disponibles.','Functions depend on the vehicle, adapter and available definitions.'),
@@ -58,6 +59,9 @@ def icon(key):
 
 def setup(w):
     for f in (ROOT/'assets').glob('Tajawal-*.ttf'):QFontDatabase.addApplicationFont(str(f))
+    from autodiag_experience import install
+    install(w)
+    import workshop_tools
     w.design_scale=1
     texts=[]
     def label(key,obj=''):
@@ -69,7 +73,7 @@ def setup(w):
     w.language_picker.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);h.addWidget(w.language_picker)
     w.layout.addWidget(header)
     nav=QWidget();nav.setObjectName('appNav');n=QHBoxLayout(nav);n.setContentsMargins(24,8,24,8)
-    for key,callback in [('home',w.go_home),('vehicle',w.vehicle_page),('diagnosis',w.diagnosis_page),('assistant',w.ai_page),('tools',w.more_page),('settings',w.settings_page)]:
+    for key,callback in [('home',w.go_home),('vehicle',w.vehicle_page),('diagnosis',w.diagnosis_page),('assistant',w.ai_page),('tools',lambda:workshop_tools.customers(w)),('invoice',lambda:workshop_tools.invoices(w))]:
         b=QPushButton(word(key));b.setObjectName('navButton');b.clicked.connect(callback);texts.append((b,key));n.addWidget(b)
     n.addStretch();w.layout.addWidget(nav)
     w.pages=QStackedWidget();w.layout.addWidget(w.pages,1)
