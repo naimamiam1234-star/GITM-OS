@@ -13,16 +13,16 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       GH_TOKEN: ${{ github.token }}
-      SOURCE_RUN: '38094790367'
-      RELEASE_TAG: gitm-os-3.3.0-plasma5
+      SOURCE_RUN: '38138792325'
+      RELEASE_TAG: gitm-os-3.3.0-plasma6
     steps:
       - uses: actions/checkout@v4
       - name: Require successful source build
         run: |
-          for attempt in $(seq 1 60); do
+          for attempt in $(seq 1 120); do
             status=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .status)
             test "$status" = completed && break
             sleep 20
@@ -70,4 +70,4 @@ jobs:
           rm GITM-OS-Plasma6-amd64.iso
       - name: Publish development preview
         run: |
-          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title 'GITM OS — Native theme and floating dock preview' --notes-file release-tools/plasma-notes.md release-assets/*
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title 'GITM OS — Day-mode and system controls preview' --notes-file release-tools/plasma-notes.md release-assets/*
