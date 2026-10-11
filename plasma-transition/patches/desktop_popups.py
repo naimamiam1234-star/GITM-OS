@@ -221,7 +221,7 @@ class Popups(QObject):
   def sync():
    from desktop_radios import state_icon
    light=self.desktop.appearance['mode']=='light'
-   for key in ('settings','camera','lock','volume','power','airplane'):self.tiles[key].setIcon(self.desktop.icon(key))
+   for key in ('settings','camera','lock','power','airplane'):self.tiles[key].setIcon(self.desktop.icon(key))
    for key,state in [('wifi',self.desktop.radios.wifi_state),('bluetooth',self.desktop.radios.bluetooth_state)]:
     on=state['kind'] in ('on','connected');self.tiles[key].setText(('Wi-Fi' if key=='wifi' else 'Bluetooth')+'\n'+('متصل' if state['kind']=='connected' else 'مفعّل' if on else 'غير متاح' if state['kind']=='missing' else 'متوقف' if state['kind']=='off' else 'جارٍ القراءة'))
     self.tiles[key].setIcon(state_icon(key,dict(state,light=light)))
@@ -230,7 +230,7 @@ class Popups(QObject):
    off=all(s['kind'] in ('off','missing') for s in [self.desktop.radios.wifi_state,self.desktop.radios.bluetooth_state])
    self.tiles['airplane'].setText('وضع الطيران\n'+('الاتصالات متوقفة' if off else 'الاتصالات متاحة'))
    self.tiles['airplane'].setEnabled(any(s['kind'] in ('on','connected','off') for s in [self.desktop.radios.wifi_state,self.desktop.radios.bluetooth_state]))
-   audio=self.desktop.radios.audio_state;volume.setEnabled(audio.get('kind')=='on')
+   audio=self.desktop.radios.audio_state;volume.setEnabled(audio.get('kind')=='on');self.tiles['volume'].setIcon(state_icon('volume',dict(audio,light=light)))
    if not volume.isSliderDown():volume.setValue(min(100,audio.get('percent',0)))
   p.sync=sync
  def mode(self):

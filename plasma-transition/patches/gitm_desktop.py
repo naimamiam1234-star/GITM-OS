@@ -248,7 +248,7 @@ class Desktop(QWidget):
   if not p.exists():p=ROOT/'assets/tools'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/'settings.svg'
   icon=QIcon(str(p))
-  if name in ('search','chevron','power','volume','suspend','reboot','lock') and self.appearance['mode']=='light':
+  if name in ('search','chevron','power','suspend','reboot','lock') and self.appearance['mode']=='light':
    pixmap=icon.pixmap(32,32);painter=QPainter(pixmap);painter.setCompositionMode(QPainter.CompositionMode_SourceIn);painter.fillRect(pixmap.rect(),QColor('#405978'));painter.end();return QIcon(pixmap)
   return icon
  def resizeEvent(self,event):
