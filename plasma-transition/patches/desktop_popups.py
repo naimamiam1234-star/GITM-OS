@@ -1,4 +1,5 @@
 """Anchored status popups backed by NetworkManager, BlueZ and PipeWire."""
+import time
 from PySide6.QtCore import Qt,QPoint,QSize,QTimer
 from PySide6.QtGui import QPainter,QPainterPath,QColor,QPen
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,QSlider,QListWidget,QListWidgetItem,QLineEdit
@@ -18,6 +19,7 @@ class StatusPopup(QDialog):
   p.drawRoundedRect(self.rect().adjusted(1,1,-1,-1),20,20)
  def hideEvent(self,event):
   super().hideEvent(event)
+  if not getattr(self.owner,'closing',False):self.last_hide=time.monotonic()
   if self.key=='control':self.owner.desktop.status_buttons['chevron'].setChecked(False)
  def keyPressEvent(self,event):
   if event.key()==Qt.Key_Escape:self.hide();return
@@ -29,7 +31,7 @@ class Popups:
   self.control=self.create('control','مركز التحكم');self.build_control(self.control)
  def create(self,key,title):
   p=StatusPopup(self,key);self.panels[key]=p
-  h=QHBoxLayout();label=QLabel(title);label.setStyleSheet('font-size:21px;font-weight:bold');h.addWidget(label,1)
+  h=QHBoxLayout();label=QLabel(title);label.setAlignment(Qt.AlignRight|Qt.AlignVCenter);label.setStyleSheet('font-size:21px;font-weight:bold');h.addWidget(label,1)
   close=QPushButton('×');close.setFixedSize(40,40);close.setAccessibleName('إغلاق');close.clicked.connect(p.hide);h.addWidget(close);p.body.addLayout(h)
   return p
  def message(self,p,text=''):
@@ -39,7 +41,10 @@ class Popups:
   if icon:b.setIcon(self.desktop.icon(icon));b.setIconSize(QSize(24,24))
   b.clicked.connect(fn);p.body.addWidget(b);return b
  def close(self):
-  for p in self.panels.values():p.hide()
+  self.closing=True
+  try:
+   for p in self.panels.values():p.hide()
+  finally:self.closing=False
   self.current=None
  def place(self,p,anchor):
   area=anchor.screen().availableGeometry();p.adjustSize()
@@ -50,6 +55,7 @@ class Popups:
  def show(self,key,anchor=None,toggle=True):
   p=self.panels.get(key)
   if p and p.isVisible() and toggle:p.hide();self.current=None;return p
+  if p and toggle and time.monotonic()-getattr(p,'last_hide',0)<.15:return p
   if key=='power' and p and not p.isVisible() and getattr(p,'confirm_action',None):
    self.panels.pop(key);p.deleteLater();p=None
   self.close()
@@ -203,6 +209,7 @@ class Popups:
    self.tiles['settings'].setText('الوضع النهاري' if light else 'الوضع الليلي')
    off=all(s['kind'] in ('off','missing') for s in [self.desktop.radios.wifi_state,self.desktop.radios.bluetooth_state])
    self.tiles['airplane'].setText('وضع الطيران\n'+('الاتصالات متوقفة' if off else 'الاتصالات متاحة'))
+   self.tiles['airplane'].setEnabled(any(s['kind'] in ('on','connected','off') for s in [self.desktop.radios.wifi_state,self.desktop.radios.bluetooth_state]))
    audio=self.desktop.radios.audio_state;volume.setEnabled(audio.get('kind')=='on')
    if not volume.isSliderDown():volume.setValue(min(100,audio.get('percent',0)))
   p.sync=sync

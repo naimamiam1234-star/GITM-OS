@@ -83,6 +83,8 @@ try:
   assert difference('popup-'+name+'-escape')<3,name+' popup did not close on Escape'
  click(693,40);time.sleep(1);click(803,40);time.sleep(1)
  assert difference('popup-switched-bluetooth')>3,'A single click did not switch between status icons'
+ click(803,40);time.sleep(.5)
+ assert difference('popup-same-anchor-closed')<3,'Second click on the same anchor reopened the popup'
  key('esc');time.sleep(.5)
  click(803,40);time.sleep(1);click(450,690);time.sleep(.5)
  assert difference('popup-outside-closed')<3,'Bluetooth popup did not close on outside click'

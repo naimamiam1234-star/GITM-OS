@@ -15,7 +15,10 @@ popup=app.activePopupWidget()
 assert popup and popup.isVisible(),'No actual Qt popup for Bluetooth'
 assert popup.windowFlags() & Qt.FramelessWindowHint,'Popup has window decoration'
 assert popup.y()>=w.status_buttons['bluetooth'].mapToGlobal(w.status_buttons['bluetooth'].rect().bottomLeft()).y()
-QTest.keyClick(popup,Qt.Key_Escape);app.processEvents();assert not popup.isVisible()
+QTest.keyClick(popup,Qt.Key_Escape);app.processEvents();assert not popup.isVisible();QTest.qWait(200)
+# Qt closes an outside-clicked popup before replaying that click to its anchor.
+w.bluetooth();app.processEvents();popup=app.activePopupWidget();popup.hide();w.bluetooth();app.processEvents()
+assert not popup.isVisible(),'Replayed click reopened the same popup'
 for key in ('volume','wifi'):
  w.status_buttons[key].click();app.processEvents()
  assert app.activePopupWidget() and app.activePopupWidget().isVisible(),key+' did not open a popup'

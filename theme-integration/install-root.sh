@@ -29,7 +29,7 @@ fi
 chroot "$root" env DEBIAN_FRONTEND=noninteractive bash <<'FIREFOX'
 set -Eeuo pipefail
 apt-get update
-apt-get install -y ca-certificates curl gnupg pavucontrol pulseaudio-utils bluedevil plasma-nm x11-utils
+apt-get install -y ca-certificates curl gnupg pavucontrol pulseaudio-utils bluedevil plasma-nm x11-utils spectacle
 install -d -m755 /etc/apt/keyrings
 curl -fL --retry 3 https://packages.mozilla.org/apt/repo-signing-key.gpg -o /etc/apt/keyrings/packages.mozilla.org.asc
 fingerprint=$(gpg --batch --show-keys --with-colons /etc/apt/keyrings/packages.mozilla.org.asc | awk -F: '$1=="fpr" {print $10;exit}')
