@@ -13,3 +13,5 @@ Development preview: physical installation, update installation, wireless discov
 CPU: SSSE3, SSE4.1, SSE4.2 and POPCNT required by bundled Qt. Live changes require persistence or installation to survive reboot. Native dock is visible by default; optional auto-hide is not validated.
 
 ISO parts have per-part and whole-image SHA-256. The preview service streams the joined ISO with resume support; gallery images are actual guest captures.
+
+Screenshot tool: Ubuntu's kde-spectacle package supplies /usr/bin/spectacle.
