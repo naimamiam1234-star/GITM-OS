@@ -42,3 +42,29 @@ class ResourceTests(unittest.TestCase):
    page=resources.WiringWorkspace(self.window);self.pages.append(page);query.assert_not_called()
   self.assertEqual(page.table.rowCount(),16);self.assertEqual(page.table.item(15,0).text(),'16');self.assertTrue(any(word in page.scope.text().lower() for word in ('reference','référence','مرجع')));self.assertIn('CAN H',page.table.item(5,1).text())
 
+
+ def test_audit_counts_are_separate_from_catalog_claims(self):
+  audit={'bundled_libraries':[{'license_inspected':True},{'license_inspected':True}], 'tested_integrations':[{'tested':True}]}
+  page=resources.SourcesWorkspace(self.window,rows=[{'name':'Reference','integration_verified':False}],audit=audit);self.pages.append(page)
+  self.assertEqual(page.license_count.value_label.text(),'2')
+  self.assertEqual(page.software_count.value_label.text(),'1')
+  self.assertEqual(page.verified_count.value_label.text(),'0')
+ def test_audit_missing_is_not_positive_evidence(self):
+  with tempfile.TemporaryDirectory() as directory:
+   audit,error=resources.load_audit(Path(directory)/'missing.json');self.assertTrue(error);self.assertEqual(audit,{})
+ def test_audit_manifest_hashes_and_scope(self):
+  import hashlib
+  audit=json.loads((Path(resources.__file__).parent/'source_audit.json').read_text());base=Path(resources.__file__).resolve().parents[2]
+  self.assertEqual(audit['catalog']['record_count'],35)
+  self.assertEqual(audit['catalog']['verified_integrations'],0)
+  self.assertEqual(len(audit['bundled_libraries']),2)
+  for evidence in audit['evidence']:
+   self.assertEqual(hashlib.sha256((base/evidence['path']).read_bytes()).hexdigest(),evidence['sha256'])
+  self.assertTrue(all(row['integration_verified'] is False for row in resources.load_sources()[0]))
+
+ def test_odx_dependency_loading_is_real_and_offline(self):
+  import odx_engine
+  library=odx_engine.library()
+  self.assertEqual(library.__version__,'11.6.2')
+  self.assertTrue(callable(library.load_file))
+  self.assertIn('odx-vendor',library.__file__)

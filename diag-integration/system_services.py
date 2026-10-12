@@ -3,7 +3,7 @@ import sys,shutil,subprocess,os
 from pathlib import Path
 from PySide6.QtWidgets import QWidget,QVBoxLayout,QLabel,QMainWindow,QApplication
 from PySide6.QtCore import Qt
-from professional_components import triple as t,InfoCard,action_button,styles
+from professional_components import triple as t,InfoCard,action_button,styles,icon
 SERVICES={'calculator':('kcalc',('حاسبة النظام','Calculatrice système','System calculator')),'pdf':('okular',('قارئ PDF','Lecteur PDF','PDF reader')),'media':('vlc',('مشغل الوسائط','Lecteur multimédia','Media player')),'settings':('systemsettings',('إعدادات النظام','Paramètres système','System settings'))}
 
 def command(kind,path=None):
@@ -34,7 +34,7 @@ def show(window,kind):
 
 class ServiceWindow(QMainWindow):
  def __init__(self,kind):
-  super().__init__();self.kind=kind;self.task=None;self._obd_worker=None;self.vehicle={};self.setWindowTitle('GITM OS · '+('Camera' if kind=='camera' else 'Update Center'));self.resize(1000,720);self.setMinimumSize(700,500);self.pages=None;self.current=None;self.state_label=QLabel()
+  super().__init__();self.kind=kind;self.setWindowIcon(icon('camera' if kind=='camera' else 'update'));self.task=None;self._obd_worker=None;self.vehicle={};self.setWindowTitle('GITM OS · '+('Camera' if kind=='camera' else 'Update Center'));self.resize(1000,720);self.setMinimumSize(700,500);self.pages=None;self.current=None;self.state_label=QLabel()
   import system_settings
   pref=system_settings.preferences();dark=pref.get('theme')=='dark';self.setStyleSheet(styles(dark,pref.get('font_size',16)));self.build()
  def page(self,title):
@@ -46,7 +46,10 @@ class ServiceWindow(QMainWindow):
   out=QTextEdit();out.setReadOnly(True);l.addWidget(out);return out
  def build(self):
   if self.kind=='updates':__import__('update_workspace').show(self);return
-  from PySide6.QtMultimedia import QMediaDevices
+  try:
+   from PySide6.QtMultimedia import QMediaDevices
+  except ImportError:
+   l=self.page(t('كاميرا GITM OS','Caméra GITM OS','GITM OS camera'));card=InfoCard(t('واجهة الكاميرا غير متاحة','Backend caméra indisponible','Camera backend unavailable'));message=QLabel(t('واجهة QtMultimedia غير مثبتة. ثبّت دعم الوسائط للكاميرا ثم أعد المحاولة.','QtMultimedia est absent. Installer le support multimédia puis réessayer.','QtMultimedia is not installed. Install the camera multimedia support and retry.'));message.setWordWrap(True);card.body.addWidget(message);l.addWidget(card);l.addStretch();return
   if QMediaDevices.videoInputs():
    import workshop_tools
    getattr(workshop_tools,"_system_camera_backend",workshop_tools.camera)(self)
@@ -57,8 +60,11 @@ class ServiceWindow(QMainWindow):
  def closeEvent(self,event):
   if self._obd_worker is not None and self._obd_worker.isRunning():self._obd_worker.cancel.set();event.ignore();return
   if self.kind=='camera':
-   from PySide6.QtMultimedia import QCamera
-   for cam in self.findChildren(QCamera):cam.stop()
+   try:
+    from PySide6.QtMultimedia import QCamera
+   except ImportError:QCamera=None
+   if QCamera is not None:
+    for cam in self.findChildren(QCamera):cam.stop()
   event.accept()
 if __name__=='__main__':
  app=QApplication(sys.argv);from i18n import language
@@ -69,6 +75,7 @@ if __name__=='__main__':
  if socket.waitForConnected(300):socket.write(b'activate');socket.waitForBytesWritten(300);sys.exit(0)
  QLocalServer.removeServer(name);server=QLocalServer()
  if not server.listen(name):raise SystemExit('Could not start OS service')
+ app.setApplicationName('GITM Camera' if kind=='camera' else 'GITM Update Center');app.setDesktopFileName('gitm-camera' if kind=='camera' else 'gitm-update');app.setWindowIcon(icon('camera' if kind=='camera' else 'update'))
  app.setLayoutDirection(Qt.RightToLeft if language()=='ar' else Qt.LeftToRight);window=ServiceWindow(kind)
  def activate():
   peer=server.nextPendingConnection();peer.disconnectFromServer();peer.deleteLater();window.showNormal();window.raise_();window.activateWindow()

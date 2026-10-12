@@ -15,6 +15,37 @@ class Components(unittest.TestCase):
  def test_token_themes_have_opposite_surface_luminance(self):
   c=self.module();from PySide6.QtGui import QColor
   self.assertGreater(QColor(c.palette(False)['surface']).lightness(),QColor(c.palette(True)['surface']).lightness());self.assertIn('QPushButton:focus',c.styles(False,16))
+class ReadabilityTests(unittest.TestCase):
+ def test_rtl_selection_and_latin_cell_direction(self):
+  from professional_components import configure_table
+  from PySide6.QtWidgets import QTableWidgetItem,QStyleOptionViewItem
+  previous=app.layoutDirection();self.addCleanup(app.setLayoutDirection,previous);app.setLayoutDirection(Qt.RightToLeft)
+  table=QTableWidget(2,2);configure_table(table)
+  for row in range(2):
+   table.setItem(row,0,QTableWidgetItem('P0401'));table.setItem(row,1,QTableWidgetItem('عطل'))
+  table.resize(500,200);table.show();self.addCleanup(table.close);app.processEvents();table.selectRow(0)
+  self.assertEqual(len(table.selectedItems()),2)
+  table.selectRow(-1);self.assertEqual(len(table.selectedItems()),2)
+  table.selectRow(table.rowCount());self.assertEqual(len(table.selectedItems()),2)
+  from PySide6.QtTest import QTest
+  table.clearSelection()
+  QTest.mouseClick(table.viewport(),Qt.LeftButton,Qt.NoModifier,table.visualItemRect(table.item(0,0)).center())
+  self.assertEqual({(item.row(),item.column()) for item in table.selectedItems()},{(0,0),(0,1)})
+  QTest.keyClick(table,Qt.Key_Down)
+  self.assertEqual({(item.row(),item.column()) for item in table.selectedItems()},{(1,0),(1,1)})
+  for column,direction in ((0,Qt.LeftToRight),(1,Qt.RightToLeft)):
+   option=QStyleOptionViewItem();table.itemDelegate().initStyleOption(option,table.model().index(0,column));self.assertEqual(option.direction,direction)
+ def test_table_rows_follow_font_growth(self):
+  from professional_components import configure_table
+  table=QTableWidget(1,2);configure_table(table);before=table.rowHeight(0);font=table.font();font.setPixelSize(30);table.setFont(font);app.processEvents()
+  self.assertGreater(table.rowHeight(0),before);self.assertGreaterEqual(table.rowHeight(0),table.fontMetrics().height()+16)
+ def test_missing_multimedia_reports_backend_unavailable(self):
+  from unittest.mock import patch
+  from system_services import ServiceWindow
+  from PySide6.QtWidgets import QLabel
+  with patch.dict(sys.modules,{'PySide6.QtMultimedia':None}):
+   window=ServiceWindow('camera');self.addCleanup(window.close);text=' '.join(label.text() for label in window.findChildren(QLabel));self.assertIn('QtMultimedia',text);self.assertNotIn('No connected camera',text);window.close()
+
 if __name__=='__main__':unittest.main()
 
 class ShellTests(unittest.TestCase):
@@ -50,6 +81,13 @@ class ShellTests(unittest.TestCase):
    s.home();w.vehicle={'make':'B','model':'Second','year':2022,'engine':'Two','vin':'VIN-B'};s.navigate(key)
    for field in ui.fields:self.assertEqual(ui.fields[field].text(),str(w.vehicle[field]))
    w.vehicle={'make':'A','model':'First','year':2020,'engine':'One','vin':'VIN-A'}
+ def test_font_choices_preserve_other_preferences(self):
+  from unittest.mock import patch
+  import system_settings
+  prefs={'theme':'light','font_size':16,'motion':'reduced','custom':'kept'}
+  with patch.object(system_settings,'preferences',return_value=prefs),patch.object(system_settings,'save_preferences') as save:
+   w,s=self.shell();self.assertEqual([a.text() for a in s.font_menu.actions()],['16 px','18 px','20 px'])
+   s.set_font_size(20);self.assertEqual(save.call_args.args[0],{**prefs,'font_size':20});self.assertIn('font-size:20px',w.styleSheet())
  def test_four_geometry_targets_have_no_horizontal_overflow(self):
   w,s=self.shell()
   for width,height in ((1024,768),(1280,800),(1366,768),(1920,1080)):

@@ -22,13 +22,27 @@ def load_sources(path=None):
   return rows,''
  except (OSError,ValueError,TypeError) as exc:return [],str(exc)
 
+def load_audit(path=None):
+ if path is None:path=Path(__file__).parent/'source_audit.json'
+ try:
+  path=Path(path)
+  if path.stat().st_size>2*1024*1024:raise ValueError('Audit exceeds local read limit')
+  audit=json.loads(path.read_text(encoding='utf-8'))
+  if not isinstance(audit,dict) or any(not isinstance(audit.get(key,[]),list) for key in ('bundled_libraries','tested_integrations')):raise ValueError('Invalid audit schema')
+  return audit,''
+ except (OSError,ValueError,TypeError) as exc:return {},str(exc)
+
 class SourcesWorkspace(QWidget):
  launch=ConnectionWorkspace.launch
  error=ConnectionWorkspace.error
  def refresh_state(self):pass
- def __init__(self,window,rows=None):
+ def __init__(self,window,rows=None,audit=None):
   super().__init__();self.window=window;self.worker=None;self.actions=[];self.records,self.load_error=load_sources() if rows is None else (list(rows),'');self.filtered=[];root=QVBoxLayout(self)
-  summary=QHBoxLayout();root.addLayout(summary);count=MetricCard(t('المراجع','Références','Sources'),len(self.records));summary.addWidget(count);self.verified_count=MetricCard(t('دمج موثق','Intégrations vérifiées','Verified integrations'),sum(row.get('integration_verified') is True for row in self.records));summary.addWidget(self.verified_count)
+  summary=QHBoxLayout();root.addLayout(summary);count=MetricCard(t('روابط مرجعية','Liens de référence','Reference links'),len(self.records));summary.addWidget(count);self.verified_count=MetricCard(t('دمج مصادر موثق','Intégrations du catalogue vérifiées','Catalog integrations verified'),sum(row.get('integration_verified') is True for row in self.records));summary.addWidget(self.verified_count)
+  self.audit,self.audit_error=load_audit() if audit is None else (audit,'')
+  self.license_count=MetricCard(t('تراخيص مكتبات مفحوصة','Licences de bibliothèques inspectées','Bundled licenses inspected'),sum(row.get('license_inspected') is True for row in self.audit.get('bundled_libraries',[])));summary.addWidget(self.license_count)
+  self.software_count=MetricCard(t('فحوص برمجية ناجحة','Contrôles logiciels réussis','Software checks passed'),sum(row.get('tested') is True for row in self.audit.get('tested_integrations',[])));summary.addWidget(self.software_count)
+  self.audit_scope=QLabel(t('فحص البرنامج: تحميل تبعية ODX فقط؛ ليس اختبار سيارة. التراخيص تخص المكتبات، وليس بيانات المصنع.','Contrôle logiciel : chargement de la dépendance ODX seulement ; aucun test véhicule. Licences des bibliothèques, pas des données constructeur.','Software check: ODX dependency loading only; no vehicle test. Licenses cover libraries, not manufacturer data.')+(' '+self.audit_error if self.audit_error else ''));self.audit_scope.setWordWrap(True);root.addWidget(self.audit_scope)
   scope=QLabel(t('فهرس محلي. الروابط ووجود الملفات لا يثبتان دعم السيارة أو حق إعادة التوزيع.','Catalogue local. Liens et fichiers ne prouvent ni couverture véhicule ni droits de redistribution.','Local catalog. Links and bundled files do not establish vehicle coverage or redistribution rights.'));scope.setWordWrap(True);root.addWidget(scope)
   self.search=QLineEdit();self.search.setPlaceholderText(t('ابحث في المصادر','Rechercher les sources','Search sources'));root.addWidget(self.search);self.search.textChanged.connect(self.refresh)
   split=QSplitter();root.addWidget(split,1);self.table=QTableWidget(0,4);self.table.setHorizontalHeaderLabels([t('مصدر','Source','Source'),t('دمج موثق','Vérifié','Verified'),t('إعادة توزيع','Redistribution','Redistribution'),t('الحالة','État','Status')]);configure_table(self.table);self.table.setColumnWidth(0,165);self.table.setColumnWidth(1,85);self.table.setColumnWidth(2,150);split.addWidget(self.table)

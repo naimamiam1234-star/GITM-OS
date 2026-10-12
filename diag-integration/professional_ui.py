@@ -43,6 +43,11 @@ class Shell:
   self.lang=QComboBox();self.lang.addItems(['العربية','Français','English']);self.lang.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);self.lang.currentIndexChanged.connect(self.set_language);hl.addWidget(self.lang)
   self.appearance=action_button('◐');self.appearance.setAccessibleName(t('المظهر','Apparence','Appearance'));am=QMenu(self.appearance)
   for label,key in [(t('نهاري','Clair','Light'),'light'),(t('ليلي','Sombre','Dark'),'dark'),(t('تلقائي','Auto','Auto'),'auto')]:am.addAction(label,lambda key=key:self.set_theme(key))
+  am.addSeparator()
+  font_menu=am.addMenu(t('حجم الخط','Taille du texte','Text size'))
+  for size in (16,18,20):
+   action=font_menu.addAction(str(size)+' px');action.setCheckable(True);action.setChecked(self.font==size);action.triggered.connect(lambda checked=False,size=size:self.set_font_size(size))
+  self.font_menu=font_menu
   self.appearance.setMenu(am);self.appearance.setMaximumWidth(46);hl.addWidget(self.appearance)
   self.split=action_button('▥');self.split.setAccessibleName(t('تقسيم الشاشة','Écran partagé','Split screen'));sm=QMenu(self.split);sm.addAction(t('مقارنة تقريرين','Comparer deux rapports','Compare reports'),lambda:self.navigate('reports'));sm.addAction(t('الأعطال والبيانات الحية','DTC et données','DTC and live data'),self.split_view);unsupported=sm.addAction(t('سيارتان: دعم غير معتمد','Deux véhicules: non validé','Two vehicles: not validated'));unsupported.setEnabled(False);self.split.setMenu(sm);self.split.setMaximumWidth(46);hl.addWidget(self.split)
   self.bell=action_button('●');self.bell.setAccessibleName(t('الإشعارات','Notifications','Notifications'));nm=QMenu(self.bell);nm.aboutToShow.connect(self.alert_menu);self.bell.setMenu(nm);self.bell.setMaximumWidth(42);hl.addWidget(self.bell);outer.addWidget(header)
@@ -137,6 +142,13 @@ class Shell:
  def set_theme(self,key):
   import system_settings
   self.theme=key;system_settings.save_preferences({**system_settings.preferences(),'theme':key});self.apply_theme()
+ def set_font_size(self,size):
+  if size not in (16,18,20):raise ValueError('Unsupported text size')
+  import system_settings
+  system_settings.save_preferences({**system_settings.preferences(),'font_size':size})
+  self.font=size
+  for action in self.font_menu.actions():action.setChecked(action.text()==str(size)+' px')
+  self.apply_theme()
  def apply_theme(self):
   self.dark=self.theme=='dark' or self.theme=='auto' and (time.localtime().tm_hour>=19 or time.localtime().tm_hour<7);self.w.setProperty('gitmDark',self.dark);colors=palette(self.dark);pal=self.w.palette()
   for role,key in [(QPalette.Window,'background'),(QPalette.Base,'surface'),(QPalette.Text,'text'),(QPalette.WindowText,'text'),(QPalette.Button,'surface'),(QPalette.ButtonText,'text'),(QPalette.Highlight,'primary'),(QPalette.HighlightedText,'on_primary'),(QPalette.Mid,'muted')]:pal.setColor(role,QColor(colors[key]))

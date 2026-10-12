@@ -21,6 +21,7 @@ def patch_transport(code):
 def install(target):
     target=pathlib.Path(target);source=pathlib.Path(__file__).parent
     for name in MODULES:shutil.copy2(source/(name+'.py'),target/(name+'.py'))
+    shutil.copy2(source/'source_audit.json',target/'source_audit.json')
     p=target/'native.py';code=p.read_text()
     start=code.index('    def diagnosis_page(self):');end=code.index('    def toggle_live(self):',start)
     code=code[:start]+'''    def diagnosis_page(self):
@@ -48,7 +49,7 @@ def install(target):
     p=target/'transport.py';p.write_text(patch_transport(p.read_text()));py_compile.compile(str(p),doraise=True)
     for name in (*MODULES,'native'):py_compile.compile(str(target/(name+'.py')),doraise=True)
     docs=target/'diagnostic-docs';docs.mkdir(exist_ok=True)
-    for name in ('SOURCES.md','COVERAGE.md','QUICKSTART_AR.md'):shutil.copy2(source/name,docs/name)
+    for name in ('SOURCES.md','SOURCES_AUDIT.md','COVERAGE.md','QUICKSTART_AR.md'):shutil.copy2(source/name,docs/name)
     print('GITM_DIAGNOSTIC_OVERLAY_INSTALLED',flush=True)
 
 if __name__=='__main__':install(sys.argv[1])

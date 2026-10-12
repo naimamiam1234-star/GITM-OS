@@ -1,8 +1,9 @@
 """Shared native diagnostic design components. No adapter/network I/O."""
 from pathlib import Path
-from PySide6.QtCore import Qt,QSize,QByteArray
+import unicodedata
+from PySide6.QtCore import Qt,QSize,QByteArray,QObject,QEvent,QItemSelectionModel
 from PySide6.QtGui import QIcon,QPixmap,QPainter
-from PySide6.QtWidgets import QFrame,QVBoxLayout,QLabel,QPushButton,QTableWidget
+from PySide6.QtWidgets import QFrame,QVBoxLayout,QLabel,QPushButton,QTableWidget,QStyledItemDelegate
 from i18n import language
 
 TRANSLATIONS={}
@@ -48,5 +49,31 @@ def action_button(text,role='secondary',icon=None):
  b=QPushButton(text);b.setProperty('role',role);b.setMinimumHeight(40);b.setAccessibleName(text)
  if icon is not None:b.setIcon(icon if isinstance(icon,QIcon) else globals()['icon'](icon));b.setIconSize(QSize(22,22))
  return b
+class ReadableCells(QStyledItemDelegate):
+ def initStyleOption(self,option,index):
+  super().initStyleOption(option,index)
+  rtl=any(unicodedata.bidirectional(char) in ('R','AL') for char in option.text)
+  option.direction=Qt.RightToLeft if rtl else Qt.LeftToRight
+  option.displayAlignment=(Qt.AlignRight if rtl else Qt.AlignLeft)|Qt.AlignVCenter
+
+class TableReadability(QObject):
+ def __init__(self,table):
+  super().__init__(table);self.table=table;table.installEventFilter(self);self.resize_rows()
+ def resize_rows(self):
+  self.table.verticalHeader().setDefaultSectionSize(max(34,self.table.fontMetrics().height()+16))
+ def eventFilter(self,obj,event):
+  if event.type() in (QEvent.FontChange,QEvent.StyleChange,QEvent.Show):self.resize_rows()
+  return False
+
+def select_table_row(table,row):
+ # Qt's RTL selectRow geometry path can return no selection. Select the model
+ # row directly, retaining native selection signals and selectedItems().
+ if table.layoutDirection()!=Qt.RightToLeft:
+  return QTableWidget.selectRow(table,row)
+ if 0<=row<table.rowCount() and table.columnCount():
+  index=table.model().index(row,0)
+  table.selectionModel().setCurrentIndex(index,QItemSelectionModel.NoUpdate)
+  table.selectionModel().select(index,QItemSelectionModel.ClearAndSelect|QItemSelectionModel.Rows)
+
 def configure_table(table):
- table.setEditTriggers(QTableWidget.NoEditTriggers);table.setAlternatingRowColors(False);table.setSelectionBehavior(QTableWidget.SelectRows);table.horizontalHeader().setStretchLastSection(True);table.verticalHeader().setDefaultSectionSize(34);table.verticalHeader().hide();table.setSortingEnabled(False)
+ table.setEditTriggers(QTableWidget.NoEditTriggers);table.setAlternatingRowColors(False);table.setSelectionBehavior(QTableWidget.SelectRows);table.horizontalHeader().setStretchLastSection(True);table.verticalHeader().hide();table.setSortingEnabled(False);table.setItemDelegate(ReadableCells(table));table._readability=TableReadability(table);table.selectRow=lambda row:select_table_row(table,row)
