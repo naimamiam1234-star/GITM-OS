@@ -1,32 +1,32 @@
 {
   "name": "GITM-OS-Plasma6-amd64.iso",
-  "size": 3469848576,
-  "sha256": "338eab476cce1ee47f4dc651e6e927c3cc02829db96cf16529c32a91448857c8",
+  "size": 3485108224,
+  "sha256": "d5e7851cac398f2ed2aad2fe62e72913bfb5b0950fa048273b2aaa7d6a8e56be",
   "parts": [
     {
       "name": "GITM-OS-Plasma6-amd64.iso.part01",
       "size": 1572864000,
-      "sha256": "dea9810618f3fcd483e54b18e9b320294759052c5b62d5f8ab388fff8830154c",
-      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma11/GITM-OS-Plasma6-amd64.iso.part01"
+      "sha256": "6c9eddb0dc5dbf2869c1af71714902ed2565b24a34a1e05bd7199d5825192c44",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma14/GITM-OS-Plasma6-amd64.iso.part01"
     },
     {
       "name": "GITM-OS-Plasma6-amd64.iso.part02",
       "size": 1572864000,
-      "sha256": "5eba71ce0f9a82267affbd6f2e51a2ffc0616bbb4ff516dfb4690e6b435009c5",
-      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma11/GITM-OS-Plasma6-amd64.iso.part02"
+      "sha256": "cbc8f0c774bb77849a5d4c97d09d733baea04fcc03e1fb0c2edbf4a0421e88a6",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma14/GITM-OS-Plasma6-amd64.iso.part02"
     },
     {
       "name": "GITM-OS-Plasma6-amd64.iso.part03",
-      "size": 324120576,
-      "sha256": "3d9e07b0344281a8088a695d3c2b27470e5ea2e666d13616bec4bad5f01f06c4",
-      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma11/GITM-OS-Plasma6-amd64.iso.part03"
+      "size": 339380224,
+      "sha256": "58e2d45a4238d43fec107487ccbddfdaeb9ca7d8d9dd4617da4c21d2ed76f1c7",
+      "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma14/GITM-OS-Plasma6-amd64.iso.part03"
     }
   ],
   "boundary_offset": 1572863984,
-  "boundary_hex": "3a24c4be7c5acef9363ad2e7c81e940fcdb7b89c158922578c334637aeece0a8",
+  "boundary_hex": "5e0d68bf999134e5629b44054e892f68a377385868a2855e3fa933ba97378794",
   "tail_hex": "0000000000000000000000000000000000000000000000000000000000000000",
-  "build_commit": "7b67b1d154692133cd256e94e63ee9cf704207e1",
-  "boot_test_run": 38190430931,
+  "build_commit": "e883ea6002479695714a9229c4c0deae5a453c34",
+  "boot_test_run": 38286238342,
   "bios": "passed",
   "uefi": "passed",
   "settings_single_window": "verified",
@@ -50,13 +50,36 @@
   ],
   "gallery": {
     "images": 70,
-    "size": 39058817,
-    "sha256": "814c9f3dcec9e883795603ab715d0f2397f23ba654269edc79ff3e6e19feb79a",
-    "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma11/gallery.html",
-    "overview_url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma11/gallery-overview.png",
+    "size": 38339457,
+    "sha256": "f7f0e0f8419dfa5654ce8995146401046456961b77236e85f7ea41f1922571b2",
+    "url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma14/gallery.html",
+    "overview_url": "https://github.com/naimamiam1234-star/GITM-OS/releases/download/gitm-os-3.3.0-plasma14/gallery-overview.png",
     "capture_runs": [
-      38190430931,
-      38190430934
-    ]
+      38289500104,
+      38286238297
+    ],
+    "fixture_scope": "Original source14 ISO; transient test-only gallery cleanup minimizes installer and verifies hidden state before later frames"
+  },
+  "installed_disk_validation": {
+    "run": 38286238297,
+    "source_run": 38286238342,
+    "source_commit": "e883ea6002479695714a9229c4c0deae5a453c34",
+    "iso_sha256": "d5e7851cac398f2ed2aad2fe62e72913bfb5b0950fa048273b2aaa7d6a8e56be",
+    "firmware": {
+      "UEFI": {
+        "install": "passed",
+        "native_disk_boot": "passed",
+        "installed_autodiag_capture": "passed",
+        "iso_sha256": "d5e7851cac398f2ed2aad2fe62e72913bfb5b0950fa048273b2aaa7d6a8e56be",
+        "screenshot_sha256": "be51185db6896ae4f2fa241821e25b1f60c1a5fbc49dfb64a525c8163c59e463"
+      },
+      "BIOS": {
+        "install": "passed",
+        "native_disk_boot": "passed",
+        "installed_autodiag_capture": "passed",
+        "iso_sha256": "d5e7851cac398f2ed2aad2fe62e72913bfb5b0950fa048273b2aaa7d6a8e56be",
+        "screenshot_sha256": "be51185db6896ae4f2fa241821e25b1f60c1a5fbc49dfb64a525c8163c59e463"
+      }
+    }
   }
 }
