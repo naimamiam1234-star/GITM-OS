@@ -1,0 +1,87 @@
+name: Prepare isolated local ISO test chunks
+on:
+  push:
+    branches: [stability-install-20261012]
+    paths: [.github/workflows/iso-local-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  chunks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          run-id: '38190430931'
+          github-token: ${{ github.token }}
+          path: input
+      - name: Validate and split known ISO for connector transfer limit
+        run: |
+          iso=$(find input -name '*.iso' -print -quit)
+          test -n "$iso"
+          echo '338eab476cce1ee47f4dc651e6e927c3cc02829db96cf16529c32a91448857c8' "$iso" | sha256sum -c -
+          mkdir chunks
+          split -b 400M -d -a 2 "$iso" chunks/iso-part-
+          sha256sum chunks/iso-part-* > chunks/parts.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-00
+          path: chunks/iso-part-00
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-01
+          path: chunks/iso-part-01
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-02
+          path: chunks/iso-part-02
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-03
+          path: chunks/iso-part-03
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-04
+          path: chunks/iso-part-04
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-05
+          path: chunks/iso-part-05
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-06
+          path: chunks/iso-part-06
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-07
+          path: chunks/iso-part-07
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-part-08
+          path: chunks/iso-part-08
+          compression-level: 0
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GITM-ISO-test-parts-manifest
+          path: chunks/parts.sha256
+          retention-days: 3
