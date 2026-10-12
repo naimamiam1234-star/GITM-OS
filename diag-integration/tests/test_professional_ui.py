@@ -79,7 +79,7 @@ class ShellTests(unittest.TestCase):
    ui.fields['model'].setText('Unsaved draft');s.home();s.navigate(key)
    self.assertEqual(ui.fields['model'].text(),'Unsaved draft')
    s.home();w.vehicle={'make':'B','model':'Second','year':2022,'engine':'Two','vin':'VIN-B'};s.navigate(key)
-   for field in ui.fields:self.assertEqual(ui.fields[field].text(),str(w.vehicle[field]))
+   for field in ui.fields:self.assertEqual(ui.fields[field].text(),str(w.vehicle.get(field,'')))
    w.vehicle={'make':'A','model':'First','year':2020,'engine':'One','vin':'VIN-A'}
  def test_font_choices_preserve_other_preferences(self):
   from unittest.mock import patch
