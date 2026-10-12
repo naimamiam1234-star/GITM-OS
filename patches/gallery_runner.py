@@ -7,7 +7,8 @@ def emit(value):
  subprocess.run(['logger','-t','gitm-gallery',value],check=False)
 def windows():
  result=subprocess.run(['wmctrl','-lp'],capture_output=True,text=True,timeout=4)
- return [x for x in result.stdout.splitlines() if 'GITM OS' not in x]
+ # The installer is a native child, not the desktop. Include it in cleanup.
+ return [x for x in result.stdout.splitlines() if ('GITM OS' not in x or 'GITM OS Installer' in x)]
 class Gallery(QObject):
  def __init__(self,w):
   super().__init__(w);self.w=w;self.index=0;self.records=[];self.native=None;self.focused='gitm.gallery.browser=1' in Path('/proc/cmdline').read_text()
@@ -92,5 +93,6 @@ class Gallery(QObject):
   emit('GITM_GALLERY_DONE')
 def start(w):
  w.gallery=Gallery(w);w.gallery.next()
+
 
 

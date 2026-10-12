@@ -2,7 +2,7 @@ name: Integrate GITM native theme and dock
 on:
   push:
     branches: [main]
-    paths: ['plasma-fix/**', 'theme-integration/**', 'diag-integration/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-fix.yml']
+    paths: ['overlay/etc/calamares/**', 'plasma-fix/**', 'theme-integration/**', 'diag-integration/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-fix.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,13 +20,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for run_id in 38087917743 38087604415 38089192966 38087996356 $(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$GITHUB_SHA" --jq ' .workflow_runs[] | select(.name=="Build GITM Plasma 6 preview" or .name=="Build GITM development ISO") | .id'); do
+          for run_id in $(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$GITHUB_SHA" --jq ' .workflow_runs[] | select(.name=="Build GITM Plasma 6 preview" or .name=="Build GITM development ISO") | .id'); do
             gh api -X POST repos/${{ github.repository }}/actions/runs/$run_id/cancel || true
           done
       - uses: actions/download-artifact@v4
         with:
           name: GITM-Plasma6-preview-amd64
-          run-id: '38243707526'
+          run-id: '38248858347'
           github-token: ${{ github.token }}
           path: input
       - name: Repack existing Ubuntu 26.04 image

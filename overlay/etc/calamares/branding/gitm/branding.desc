@@ -5,6 +5,8 @@ strings:
  shortProductName: GITM
  version: '3.3.0 Integration Preview'
  shortVersion: '3.3.0'
+ versionedName: 'GITM OS 3.3.0 Preview'
+ shortVersionedName: 'GITM 3.3.0'
  bootloaderEntryName: GITM OS
  welcomeStyleCalamares: true
 images:

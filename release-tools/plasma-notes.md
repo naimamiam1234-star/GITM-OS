@@ -12,6 +12,6 @@ Verification before ISO assembly (must be reconfirmed by installed suite): 137 t
 
 Limits: no physical vehicle or USB/Bluetooth/BLE/CAN/camera validation. No universal OEM coding, flashing, active tests, 41 maintenance functions, TPMS, ADAS, keys or EV coverage. No OEM ECU database bundled. Invoice fields are configurable and do not certify accounting compliance. Bundled Qt requires SSSE3/SSE4.1/SSE4.2/POPCNT. Generic OBD covers emissions diagnostics. This is a development preview.
 
-Stability update: numeric live graph ticks and constant-value padding; 16/18/20px text choices; technical LTR cells within Arabic tables; separately audited bundled licenses and ODX dependency load. Installer startup investigation does not yet establish full disk installation.
+Stability update: numeric live graph ticks and constant-value padding; 16/18/20px text choices; technical LTR cells within Arabic tables; separately audited bundled licenses and ODX dependency load. A candidate-config BIOS installation and disk-only boot passed. The release publisher separately requires full BIOS/UEFI installation of this exact final ISO and AutoDiag startup as the installed non-root user before publication.
 
 Installer startup correction: Calamares branding now provides its required slideshow image list; actual disk-install evidence is recorded separately. Vehicle-brand logos fit their styled button content in both themes.

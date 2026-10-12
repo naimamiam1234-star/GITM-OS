@@ -8,6 +8,10 @@ source=$(find input -name '*.iso' -print -quit)
 xorriso -osirrox on -indev "$source" -extract /casper/filesystem.squashfs "$work/original.squashfs"
 unsquashfs -d "$work/root" "$work/original.squashfs"
 install -D -m644 overlay/etc/calamares/branding/gitm/branding.desc "$work/root/etc/calamares/branding/gitm/branding.desc"
+install -D -m644 overlay/etc/calamares/settings.conf "$work/root/etc/calamares/settings.conf"
+for config in partition welcome mount gitm-target-check gitm-initramfs; do
+  install -D -m644 "overlay/etc/calamares/modules/$config.conf" "$work/root/etc/calamares/modules/$config.conf"
+done
 install -m755 plasma-fix/gitm-desktop "$work/root/usr/local/bin/gitm-desktop"
 install -D -m600 plasma-fix/network-manager.yaml "$work/root/etc/netplan/01-gitm-network-manager.yaml"
 install -m755 plasma-fix/network-smoke.py "$work/root/usr/local/bin/gitm-network-smoke"
@@ -26,6 +30,9 @@ bash theme-integration/install-root.sh "$work/root"
 # Populate APT's AppStream catalogue after all desktop packages are installed.
 # Preserve these lists in the live image so Discover works on first launch.
 chroot "$work/root" apt-get update
+chroot "$work/root" env DEBIAN_FRONTEND=noninteractive apt-get install -y console-setup
+# Calamares uses ckbcomp to show real key labels in its keyboard preview.
+chroot "$work/root" ckbcomp us >/dev/null
 chroot "$work/root" appstreamcli refresh-cache --force
 chroot "$work/root" env LC_ALL=C appstreamcli status | python3 plasma-fix/check-catalog.py
 mksquashfs "$work/root" "$work/fixed.squashfs" -noappend -comp zstd -Xcompression-level 8 -processors 2

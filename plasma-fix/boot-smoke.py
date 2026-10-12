@@ -8,6 +8,13 @@ if gallery:
 for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
  qmp=root/(mode+'.qmp');serial=root/(mode+'-serial.log')
  args=['qemu-system-x86_64','-machine','q35,accel=kvm:tcg','-cpu','max','-m','4096','-smp','2','-cdrom',str(iso),'-boot','d','-display','none','-serial','file:'+str(serial),'-qmp','unix:'+str(qmp)+',server=on,wait=off','-device','virtio-vga']
+ if mode=='gallery':
+  # Give the actual installer an available disk without submitting its wizard.
+  # This fixture is never included in the release or connected to host storage.
+  fixture=root/'gallery-only-40GiB.qcow2'
+  if fixture.exists():raise RuntimeError('Refusing reuse of a gallery fixture disk')
+  subprocess.run(['qemu-img','create','-f','qcow2',str(fixture),'40G'],check=True)
+  args+=['-drive','file='+str(fixture)+',format=qcow2,if=virtio']
  if mode=='uefi':args+=['-drive','if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd']
  if mode=='gallery':args+=['-kernel',str(root/'gallery-vmlinuz'),'-initrd',str(root/'gallery-initrd'),'-append','boot=casper gitm.gallery=1 console=tty0 console=ttyS0,115200 ---']
  p=subprocess.Popen(args,stdout=subprocess.DEVNULL,stderr=(root/(mode+'-qemu.log')).open('w'))
@@ -72,5 +79,6 @@ for mode in (['bios','uefi','gallery'] if gallery else ['bios','uefi']):
   p.terminate()
   try:p.wait(timeout=10)
   except subprocess.TimeoutExpired:p.kill();p.wait()
+
 
 

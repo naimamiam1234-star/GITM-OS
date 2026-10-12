@@ -2,7 +2,7 @@ name: Publish verified Plasma 6 preview
 on:
   push:
     branches: [main]
-    paths: ['release-tools/**', 'diag-integration/**', 'theme-integration/**', 'plasma-fix/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-release.yml']
+    paths: ['install-validation/**', 'overlay/etc/calamares/**', 'release-tools/**', 'diag-integration/**', 'theme-integration/**', 'plasma-fix/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-release.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -13,27 +13,37 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 180
     env:
       GH_TOKEN: ${{ github.token }}
       SOURCE_RUN: 'auto'
-      RELEASE_TAG: gitm-os-3.3.0-plasma13
+      RELEASE_TAG: gitm-os-3.3.0-plasma14
     steps:
       - uses: actions/checkout@v4
       - name: Require successful source build
         run: |
-          for attempt in $(seq 1 120); do
+          verified=false
+          for attempt in $(seq 1 300); do
             if test "$SOURCE_RUN" = auto; then
-              resolved=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$GITHUB_SHA" --jq '.workflow_runs[] | select(.name=="Integrate GITM native theme and dock") | .id' | head -n1)
+              if ! resolved=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$GITHUB_SHA" --jq '.workflow_runs | map(select(.name=="Integrate GITM native theme and dock")) | first | .id // empty'); then
+                sleep 20; continue
+              fi
               if test -z "$resolved"; then sleep 20; continue; fi
               SOURCE_RUN=$resolved
               echo "SOURCE_RUN=$SOURCE_RUN" >> "$GITHUB_ENV"
             fi
-            status=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .status)
-            test "$status" = completed && break
+            if ! result=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN); then
+              sleep 20; continue
+            fi
+            test "$(printf '%s' "$result" | jq -r .head_sha)" = "$GITHUB_SHA"
+            status=$(printf '%s' "$result" | jq -r .status)
+            if test "$status" = completed; then
+              test "$(printf '%s' "$result" | jq -r .conclusion)" = success
+              verified=true; break
+            fi
             sleep 20
           done
-          test "$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .conclusion)" = success
+          test "$verified" = true
       - uses: actions/download-artifact@v4
         with:
           name: GITM-Plasma6-preview-amd64
@@ -49,7 +59,7 @@ jobs:
       - name: Validate ISO and guest evidence
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pil qemu-system-x86 tesseract-ocr
+          sudo apt-get install -y python3-pil qemu-system-x86 qemu-utils ovmf xorriso python3-zstandard tesseract-ocr
           python3 release-tools/verify-plasma.py
       - name: Verify actual desktop keyboard input
         run: sudo python3 release-tools/check-keyboard.py
@@ -58,9 +68,33 @@ jobs:
         with:
           name: GITM-Plasma6-input-validation
           path: input-check/
+      - name: Verify complete BIOS installation of the final ISO
+        run: |
+          source=$(find download/iso -type f -name '*.iso' -print -quit)
+          test -n "$source"
+          bash install-validation/prepare.sh "$source" dist/final-install-bios disk
+          sudo python3 install-validation/boot-install.py "$source" --output-root dist/final-install-bios
+      - name: Verify complete UEFI installation of the final ISO
+        run: |
+          source=$(find download/iso -type f -name '*.iso' -print -quit)
+          test -n "$source"
+          bash install-validation/prepare.sh "$source" dist/final-install-uefi disk
+          sudo python3 install-validation/boot-install.py "$source" --uefi --output-root dist/final-install-uefi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-FinalISO-disk-install-validation
+          path: |
+            dist/final-install-*/*.log
+            dist/final-install-*/*.txt
+            dist/final-install-*/*.png
+            dist/final-install-*/*.json
+            dist/final-install-*/*.sha256
+            dist/final-install-*/*-guest-evidence.tar.gz
+          retention-days: 30
       - name: Package verified preview
         run: |
-          mkdir release-assets dist
+          mkdir -p release-assets dist
           cp -a download/gallery dist/gallery
           cp input-check/dock-revealed.png dist/gallery/
           python3 release-tools/prepare-gallery.py
@@ -72,7 +106,7 @@ jobs:
           cp ../dist/gallery.html ../dist/gallery-overview.png .
           cp ../input-check/keyboard-search.png .
           sha256sum GITM-OS-Plasma6-amd64.iso.part* > parts.sha256
-          SOURCE_SHA=$(gh api repos/${{ github.repository }}/actions/runs/$SOURCE_RUN --jq .head_sha) python3 ../release-tools/manifest-plasma.py
+          SOURCE_SHA="$GITHUB_SHA" python3 ../release-tools/manifest-plasma.py
           rm GITM-OS-Plasma6-amd64.iso
       - name: Publish development preview
         run: |
