@@ -1,0 +1,49 @@
+name: GITM actual disk installation and native boot
+on:
+  push:
+    branches: [stability-install-20261012]
+    paths: ['install-validation/**', '.github/workflows/disk-install.yml']
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Source ISO artifact run (source13)
+        default: '38248858347'
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  disk-install:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          run-id: ${{ inputs.source_run || '38248858347' }}
+          github-token: ${{ github.token }}
+          path: input
+      - name: Install VM tools
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 qemu-utils xorriso python3-pil python3-zstandard
+      - name: Prepare ephemeral candidate configuration and helper
+        run: |
+          source=$(find input -type f -name '*.iso' -print -quit)
+          test -n "$source"
+          bash install-validation/prepare.sh "$source" dist/disk-install disk
+      - name: Install to fresh 40GiB disk and boot without ISO
+        run: |
+          source=$(find input -type f -name '*.iso' -print -quit)
+          sudo python3 install-validation/boot-install.py "$source"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-actual-disk-install-evidence
+          path: |
+            dist/disk-install/*.log
+            dist/disk-install/*.txt
+            dist/disk-install/*.png
+            dist/disk-install/*.json
+            dist/disk-install/*.sha256
+            dist/disk-install/*-guest-evidence.tar.gz
+          retention-days: 14
