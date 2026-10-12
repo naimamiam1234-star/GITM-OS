@@ -69,7 +69,7 @@ class Shell:
   w.close_guard=CloseGuard(w);w.professional_shell=self
   self.timer=QTimer(w);self.timer.setInterval(1000);self.timer.timeout.connect(self.refresh);self.timer.start()
   QShortcut(QKeySequence('F11'),w,activated=self.fullscreen);QShortcut(QKeySequence('Ctrl+K'),w,activated=self.search.setFocus)
-  self.apply_theme();self.refresh()
+  self.apply_theme();self.refresh();self.page_changed()
  def build_home(self):
   w=self.w;home=QWidget();body=QVBoxLayout(home);body.setContentsMargins(14,10,14,10);body.setSpacing(8);self.vehicle_card=InfoCard(t('السيارة الحالية','Véhicule actuel','Current vehicle'));self.vehicle_label=QLabel();self.vehicle_label.setWordWrap(True);self.vehicle_card.body.addWidget(self.vehicle_label);body.addWidget(self.vehicle_card)
   row=QHBoxLayout();allb=action_button(t('الكل','Tout','All'));allb.clicked.connect(lambda:self.select_group(None));row.addWidget(allb)
