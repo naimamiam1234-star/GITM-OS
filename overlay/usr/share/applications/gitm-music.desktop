@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM Media
-Exec=gitm-autodiag --tool music
-Icon=multimedia-player
-Categories=Utility;
-Terminal=false

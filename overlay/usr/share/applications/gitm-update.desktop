@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM Application Updates
-Exec=gitm-autodiag --tool update
-Icon=system-software-update
-Categories=Utility;
-Terminal=false

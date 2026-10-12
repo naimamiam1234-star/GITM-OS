@@ -1,0 +1,97 @@
+name: Publish reviewed source14 gallery recapture
+on:
+  push:
+    branches: [gallery-recapture-20261012]
+    paths: ['gallery-publication/**', '.github/workflows/gallery-republish.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: gitm-source14-gallery-republish
+  cancel-in-progress: false
+jobs:
+  gallery-republish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: gitm-os-3.3.0-plasma14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require exact successful capture, publisher, and source runs
+        run: |
+          mkdir -p download/runs
+          python3 - <<'PY'
+          import json,os,pathlib,subprocess,time
+          expected={38289500104:'546fd89b4bb619d9ec09760c959c48ea999feb3a',38286238297:'e883ea6002479695714a9229c4c0deae5a453c34',38286238342:'e883ea6002479695714a9229c4c0deae5a453c34'}
+          deadline=time.monotonic()+9000
+          pending=set(expected)
+          while pending:
+              for run in list(pending):
+                  r=subprocess.run(['gh','api',f'repos/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{run}'],capture_output=True,text=True)
+                  if r.returncode:
+                      print(f'Transient API failure for {run}; retrying',flush=True)
+                      continue
+                  data=json.loads(r.stdout)
+                  if data['id']!=run or data['head_sha']!=expected[run]:raise RuntimeError(f'Run {run} head mismatch')
+                  if data['status']=='completed':
+                      if data['conclusion']!='success':raise RuntimeError(f'Run {run} failed: {data["conclusion"]}')
+                      pathlib.Path(f'download/runs/{run}.json').write_text(r.stdout)
+                      pending.remove(run)
+              if pending:
+                  if time.monotonic()>deadline:raise RuntimeError('Evidence run wait timed out')
+                  time.sleep(20)
+          PY
+      - name: Download only required immutable evidence and manifest
+        run: |
+          download_with_retries() {
+            target=$1; shift
+            for attempt in 1 2 3 4; do
+              stage="$target.attempt-$attempt"
+              if "$@" --dir "$stage"; then mv "$stage" "$target"; return 0; fi
+              sleep 10
+            done
+            return 1
+          }
+          download_with_retries download/recapture gh run download 38289500104 --repo "$GITHUB_REPOSITORY" --name GITM-source14-gallery-recapture-evidence
+          download_with_retries download/input gh run download 38286238297 --repo "$GITHUB_REPOSITORY" --name GITM-Plasma6-input-validation
+          download_with_retries download/disk gh run download 38286238297 --repo "$GITHUB_REPOSITORY" --name GITM-FinalISO-disk-install-validation
+          download_with_retries download/manifest gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern plasma-manifest.json
+      - name: Gate exact ISO, installation proofs, and package 70 captures
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pil
+          python3 gallery-publication/repackage.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-source14-gallery-publication-review
+          path: |
+            release-assets/*
+            dist/gallery-publication-review.json
+            dist/gallery/guest-report.txt
+            download/runs/*.json
+          retention-days: 30
+      - name: Replace gallery assets and manifest only
+        run: |
+          uploaded=false
+          for attempt in 1 2 3 4; do
+            if gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --clobber release-assets/GITM-Plasma6-gallery.zip release-assets/gallery.html release-assets/gallery-overview.png release-assets/plasma-manifest.json; then
+              uploaded=true; break
+            fi
+            sleep 10
+          done
+          test "$uploaded" = true
+          python3 - <<'PYVERIFY'
+          import hashlib,json,os,pathlib,subprocess,time
+          expected={p.name:(p.stat().st_size,'sha256:'+hashlib.file_digest(p.open('rb'),'sha256').hexdigest()) for p in pathlib.Path('release-assets').iterdir()}
+          for attempt in range(12):
+              r=subprocess.run(['gh','api',f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases/tags/{os.environ["RELEASE_TAG"]}'],capture_output=True,text=True)
+              if r.returncode==0:
+                  assets={a['name']:(a['size'],a.get('digest')) for a in json.loads(r.stdout)['assets']}
+                  if all(assets.get(name)==value for name,value in expected.items()):break
+              time.sleep(5)
+          else:raise RuntimeError('Published gallery asset sizes/digests did not match')
+          print('PUBLISHED_GALLERY_ASSETS_SHA256_VERIFIED',flush=True)
+          PYVERIFY

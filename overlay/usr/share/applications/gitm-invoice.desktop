@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM Invoices
-Exec=gitm-autodiag --tool invoice
-Icon=view-financial-account
-Categories=Utility;
-Terminal=false

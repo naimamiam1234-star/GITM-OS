@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM OS — Plasma 6
-Exec=/usr/local/bin/gitm-session
-TryExec=/usr/bin/startplasma-x11
-DesktopNames=KDE;

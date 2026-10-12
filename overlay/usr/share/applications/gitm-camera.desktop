@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM USB Inspection Camera
-Exec=gitm-autodiag --tool camera
-Icon=camera-web
-Categories=Utility;
-Terminal=false

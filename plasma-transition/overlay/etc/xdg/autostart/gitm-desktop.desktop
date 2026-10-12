@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM Desktop
-Exec=/usr/local/bin/gitm-desktop
-OnlyShowIn=KDE;
-X-KDE-autostart-after=panel
-Terminal=false

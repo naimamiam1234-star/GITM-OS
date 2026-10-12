@@ -1,6 +1,0 @@
-#!/bin/sh
-if [ ! -d /cdrom/casper ]; then
- kdialog --error 'Installation is available only from the live USB.'
- exit 1
-fi
-exec pkexec /usr/bin/calamares

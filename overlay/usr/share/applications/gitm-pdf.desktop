@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=GITM Documents
-Exec=gitm-autodiag --tool pdf
-Icon=application-pdf
-Categories=Utility;
-Terminal=false

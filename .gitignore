@@ -1,8 +1,0 @@
-build-input/
-dist/
-__pycache__/
-*.pyc
-*.iso
-*.zip
-*.pem
-!overlay/usr/share/gitm/update-public.pem
