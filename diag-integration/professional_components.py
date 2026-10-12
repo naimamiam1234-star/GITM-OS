@@ -29,7 +29,7 @@ def styles(dark=False,font_size=16):
  QProgressBar{{background:{p['surface']};border:1px solid {p['outline']};border-radius:7px;min-height:18px;text-align:center}} QProgressBar::chunk{{background:{p['primary']};border-radius:7px}} QScrollArea{{border:0}} QMenu{{background:{p['surface']};color:{p['text']};border:1px solid {p['outline']};padding:5px}} QMenu::item{{padding:8px 18px}} QMenu::item:selected{{background:{p['selection']}}} QToolTip{{background:{p['header']};color:white;border:1px solid {p['outline']};padding:6px}} QSplitter::handle{{background:{p['outline']}}}'''
 class InfoCard(QFrame):
  def __init__(self,title,parent=None):
-  super().__init__(parent);self.setObjectName('infoCard');self.body=QVBoxLayout(self);self.body.setContentsMargins(14,10,14,10);self.body.setSpacing(7);self.title_label=QLabel(title);self.title_label.setObjectName('cardTitle');self.body.addWidget(self.title_label)
+  super().__init__(parent);self.setObjectName('infoCard');self.body=QVBoxLayout(self);self.body.setContentsMargins(14,10,14,10);self.body.setSpacing(7);self.title_label=QLabel(title);self.title_label.setWordWrap(True);self.title_label.setObjectName('cardTitle');self.body.addWidget(self.title_label)
 class MetricCard(InfoCard):
  def __init__(self,title,value='—',detail='',parent=None):
   super().__init__(title,parent);self.setObjectName('metricCard');self.value_label=QLabel(str(value));self.value_label.setObjectName('metricValue');self.detail_label=QLabel(str(detail));self.detail_label.setObjectName('muted');self.detail_label.setWordWrap(True);self.body.addWidget(self.value_label);self.body.addWidget(self.detail_label);self.setMinimumWidth(90)

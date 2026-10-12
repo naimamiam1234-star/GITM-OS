@@ -229,3 +229,14 @@ class GraphLayoutTests(unittest.TestCase):
   self.assertLessEqual(self.ui.graph.parentWidget().parentWidget().maximumHeight(),280)
   self.ui.show_split();self.assertGreaterEqual(self.ui.split_live.minimumHeight(),140)
   self.assertLessEqual(self.ui.split_graph.parentWidget().parentWidget().maximumHeight(),280)
+
+@unittest.skipIf(Workspace is None,'Qt runtime not on Python path')
+class CompactLiveLayoutTests(unittest.TestCase):
+ setUpClass=classmethod(WorkspaceTests.setUpClass.__func__)
+ setUp=WorkspaceTests.setUp
+ tearDown=WorkspaceTests.tearDown
+ def test_live_collapses_summary_cards_but_keeps_connection(self):
+  self.ui.tabs.setCurrentIndex(2)
+  self.assertTrue(all(card.isHidden() for card in self.ui.metrics.values()))
+  self.assertFalse(self.ui.connection.isHidden());self.assertGreaterEqual(self.ui.live_table.minimumHeight(),140)
+  self.ui.tabs.setCurrentIndex(0);self.assertTrue(all(not card.isHidden() for card in self.ui.metrics.values()))

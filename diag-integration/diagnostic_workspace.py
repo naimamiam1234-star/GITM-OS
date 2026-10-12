@@ -6,7 +6,7 @@ from collections import deque
 from shiboken6 import isValid
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QEvent
 from PySide6.QtGui import QPainter, QColor, QPen
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QTabWidget,QTableWidget,QTableWidgetItem,QTextEdit,QComboBox,QMessageBox,QFileDialog,QCheckBox,QLineEdit,QProgressBar,QMenu,QSplitter,QScrollArea
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QTabWidget,QTableWidget,QTableWidgetItem,QTextEdit,QComboBox,QMessageBox,QFileDialog,QCheckBox,QLineEdit,QProgressBar,QMenu,QSplitter,QScrollArea,QSizePolicy
 import transport, store
 from i18n import language
 from diagnostic_reports import html_report,write_report,export_csv
@@ -78,7 +78,7 @@ class Workspace(QWidget):
   root=QVBoxLayout(self);root.setContentsMargins(8,8,8,8);root.setSpacing(8)
   self.connection=QLabel();self.connection.setWordWrap(True);root.addWidget(self.connection)
   self.simulator_badge=QLabel('SIMULATOR · '+t('simulator'));self.simulator_badge.setProperty('role','warning');self.simulator_badge.setWordWrap(True);self.simulator_badge.hide();root.addWidget(self.simulator_badge)
-  scope=QLabel(t('scope'));scope.setWordWrap(True);scope.setProperty('role','muted');root.addWidget(scope)
+  scope=QLabel(t('scope'));self.scope_label=scope;scope.setWordWrap(True);scope.setProperty('role','muted');root.addWidget(scope)
   metric_line=QHBoxLayout();self.metrics={}
   for key,title in [('responders',triple('وحدات مستجيبة','Calculateurs répondants','Responding ECUs')),('dtc',h('DTC count')),('mil',h('MIL'))]:
    card=MetricCard(title);self.metrics[key]=card;metric_line.addWidget(card)
@@ -90,7 +90,7 @@ class Workspace(QWidget):
   self.status=QLabel(t('idle'));self.status.setWordWrap(True);root.addWidget(self.status);self.progress=QProgressBar();self.progress.setRange(0,0);self.progress.setTextVisible(False);self.progress.setMaximumHeight(6);self.progress.hide();root.addWidget(self.progress);self.tabs=QTabWidget();root.addWidget(self.tabs,1)
   summary_card=InfoCard(t('summary'));self.summary=QTextEdit();self.summary.setReadOnly(True);self.summary.setPlaceholderText(triple('اختر السيارة والمحول، ثم ابدأ الفحص لعرض النتائج هنا.','Choisir véhicule et adaptateur, puis lancer le diagnostic.','Choose a vehicle and adapter, then start a scan to view results here.'));summary_card.body.addWidget(self.summary);self.tabs.addTab(summary_card,t('summary'))
   self.dtc=self.table(['ECU','Class','Status','DTC / error']);dtc_page=QWidget();dtc_layout=QVBoxLayout(dtc_page);self.dtc_search=QLineEdit();self.dtc_search.setPlaceholderText(triple('بحث بالرمز أو وحدة التحكم أو الحالة','Rechercher code, calculateur ou état','Search code, ECU or status'));self.dtc_search.textChanged.connect(self.filter_dtc);dtc_layout.addWidget(self.dtc_search);dtc_layout.addWidget(self.dtc,2);definition=QPushButton(t('definition'));definition.clicked.connect(self.lookup_dtc);dtc_layout.addWidget(definition);self.actions.append(definition);self.dtc_reference=QTextEdit();self.dtc_reference.setReadOnly(True);self.dtc_reference.setMaximumHeight(200);dtc_layout.addWidget(self.dtc_reference,1);self.dtc.cellDoubleClicked.connect(lambda row,col:self.lookup_dtc(row));self.tabs.addTab(dtc_page,'DTC')
-  page=QWidget();l=QVBoxLayout(page);line=QHBoxLayout();l.addLayout(line);line.addWidget(QLabel(h('ECU')));self.ecus=QComboBox();line.addWidget(self.ecus);self.ecus.currentIndexChanged.connect(self.update_graph);self.pid_checks={};self.pids=QComboBox();self.pids.currentIndexChanged.connect(self.update_graph);self.pids.setPlaceholderText(t('scanfirst'));self.pids.setMinimumWidth(100);self.pids.setMaximumWidth(260);line.addWidget(self.pids,1);b=action_button(triple('بيانات حية','Direct','Live'));b.clicked.connect(self.toggle_live);line.addWidget(b);self.record=QCheckBox(t('record'));line.addWidget(self.record);b=QPushButton('CSV');b.clicked.connect(self.export_live);line.addWidget(b);options=QHBoxLayout();self.pid_menu=QMenu(self);self.pid_button=action_button(triple('معلمات إضافية (حتى 5)','Paramètres (5 max)','Parameters (up to 5)'));self.pid_button.setMenu(self.pid_menu);options.addWidget(self.pid_button);self.pause_graph=QCheckBox(triple('إيقاف الرسم مؤقتاً','Pause du graphique','Pause graph'));self.pause_graph.toggled.connect(self.update_graph);options.addWidget(self.pause_graph);l.addLayout(options);self.graph=Graph();graph_area=QScrollArea();graph_area.setWidgetResizable(True);graph_area.setMinimumHeight(110);graph_area.setMaximumHeight(280);graph_area.setWidget(self.graph);l.addWidget(graph_area,1);self.live_table=self.table(['Time','ECU','PID','Name','Value','Unit','Error']);self.live_table.setMinimumHeight(140);self.live_table.setColumnWidth(0,150);l.addWidget(self.live_table);self.tabs.addTab(page,t('live'))
+  page=QWidget();l=QVBoxLayout(page);l.setSpacing(6);l.setAlignment(Qt.AlignTop);line=QHBoxLayout();l.addLayout(line);line.addWidget(QLabel(h('ECU')));self.ecus=QComboBox();line.addWidget(self.ecus);self.ecus.currentIndexChanged.connect(self.update_graph);self.pid_checks={};self.pids=QComboBox();self.pids.currentIndexChanged.connect(self.update_graph);self.pids.setPlaceholderText(t('scanfirst'));self.pids.setMinimumWidth(100);self.pids.setMaximumWidth(260);line.addWidget(self.pids,1);b=action_button(triple('بيانات حية','Direct','Live'));b.clicked.connect(self.toggle_live);line.addWidget(b);self.record=QCheckBox(t('record'));self.record.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Preferred);line.addWidget(self.record);b=QPushButton('CSV');b.clicked.connect(self.export_live);line.addWidget(b);options=QHBoxLayout();self.pid_menu=QMenu(self);self.pid_button=action_button(triple('معلمات إضافية (حتى 5)','Paramètres (5 max)','Parameters (up to 5)'));self.pid_button.setMenu(self.pid_menu);options.addWidget(self.pid_button);self.pause_graph=QCheckBox(triple('إيقاف الرسم مؤقتاً','Pause du graphique','Pause graph'));self.pause_graph.toggled.connect(self.update_graph);options.addWidget(self.pause_graph);l.addLayout(options);self.graph=Graph();graph_area=QScrollArea();self.graph_area=graph_area;graph_area.setWidgetResizable(True);graph_area.setMinimumHeight(110);graph_area.setMaximumHeight(280);graph_area.setWidget(self.graph);l.addWidget(graph_area,1);self.live_table=self.table(['Time','ECU','PID','Name','Value','Unit','Error']);self.live_table.setMinimumHeight(140);self.live_table.setColumnWidth(0,150);l.addWidget(self.live_table);self.tabs.addTab(page,t('live'))
   self.ready=self.table(['ECU','MIL','DTC count','Monitor','Supported','Complete']);ready_page=QWidget();ready_layout=QVBoxLayout(ready_page);ready_line=QHBoxLayout();self.readiness_cards={}
   for key,title in [('complete',t('complete')),('incomplete',triple('غير مكتمل','Incomplet','Incomplete')),('unsupported',t('unsupported')),('unknown',triple('غير معروف','Inconnu','Unknown'))]:
    card=MetricCard(title);ready_line.addWidget(card);self.readiness_cards[key]=card
@@ -99,7 +99,16 @@ class Workspace(QWidget):
   for pid,title in [(5,triple('حرارة المبرد','Température liquide','Coolant temperature')),(12,'RPM'),(13,triple('السرعة','Vitesse','Speed'))]:
    card=MetricCard(title);freeze_line.addWidget(card);self.freeze_cards[pid]=card
   freeze_layout.addLayout(freeze_line);freeze_layout.addWidget(self.freeze,1);self.tabs.addTab(freeze_page,t('freeze'))
-  self.report_view=QTextEdit();self.report_view.setReadOnly(True);self.report_view.setStyleSheet('QTextEdit { background: white; color: #16283b; }');self.tabs.addTab(self.report_view,t('report'));self.refresh_connection();self.update_actions()
+  self.report_view=QTextEdit();self.report_view.setReadOnly(True);self.report_view.setStyleSheet('QTextEdit { background: white; color: #16283b; }');self.tabs.addTab(self.report_view,t('report'));self.tabs.currentChanged.connect(self.update_live_layout);self.refresh_connection();self.update_actions()
+ def resizeEvent(self,event):
+  super().resizeEvent(event)
+  if hasattr(self,'graph_area'):self.update_live_layout()
+ def update_live_layout(self,*args):
+  live=self.tabs.currentIndex()==2 or self.tabs.currentWidget()==getattr(self,'split_page',None)
+  for card in self.metrics.values():card.setVisible(not live)
+  self.scope_label.setVisible(not live);self.connection.setToolTip(self.scope_label.text() if live else '')
+  compact=live and self.window.height()<700
+  self.graph_area.setMaximumHeight(110 if compact else 280);self.live_table.setMaximumHeight(140 if compact else 16777215)
  def table(self,headers):
   w=QTableWidget(0,len(headers));w.setHorizontalHeaderLabels([h(v) for v in headers]);w.setEditTriggers(QTableWidget.NoEditTriggers);configure_table(w);return w
  def rows(self,table,rows):

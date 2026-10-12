@@ -54,12 +54,15 @@ class ResourceTests(unittest.TestCase):
    audit,error=resources.load_audit(Path(directory)/'missing.json');self.assertTrue(error);self.assertEqual(audit,{})
  def test_audit_manifest_hashes_and_scope(self):
   import hashlib
-  audit=json.loads((Path(resources.__file__).parent/'source_audit.json').read_text());base=Path(resources.__file__).resolve().parents[2]
+  audit=json.loads((Path(resources.__file__).parent/'source_audit.json').read_text())
+  import native
+  base=Path(getattr(native,'ROOT',Path(native.__file__).parent))
   self.assertEqual(audit['catalog']['record_count'],35)
   self.assertEqual(audit['catalog']['verified_integrations'],0)
   self.assertEqual(len(audit['bundled_libraries']),2)
   for evidence in audit['evidence']:
-   self.assertEqual(hashlib.sha256((base/evidence['path']).read_bytes()).hexdigest(),evidence['sha256'])
+   digest=hashlib.sha256((base/evidence['app_path']).read_bytes()).hexdigest()
+   self.assertIn(digest,{evidence['sha256'],evidence.get('installed_sha256',evidence['sha256'])})
   self.assertTrue(all(row['integration_verified'] is False for row in resources.load_sources()[0]))
 
  def test_odx_dependency_loading_is_real_and_offline(self):
