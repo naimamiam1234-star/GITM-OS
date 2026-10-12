@@ -113,7 +113,10 @@ for name in names:
     option='-version' if name in ['xorriso','unsquashfs'] else '--version'
     check=subprocess.run([str(root/'wrappers'/name),option],capture_output=True,text=True)
     (root/(name+'-version.txt')).write_text(check.stdout+check.stderr)
-    if check.returncode:
+    version_text=check.stdout+check.stderr
+    print(name+' version exit='+str(check.returncode)+' '+version_text[:300],flush=True)
+    expected_unsquashfs_version_exit=(name=='unsquashfs' and check.returncode==1 and 'unsquashfs version' in version_text.lower())
+    if check.returncode and not expected_unsquashfs_version_exit:
         raise RuntimeError(name+' bundled startup failed')
 digest=[]
 for path in sorted(root.rglob('*')):

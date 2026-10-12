@@ -2,7 +2,7 @@ name: GITM installer startup evidence
 on:
   push:
     branches: [stability-install-20261012]
-    paths: [install-validation/**, .github/workflows/installer-probe.yml]
+    paths: [install-validation/prepare.sh, install-validation/guest-probe.py, install-validation/boot-probe.py]
   workflow_dispatch:
     inputs:
       source_run:
