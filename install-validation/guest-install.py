@@ -85,23 +85,38 @@ def main():
         x('windowminimize',win); time.sleep(.5); x('windowmap',win); x('windowactivate',win)
         time.sleep(2); mark('FRAME|'+label); time.sleep(8)
     def click(a,b): x('mousemove','--sync',a,b); x('click',1); time.sleep(3)
+    def geometry(window):
+        fields=dict(line.split('=',1) for line in x('getwindowgeometry','--shell',window).splitlines() if '=' in line)
+        return {key:int(fields[key]) for key in ('X','Y','WIDTH','HEIGHT')}
+    def next_button(window=win):
+        g=geometry(window); click(g['X']+g['WIDTH']-150,g['Y']+g['HEIGHT']-23)
     frame('welcome')
-    click(1000,650); frame('location')
-    click(1000,650); frame('keyboard')
-    click(1000,650); frame('partitions')
+    next_button(); frame('location')
+    next_button(); frame('keyboard')
+    next_button(); frame('partitions')
     click(334,227); frame('erase-preview')
-    click(1000,650); frame('users')
+    next_button(); frame('users')
     for a,b,value in [(425,205,'GITM CI'),(425,273,'gitmtest'),(425,341,'gitm-ci'),(425,409,'GITMciTest42'),(625,409,'GITMciTest42')]:
         click(a,b); x('key','ctrl+a'); x('type','--clearmodifiers',value)
-    click(334,448); click(1000,650); frame('summary')
+    click(334,448); next_button(); frame('summary')
     logs=(out/'calamares-debug.log').read_text(errors='replace')
     (out/'pre-confirm-plan.log').write_text(logs)
     # Fail closed: a mere disk/free-space preview is not a root plan.
-    partition=re.search(r'/dev/vda[1-9][0-9]*',logs)
-    root_mapping=re.search(r'(?:mount.?point|mounting|mountPoint)[^\n]{0,100}(?:[\"\s:]\/([\"\s,;]|$))',logs,re.I)
-    if not partition or not root_mapping: raise RuntimeError('No explicit vda partition and / mapping in pre-confirm log; refusing installation')
-    mark('PLAN_GUARD_PASS|'+partition.group())
-    click(1000,733); frame('confirmation'); click(744,458); mark('INSTALL_CONFIRMED')
+    # A planned partition has no /dev/vdaN node until CreatePartitionJob runs.
+    plan=logs.rsplit('Building partition information map',1)[-1]
+    root_mapping=re.search(r'partlabel\s*:\s*"GITM-root".{0,500}mountPoint:\s*:\s*"/".{0,200}fs:\s*:\s*"(?:ext4|btrfs)".{0,200}claimed\s*:\s*"true"',plan,re.S)
+    if 'partitions on "/dev/vda"' not in plan or 'CreatePartitionJob' not in logs or not root_mapping:
+        raise RuntimeError('No explicit new root filesystem plan on the fixture disk; refusing installation')
+    mark('PLAN_GUARD_PASS|/dev/vda|GITM-root|/')
+    next_button(); time.sleep(1)
+    popup=None
+    for _ in range(20):
+        ids=run(['xdotool','search','--onlyvisible','--name','^Continue with Installation\\?$'],env,check=False).split()
+        if ids: popup=ids[-1]; break
+        time.sleep(.5)
+    if not popup: raise RuntimeError('Installation confirmation dialog missing')
+    frame('confirmation'); g=geometry(popup)
+    click(g['X']+g['WIDTH']-145,g['Y']+g['HEIGHT']-28); mark('INSTALL_CONFIRMED')
     injected=False; end=time.monotonic()+1500
     while time.monotonic()<end:
         # Keep the disposable X11 test session active while file copying runs.
