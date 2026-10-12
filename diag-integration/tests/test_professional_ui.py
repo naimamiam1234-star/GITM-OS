@@ -27,6 +27,13 @@ class ShellTests(unittest.TestCase):
   w,s=self.shell();s.navigate('diagnosis');first=w.pages.currentWidget();s.navigate('reports');s.navigate('diagnosis');self.assertIs(w.pages.currentWidget(),first);self.assertEqual(len(w.home_cards),20)
  def test_unknown_footer_measurement_and_split_actions(self):
   w,s=self.shell();s.refresh();self.assertNotIn('12.6',s.context.text());self.assertEqual(w.menuBar().actions(),[]);self.assertGreaterEqual(len(s.split.menu().actions()),2)
+ def test_close_cancels_cloud_task_without_destroying_running_thread(self):
+  import threading
+  from PySide6.QtCore import QThread,QEvent
+  class Pending(QThread):
+   def isRunning(self):return True
+  w,s=self.shell();w.task=Pending(w);w.ai_cancel=threading.Event();event=QEvent(QEvent.Close)
+  self.assertTrue(w.close_guard.eventFilter(w,event));self.assertTrue(w.ai_cancel.is_set());self.assertFalse(event.isAccepted());w.task=None
  def test_page_callbacks_use_navigation_cache(self):
   w,s=self.shell();s.navigate('diagnosis');diagnosis=w.pages.currentWidget()
   w.adapter_page();adapter=w.pages.currentWidget();count=w.pages.count()

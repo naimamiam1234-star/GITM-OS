@@ -1,5 +1,5 @@
 import unittest
-import copy
+import copy,json
 from workshop_workspace import filter_records, compare_reports
 from ai_workspace import sanitized_scan
 
@@ -26,7 +26,7 @@ class WorkshopTests(unittest.TestCase):
 from unittest.mock import patch
 import tempfile,time
 from pathlib import Path
-from PySide6.QtWidgets import QApplication,QWidget,QLineEdit
+from PySide6.QtWidgets import QApplication,QWidget,QLineEdit,QFileDialog
 from workshop_workspace import History
 from ai_workspace import Assistant
 from update_workspace import Updates
@@ -60,3 +60,44 @@ class WorkshopQtTests(unittest.TestCase):
    deadline=time.monotonic()+2
    while ui.worker is not None and time.monotonic()<deadline:self.app.processEvents();time.sleep(.005)
    self.assertIsNone(ui.worker);self.assertFalse(ui.install.isEnabled());self.assertIsNone(ui.selected_path);self.assertIn('invalid signature',ui.raw.toPlainText())
+
+class AnnotationTests(unittest.TestCase):
+ @classmethod
+ def setUpClass(cls):cls.app=QApplication.instance() or QApplication([])
+ def test_notes_preserve_original_and_local_permissions(self):
+  import store
+  from workshop_workspace import save_annotation,load_annotation,record_html,annotation_directory
+  with tempfile.TemporaryDirectory() as directory,patch.object(store,'BASE',Path(directory)),patch('cloud_ai.stream_chat') as cloud:
+   original={'format':'gitm-obd-session/1','evidence':'simulator','ecus':[]};store.save({},'OBD_SESSION',original);before=store.reports()[0]
+   save_annotation(1,'<b>Technician observation</b>');self.assertEqual(load_annotation(1)['notes'],'<b>Technician observation</b>');self.assertEqual(store.reports()[0],before);cloud.assert_not_called()
+   self.assertEqual(annotation_directory(1).stat().st_mode&0o777,0o700);self.assertEqual((annotation_directory(1)/'metadata.json').stat().st_mode&0o777,0o600);self.assertIn('&lt;b&gt;Technician',record_html(before))
+ def test_image_validation_and_private_copy(self):
+  from workshop_workspace import attach_image,load_annotation,annotation_directory,record_html,MAX_IMAGE_BYTES
+  from PySide6.QtGui import QImage
+  import store
+  with tempfile.TemporaryDirectory() as directory,patch.object(store,'BASE',Path(directory)):
+   bad=Path(directory)/'bad.svg';bad.write_text('<svg/>')
+   with self.assertRaises(ValueError):attach_image(1,bad)
+   large=Path(directory)/'large.png'
+   with large.open('wb') as f:f.truncate(MAX_IMAGE_BYTES+1)
+   with self.assertRaises(ValueError):attach_image(1,large)
+   dimension=QImage(4097,1,QImage.Format_RGB32);dimension.fill(0);wide=Path(directory)/'wide.png';self.assertTrue(dimension.save(str(wide)))
+   with self.assertRaises(ValueError):attach_image(1,wide)
+   image=QImage(20,20,QImage.Format_RGB32);image.fill(0xff007700);path=Path(directory)/'valid.png';self.assertTrue(image.save(str(path)));attach_image(1,path)
+   metadata=load_annotation(1);saved=annotation_directory(1)/metadata['image'];self.assertEqual(saved.stat().st_mode&0o777,0o600);self.assertIn('data:image/png;base64,',record_html({'id':1,'result':{}}))
+ def test_no_selection_disables_annotations(self):
+  import store
+  with tempfile.TemporaryDirectory() as directory,patch.object(store,'BASE',Path(directory)):
+   window=QWidget();ui=History(window);self.assertFalse(ui.save_notes.isEnabled());self.assertFalse(ui.add_image.isEnabled());self.assertFalse(ui.remove_image.isEnabled());ui.deleteLater();window.deleteLater();self.app.processEvents()
+
+ def test_selected_html_json_exports_keep_original_record(self):
+  import store
+  from workshop_workspace import save_annotation
+  with tempfile.TemporaryDirectory() as directory,patch.object(store,'BASE',Path(directory)):
+   store.save({},'OBD_SESSION',{'format':'gitm-obd-session/1','ecus':[]});before=store.reports()[0];save_annotation(1,'Technician added note');window=QWidget();ui=History(window);ui.table.selectRow(0)
+   for kind in ('HTML','JSON'):
+    path=Path(directory)/('export.'+kind.lower())
+    with patch.object(QFileDialog,'getSaveFileName',return_value=(str(path),'')):ui.export(kind)
+    self.assertIn('Technician added note',path.read_text())
+    if kind=='JSON':self.assertEqual(json.loads(path.read_text())['result'],before['result'])
+   self.assertEqual(store.reports()[0],before);ui.deleteLater();window.deleteLater();self.app.processEvents()

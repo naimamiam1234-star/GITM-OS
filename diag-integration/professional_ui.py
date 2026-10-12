@@ -21,6 +21,11 @@ class CloseGuard(QObject):
    worker=getattr(self.w,'_obd_worker',None)
    if worker is not None and isValid(worker) and worker.isRunning():
     worker.cancel.set();self.w.professional_shell.context.setText(t('جارٍ إنهاء الطلب بأمان','Fin de requête','Finishing current request'));event.ignore();return True
+   task=getattr(self.w,'task',None)
+   if task is not None and isValid(task) and task.isRunning():
+    cancel=getattr(self.w,'ai_cancel',None)
+    if cancel is not None:cancel.set()
+    self.w.professional_shell.context.setText(t('جارٍ إنهاء الطلب بأمان','Fin de requête','Finishing current request'));event.ignore();return True
   if event.type()==QEvent.KeyPress and event.key()==Qt.Key_Escape and self.w.isFullScreen():self.w.showMaximized();return True
   return False
 

@@ -20,6 +20,13 @@ class WorkspaceTests(unittest.TestCase):
  def test_explicit_no_data(self):
   self.ui.display({'status':'partial','ecus':[{'id':'7E8','dtc':{'stored':{'status':'error','codes':[],'error':'NO DATA'}},'errors':['VIN unavailable']}],'errors':[{'section':'VIN','error':'NO DATA'}]})
   self.assertEqual(self.ui.dtc.item(0,3).text(),'NO DATA');self.assertIn('NO DATA',self.ui.summary.toPlainText())
+ def test_vehicle_context_change_cannot_relabel_or_continue_old_session(self):
+  from unittest.mock import patch
+  self.window.vehicle={'make':'Original'};self.ui.display({'vehicle':{'make':'Original'},'status':'complete','ecus':[{'id':'7E8','supported_pids':[12]}]})
+  self.window.vehicle={'make':'New selection'};self.ui.refresh_connection()
+  self.assertIn('Original',self.ui.connection.text());self.assertNotIn('New selection',self.ui.connection.text())
+  with patch.object(self.ui,'launch') as request:self.ui.toggle_live();request.assert_not_called()
+  self.assertFalse(self.ui.live_on)
  def test_bounded_recording_and_graph(self):
   self.ui.display({'status':'complete','ecus':[{'id':'7E8','supported_pids':[12]}]})
   self.ui.record.setChecked(True)

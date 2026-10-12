@@ -129,8 +129,9 @@ class Workspace(QWidget):
   info=transport.LINK.info();return (id(transport.LINK),getattr(transport.LINK,'generation',0),info.get('connected'),info.get('transport'),info.get('target'),info.get('adapter'))
  def refresh_connection(self):
   try:
-   info=transport.LINK.info();vehicle=getattr(self.window,'vehicle',{}) or {};vehicle_text=' · '.join(str(vehicle.get(key)) for key in ('make','model','year','engine') if vehicle.get(key))
+   info=transport.LINK.info();selected=getattr(self.window,'vehicle',{}) or {};vehicle=self.report.get('vehicle',{}) if self.report else selected;vehicle_text=' · '.join(str(vehicle.get(key)) for key in ('make','model','year','engine') if vehicle.get(key))
    self.connection.setText((vehicle_text+' · ' if vehicle_text else '')+('● '+(triple('متصل بالمحاكي','Connecté au simulateur','Connected to simulator') if (self.report or {}).get('evidence')=='simulator' else t('connected')) if info.get('connected') else '○ '+t('disconnected'))+' · '+str(info.get('adapter') or '—')+' · '+str(info.get('target') or '—'))
+   if self.report and vehicle!=selected:self.connection.setText(self.connection.text()+' · '+triple('نتائج السيارة السابقة؛ ابدأ فحصًا جديدًا','Résultats du véhicule précédent; nouveau diagnostic requis','Previous vehicle results; start a new scan'))
   except Exception as e:self.connection.setText(str(e))
   if hasattr(self,'clear_button'):self.update_actions()
  def eventFilter(self,obj,event):
@@ -208,10 +209,12 @@ class Workspace(QWidget):
 
   self.launch(fn,done)
  def toggle_live(self):
+  if self.report and dict(self.report.get('vehicle') or {})!=dict(self.window.vehicle or {}):self.stop();self.status.setText(t('scanfirst'));return
   self.live_on=not self.live_on
   if self.live_on:self.timer.start();self.poll()
   else:self.timer.stop()
  def poll(self):
+  if self.report and dict(self.report.get('vehicle') or {})!=dict(self.window.vehicle or {}):self.stop();self.status.setText(t('scanfirst'));return
   if not self.isVisible():self.stop();return
   if self.worker is not None:return
   if self.connection_key()!=self.connection_identity:self.stop();self.pids.clear();self.session=Session(link=transport.LINK);self.status.setText(t('scanfirst'));return
