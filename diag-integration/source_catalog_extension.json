@@ -1,0 +1,198 @@
+[
+  {
+    "id": "researched-pylessard-python-udsoncan",
+    "name": "python-udsoncan",
+    "url": "https://github.com/pylessard/python-udsoncan",
+    "categories": [
+      "protocols"
+    ],
+    "makes": [],
+    "protocols": [
+      "UDS"
+    ],
+    "license": "MIT",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-pylessard-python-can-isotp",
+    "name": "python-can-isotp",
+    "url": "https://github.com/pylessard/python-can-isotp",
+    "categories": [
+      "protocols"
+    ],
+    "makes": [],
+    "protocols": [
+      "ISO-TP",
+      "CAN"
+    ],
+    "license": "MIT",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-jacobschaer-python-doipclient",
+    "name": "python-doipclient",
+    "url": "https://github.com/jacobschaer/python-doipclient",
+    "categories": [
+      "protocols"
+    ],
+    "makes": [],
+    "protocols": [
+      "DoIP"
+    ],
+    "license": "MIT",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-cantools-cantools",
+    "name": "cantools",
+    "url": "https://github.com/cantools/cantools",
+    "categories": [
+      "electrical",
+      "protocols"
+    ],
+    "makes": [],
+    "protocols": [
+      "CAN",
+      "DBC",
+      "ARXML"
+    ],
+    "license": "MIT",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-rusefi-rusefi",
+    "name": "rusEFI",
+    "url": "https://github.com/rusefi/rusefi",
+    "categories": [
+      "mechanics",
+      "electrical"
+    ],
+    "makes": [],
+    "protocols": [
+      "CAN"
+    ],
+    "license": "CHECK_LICENSE",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-speeduino-speeduino",
+    "name": "Speeduino",
+    "url": "https://github.com/speeduino/speeduino",
+    "categories": [
+      "mechanics",
+      "electrical"
+    ],
+    "makes": [],
+    "protocols": [
+      "CAN"
+    ],
+    "license": "GPL-2.0",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-cedricp-ddt4all",
+    "name": "DDT4All",
+    "url": "https://github.com/cedricp/ddt4all",
+    "categories": [
+      "diagnostics",
+      "electrical"
+    ],
+    "makes": [
+      "Renault",
+      "Dacia"
+    ],
+    "protocols": [
+      "CAN",
+      "KWP2000",
+      "DoIP"
+    ],
+    "license": "GPL-3.0",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-openvehicles-Open-Vehicle-Monitoring-System-3",
+    "name": "OVMS",
+    "url": "https://github.com/openvehicles/Open-Vehicle-Monitoring-System-3",
+    "categories": [
+      "electric-vehicles",
+      "electrical"
+    ],
+    "makes": [],
+    "protocols": [
+      "CAN"
+    ],
+    "license": "CHECK_LICENSE",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-autowp-arduino-mcp2515",
+    "name": "MCP2515 Arduino",
+    "url": "https://github.com/autowp/arduino-mcp2515",
+    "categories": [
+      "adapters",
+      "electrical"
+    ],
+    "makes": [],
+    "protocols": [
+      "CAN 2.0"
+    ],
+    "license": "MIT",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  },
+  {
+    "id": "researched-commaai-opendbc",
+    "name": "openDBC",
+    "url": "https://github.com/commaai/opendbc",
+    "categories": [
+      "electrical",
+      "protocols"
+    ],
+    "makes": [],
+    "protocols": [
+      "CAN",
+      "DBC"
+    ],
+    "license": "MIT",
+    "redistribution": "CHECK_LICENSE",
+    "integration_verified": false,
+    "status": "Upstream reference reviewed; application integration and vehicle compatibility not verified",
+    "reviewed_utc": "2026-10-12",
+    "coverage": "Project-specific; not universal vehicle coverage"
+  }
+]

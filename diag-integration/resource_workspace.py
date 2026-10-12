@@ -10,6 +10,15 @@ from professional_components import triple,InfoCard,MetricCard,action_button,con
 def t(ar,fr,en):return triple(ar,fr,en)
 def flag(value):
  return t('نعم','Oui','Yes') if value is True else t('لا','Non','No') if value is False else '—'
+def searchable(row):
+ return ' '.join(str(row.get(key,'')) for key in ('name','status','redistribution','license','id','categories','makes','protocols','coverage')).casefold()
+def catalog_extension():
+ path=Path(__file__).parent/'source_catalog_extension.json'
+ try:
+  rows=json.loads(path.read_text(encoding='utf-8'))
+  if not isinstance(rows,list) or any(not isinstance(row,dict) for row in rows):raise ValueError('Invalid source extension')
+  return rows
+ except (OSError,ValueError):return []
 def load_sources(path=None):
  if path is None:
   import native
@@ -19,6 +28,13 @@ def load_sources(path=None):
   if path.stat().st_size>2*1024*1024:raise ValueError('Source catalog exceeds local read limit')
   rows=json.loads(path.read_text(encoding='utf-8'))
   if not isinstance(rows,list) or any(not isinstance(row,dict) for row in rows):raise ValueError('Source catalog must be a list of records')
+  if path.name=='sources.json':
+   known={row.get('url','').rstrip('/').casefold() for row in rows}
+   for extra in catalog_extension():
+    existing=next((row for row in rows if row.get('url','').rstrip('/').casefold()==extra['url'].rstrip('/').casefold()),None)
+    if existing is not None:
+     for key in ('categories','makes','protocols','coverage','reviewed_utc'):existing[key]=extra[key]
+    else:rows.append(extra)
   return rows,''
  except (OSError,ValueError,TypeError) as exc:return [],str(exc)
 
@@ -56,7 +72,7 @@ class SourcesWorkspace(QWidget):
  def selected(self):
   row=self.table.currentRow();return self.filtered[row] if 0<=row<len(self.filtered) and self.table.selectedItems() else None
  def refresh(self,*args):
-  query=self.search.text().casefold();self.filtered=[row for row in self.records if query in ' '.join(str(row.get(key,'')) for key in ('name','status','redistribution','license','id')).casefold()];self.table.blockSignals(True);self.table.setRowCount(len(self.filtered))
+  query=self.search.text().casefold();self.filtered=[row for row in self.records if query in searchable(row)];self.table.blockSignals(True);self.table.setRowCount(len(self.filtered))
   for i,row in enumerate(self.filtered):
    for j,value in enumerate((row.get('name','—'),flag(row.get('integration_verified')),row.get('redistribution','—'),row.get('status','—'))):
     item=QTableWidgetItem(str(value));item.setToolTip(str(value));self.table.setItem(i,j,item)
@@ -67,7 +83,7 @@ class SourcesWorkspace(QWidget):
   row=self.selected();self.open_button.setEnabled(bool(row and self.valid_url(row.get('url'))))
   if row is None:self.details.clear();return
   lines=[]
-  for label,value in [(t('الاسم','Nom','Name'),row.get('name')),(t('الحالة','État','Status'),row.get('status')),(t('الترخيص','Licence','License'),row.get('license')),(t('إعادة التوزيع','Redistribution','Redistribution'),row.get('redistribution')),(t('دمج موثق','Intégration vérifiée','Integration verified'),flag(row.get('integration_verified'))),(t('المعرف','Identifiant','Record ID'),row.get('id')),(t('ملفات محلية','Fichiers locaux','Local data path'),row.get('data_path')),(t('الرابط','Lien','URL'),row.get('url'))]:lines.append(str(label)+': '+str(value if value not in (None,'') else '—'))
+  for label,value in [(t('الاسم','Nom','Name'),row.get('name')),(t('الحالة','État','Status'),row.get('status')),(t('الترخيص','Licence','License'),row.get('license')),(t('إعادة التوزيع','Redistribution','Redistribution'),row.get('redistribution')),(t('دمج موثق','Intégration vérifiée','Integration verified'),flag(row.get('integration_verified'))),(t('المعرف','Identifiant','Record ID'),row.get('id')),(t('ملفات محلية','Fichiers locaux','Local data path'),row.get('data_path')),(t('المجالات','Domaines','Categories'),row.get('categories')),(t('الماركات','Marques','Makes'),row.get('makes')),(t('البروتوكولات','Protocoles','Protocols'),row.get('protocols')),(t('التغطية','Couverture','Coverage'),row.get('coverage')),(t('الرابط','Lien','URL'),row.get('url'))]:lines.append(str(label)+': '+str(value if value not in (None,'') else '—'))
   self.details.setPlainText('\n\n'.join(lines))
  def import_evidence(self):
   path,_=QFileDialog.getOpenFileName(self,t('استيراد مرجع تقني مع مصدر وترخيص','Importer une référence avec source et licence','Import evidence with source and license'),'', 'JSON (*.json)')

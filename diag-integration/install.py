@@ -22,6 +22,7 @@ def install(target):
     target=pathlib.Path(target);source=pathlib.Path(__file__).parent
     for name in MODULES:shutil.copy2(source/(name+'.py'),target/(name+'.py'))
     shutil.copy2(source/'source_audit.json',target/'source_audit.json')
+    shutil.copy2(source/'source_catalog_extension.json',target/'source_catalog_extension.json')
     p=target/'native.py';code=p.read_text()
     start=code.index('    def diagnosis_page(self):');end=code.index('    def toggle_live(self):',start)
     code=code[:start]+'''    def diagnosis_page(self):
