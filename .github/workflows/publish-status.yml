@@ -1,0 +1,39 @@
+name: Publish status-bar fixed ISO
+on:
+  workflow_run:
+    workflows: ["Build GITM development ISO"]
+    types: [completed]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == '7d936a5e87d65ba30ece7818883a079b55c85cf4' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-OS-3.3-integration-amd64
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-full-gallery
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: dist/gallery
+      - name: Install screenshot album renderer
+        run: sudo apt-get update && sudo apt-get install -y python3-pil
+      - name: Prepare full screenshot album
+        run: python3 release/prepare-gallery.py
+      - name: Verify and split the boot-tested ISO
+        env:
+          BOOT_TEST_RUN: ${{ github.event.workflow_run.id }}
+        run: python3 release/prepare-status.py
+      - name: Publish immutable corrected image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create gitm-os-3.3.0-layoutfix1 dist/*.part-* dist/*.sha256 dist/Join-ISO-Windows.cmd dist/release-manifest.json dist/desktop-smoke.png dist/bios.png dist/uefi.png dist/gallery.html dist/gallery.zip dist/gallery-overview.png --prerelease --title "GITM OS 3.3 — no-scroll desktop, usage rings and dynamic status icons" --notes-file docs/layout-fix.md --target ${{ github.event.workflow_run.head_sha }}

@@ -1,0 +1,10 @@
+[kdeglobals][KDE]
+widgetStyle=Breeze
+[kdeglobals][General]
+ColorScheme=BreezeDark
+[kdeglobals][Icons]
+Theme=breeze
+[plasmarc][Theme]
+name=breeze-dark
+[kwinrc][org.kde.kdecoration2]
+library=org.kde.breeze

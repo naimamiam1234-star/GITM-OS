@@ -1,0 +1,13 @@
+[Unit]
+Description=GITM browser namespace policy
+After=apparmor.service
+Before=sddm.service
+ConditionSecurity=apparmor
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/apparmor_parser -r /etc/apparmor.d/gitm-falkon
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

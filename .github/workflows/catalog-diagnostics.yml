@@ -1,0 +1,28 @@
+name: Diagnose Discover catalogue
+on:
+  push:
+    branches: [main]
+    paths: ['catalog-diagnostics/**', '.github/workflows/catalog-diagnostics.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          run-id: '38060501100'
+          github-token: ${{ github.token }}
+          path: input
+      - name: Compare packaged catalogue with refreshed catalogue
+        run: sudo bash catalog-diagnostics/probe.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-catalog-evidence
+          path: evidence/

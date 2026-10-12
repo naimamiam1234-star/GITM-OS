@@ -1,0 +1,9 @@
+#!/bin/sh
+export XDG_CURRENT_DESKTOP=GITM
+export QT_FFMPEG_DECODING_HW_DEVICE_TYPES=,
+export QT_QPA_PLATFORM=xcb
+mkdir -p "$HOME/.local/share/gitm"
+openbox &
+/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1 &
+nm-applet &
+exec /opt/gitm-venv/bin/python /opt/gitm/gitm_desktop.py >> "$HOME/.local/share/gitm/desktop.log" 2>&1

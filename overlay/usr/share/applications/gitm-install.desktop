@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Install GITM OS
+Name[ar]=تثبيت GITM OS
+Name[fr]=Installer GITM OS
+Exec=gitm-install
+Icon=system-software-install
+Categories=System;
+Terminal=false

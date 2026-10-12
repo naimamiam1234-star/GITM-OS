@@ -1,0 +1,6 @@
+#!/bin/sh
+export XDG_CURRENT_DESKTOP=KDE
+export XDG_SESSION_DESKTOP=KDE
+export XDG_SESSION_TYPE=x11
+export GITM_NATIVE_PLASMA=1
+exec startplasma-x11

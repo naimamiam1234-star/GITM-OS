@@ -1,0 +1,211 @@
+{
+  "schema": "gitm-source-audit/1",
+  "audit_date_utc": "2026-10-12",
+  "basis": "Local bundled files and reproducible offline test; no remote license or OEM data-rights verification.",
+  "catalog": {
+    "record_count": 35,
+    "verified_integrations": 0,
+    "meaning": "Reference links; original integration_verified=false flags preserved."
+  },
+  "bundled_libraries": [
+    {
+      "name": "odxtools",
+      "version": "11.6.2",
+      "license": "MIT",
+      "license_inspected": true,
+      "role": "Imported by odx_engine.library for offline ODX/PDX parsing and codec.",
+      "obligations": "Preserve copyright and permission notice. No OEM data rights granted."
+    },
+    {
+      "name": "python-can",
+      "version": "4.6.1",
+      "license": "LGPL-3.0-only",
+      "license_inspected": true,
+      "role": "Bundled odxtools dependency; downstream isotp_state_machine/snoop tooling imports it. No direct GITM application import; not GITM transport.",
+      "obligations": "Bundled license is LGPLv3 incorporating GPLv3; distribution compliance needs its applicable notices/source obligations. This audit is not a compliance certification."
+    }
+  ],
+  "tested_integrations": [
+    {
+      "name": "odxtools dependency load",
+      "tested": true,
+      "test": "test_resources_ui.ResourceTests.test_odx_dependency_loading_is_real_and_offline",
+      "scope": "Actual odx_engine.library() resolves bundled version 11.6.2 and callable load_file. Dependency-loading smoke test only, not parsing/codec validation or vehicle execution."
+    }
+  ],
+  "reference_only_protocol_libraries": [
+    {
+      "name": "can-isotp",
+      "app_imports": [],
+      "integration_tested": false,
+      "license_inspected": false
+    },
+    {
+      "name": "udsoncan",
+      "app_imports": [],
+      "integration_tested": false,
+      "license_inspected": false
+    },
+    {
+      "name": "doipclient",
+      "app_imports": [],
+      "integration_tested": false,
+      "license_inspected": false
+    }
+  ],
+  "application_import_scan": {
+    "method": "Python AST Import/ImportFrom over app/*.py (nonrecursive; vendor excluded)",
+    "files": [
+      "source/GearDiag-Raw-Build/app/adapter_inventory.py",
+      "source/GearDiag-Raw-Build/app/automotive_data.py",
+      "source/GearDiag-Raw-Build/app/ble_link.py",
+      "source/GearDiag-Raw-Build/app/boot_media.py",
+      "source/GearDiag-Raw-Build/app/can_capture.py",
+      "source/GearDiag-Raw-Build/app/clients.py",
+      "source/GearDiag-Raw-Build/app/cloud_ai.py",
+      "source/GearDiag-Raw-Build/app/cloud_backend.py",
+      "source/GearDiag-Raw-Build/app/desktop_shell.py",
+      "source/GearDiag-Raw-Build/app/device_admin.py",
+      "source/GearDiag-Raw-Build/app/diagnostic_platform.py",
+      "source/GearDiag-Raw-Build/app/diagnostics.py",
+      "source/GearDiag-Raw-Build/app/doip_discovery.py",
+      "source/GearDiag-Raw-Build/app/ecu_scan.py",
+      "source/GearDiag-Raw-Build/app/engine_adapters.py",
+      "source/GearDiag-Raw-Build/app/evidence_registry.py",
+      "source/GearDiag-Raw-Build/app/i18n.py",
+      "source/GearDiag-Raw-Build/app/import_center.py",
+      "source/GearDiag-Raw-Build/app/knowledge.py",
+      "source/GearDiag-Raw-Build/app/lin_decode.py",
+      "source/GearDiag-Raw-Build/app/mcd_adapter.py",
+      "source/GearDiag-Raw-Build/app/native.py",
+      "source/GearDiag-Raw-Build/app/odx_engine.py",
+      "source/GearDiag-Raw-Build/app/recordings.py",
+      "source/GearDiag-Raw-Build/app/report_compare.py",
+      "source/GearDiag-Raw-Build/app/scope.py",
+      "source/GearDiag-Raw-Build/app/server.py",
+      "source/GearDiag-Raw-Build/app/services.py",
+      "source/GearDiag-Raw-Build/app/source_gateway.py",
+      "source/GearDiag-Raw-Build/app/start_release.py",
+      "source/GearDiag-Raw-Build/app/store.py",
+      "source/GearDiag-Raw-Build/app/system_launcher.py",
+      "source/GearDiag-Raw-Build/app/system_settings.py",
+      "source/GearDiag-Raw-Build/app/system_status.py",
+      "source/GearDiag-Raw-Build/app/transport.py",
+      "source/GearDiag-Raw-Build/app/unified_diagnostics.py",
+      "source/GearDiag-Raw-Build/app/usb_update.py",
+      "source/GearDiag-Raw-Build/app/vehicle_documents.py",
+      "source/GearDiag-Raw-Build/app/vehicle_packs.py",
+      "source/GearDiag-Raw-Build/app/video_surface.py",
+      "source/GearDiag-Raw-Build/app/visual_theme.py",
+      "source/GearDiag-Raw-Build/app/workshop_knowledge.py",
+      "source/GearDiag-Raw-Build/app/workshop_tools.py"
+    ],
+    "module_matches": {
+      "can": [],
+      "isotp": [],
+      "udsoncan": [],
+      "doipclient": [],
+      "odxtools": [
+        "source/GearDiag-Raw-Build/app/odx_engine.py"
+      ]
+    }
+  },
+  "limits": [
+    "No inferred OEM redistribution rights.",
+    "No manufacturer/full-vehicle coverage or hardware validation.",
+    "No inference from catalog links or dependency bundling to integration support."
+  ],
+  "evidence": [
+    {
+      "path": "source/GearDiag-Raw-Build/app/sources.json",
+      "sha256": "d47e4c56a4700354ed6973571c9f5567090ca27207d20556619d6d789a77ca30",
+      "app_path": "sources.json"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/odx_engine.py",
+      "sha256": "a5027b4bb39fc809404ffabf0d1ed932fda6c5dc6f66df4920742e144036d750",
+      "app_path": "odx_engine.py"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/transport.py",
+      "sha256": "0794782dcf629676cdd9fef2430cd259e2aa5aab894aa405e1735c17bb4f31a3",
+      "app_path": "transport.py",
+      "installed_sha256": "6a963af158b0c29f7a5635ffe640c539d9602f03e3a9c3867ca2fa0f6975fe23",
+      "installed_transform": "install.patch_transport adds connection-generation constructor and close guards",
+      "expected_production_sha256": "17b0a37a2262d377a527558f9d35ca988e7a86ce70d4faf0f2a2f54bd67adab6",
+      "production_transform": {
+        "source_url": "https://github.com/naimamiam1234-star/GITM-OS/blob/eda30658a2534a1c57a0884e89b53a9e780612a5/scripts/patch-source.py",
+        "github_blob_sha": "3301e9bc80db6c558927248e0948730f4d2080da",
+        "revision": "eda30658a2534a1c57a0884e89b53a9e780612a5",
+        "pipeline": "raw transport -> exact inspected scripts/patch-source.py transport block -> install.patch_transport",
+        "transport_block": "p=root/'transport.py';s=p.read_text().replace('  # Do not send the GITM/ELM handshake', \"  if os.environ.get('GITM_NO_AUTODISCOVER')=='1':return self.info()\\n  # Do not send the GITM/ELM handshake\")\ns=s.replace('  self.io=self.fd=self.family', '  if self.reservation is not None:self.reservation.close();self.reservation=None\\n  self.io=self.fd=self.family')\n# Reserve each adapter across processes, including primary/secondary windows.\ns=s.replace('self.lock=threading.RLock()', 'self.lock=threading.RLock(); self.reservation=None')\ns=s.replace(' def close(self):', ' def close(self):')\ns=s.replace('   self.close()\\n   if kind', \"   self.close()\\n   import fcntl,hashlib\\n   from pathlib import Path\\n   scope=Path(os.environ.get('XDG_RUNTIME_DIR',str(Path.home()/'.local/share/gitm')))/'vci-locks';scope.mkdir(parents=True,exist_ok=True)\\n   key=hashlib.sha256((str(kind)+':'+str(target)).encode()).hexdigest()\\n   self.reservation=(scope/(key+'.lock')).open('a')\\n   try:fcntl.flock(self.reservation,fcntl.LOCK_EX|fcntl.LOCK_NB)\\n   except BlockingIOError:raise ConnectionError('Adapter already in use by another GITM session')\\n   if kind\")\np.write_text(s)\n",
+        "verification": "Reproduced exact pipeline against raw transport in memory; result matches failed ISO build actual digest. No digest accepted from build alone."
+      }
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/requirements-odx.txt",
+      "sha256": "e84fb21ac2f2357f694aa2228bbbbae8e479ffb86dd64c01123e4a34dfa66add",
+      "app_path": "requirements-odx.txt"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/odx-vendor/odxtools-11.6.2.dist-info/METADATA",
+      "sha256": "05d1c390f16e06f950e25642d4b7e05a894973f25af490cd9e1711e0a8d74cb6",
+      "app_path": "odx-vendor/odxtools-11.6.2.dist-info/METADATA"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/odx-vendor/odxtools-11.6.2.dist-info/licenses/LICENSE",
+      "sha256": "35e18f1507536ba10a78e37769285594f008aae2676db88e7e3d2cbb3eabcf24",
+      "app_path": "odx-vendor/odxtools-11.6.2.dist-info/licenses/LICENSE"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/odx-vendor/python_can-4.6.1.dist-info/METADATA",
+      "sha256": "fd7acba03ee021809f914a8cb777cb3669d7a1ca1c04520f18d0e12663672a8b",
+      "app_path": "odx-vendor/python_can-4.6.1.dist-info/METADATA"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/odx-vendor/python_can-4.6.1.dist-info/licenses/LICENSE.txt",
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "app_path": "odx-vendor/python_can-4.6.1.dist-info/licenses/LICENSE.txt"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/odx-vendor/odxtools/isotp_state_machine.py",
+      "sha256": "1f22217896079d26732ab417444a12d07133cb8d86a5bd9e356e331abcc89e06",
+      "app_path": "odx-vendor/odxtools/isotp_state_machine.py"
+    },
+    {
+      "path": "source/GearDiag-Raw-Build/app/odx-vendor/odxtools/cli/snoop.py",
+      "sha256": "df529650a0a35749bef0159a8f35717145c3af8c9944ec86dea5fc1305126f84",
+      "app_path": "odx-vendor/odxtools/cli/snoop.py"
+    }
+  ],
+  "validation": {
+    "environment": {
+      "cwd": "/workspace/scratch/630d3bd9704e",
+      "GITM_STATE": "/tmp/source-tests",
+      "PYTHONPATH": "ui-work/diag-integration:source/GearDiag-Raw-Build/app:runtime",
+      "QT_QPA_PLATFORM": "offscreen"
+    },
+    "dependency_load": {
+      "command": "python3 -c 'import odx_engine,json; library=odx_engine.library(); print(json.dumps({\"version\":library.__version__,\"file\":library.__file__,\"load_file_callable\":callable(library.load_file)}))' ",
+      "exit_code": 0,
+      "stdout": {
+        "version": "11.6.2",
+        "file": "/workspace/scratch/630d3bd9704e/source/GearDiag-Raw-Build/app/odx-vendor/odxtools/__init__.py",
+        "load_file_callable": true
+      }
+    },
+    "resource_tests": {
+      "command": "python3 -m unittest discover -s ui-work/diag-integration/tests -p test_resources_ui.py",
+      "exit_code": 0,
+      "tests_run": 12,
+      "result": "OK"
+    },
+    "full_suite": {
+      "command": "python3 ui-work/diag-integration/run-tests.py",
+      "exit_code": 0,
+      "tests_run": 137,
+      "result": "GITM_DIAGNOSTIC_TESTS_PASS|137"
+    }
+  },
+  "transport_identity": "Transport evidence records raw, overlay-only, and production digests. Production applies inspected commit-pinned patch-source.py transport block (adapter flock reservation and GITM_NO_AUTODISCOVER) before install.patch_transport. No hardware assertion."
+}

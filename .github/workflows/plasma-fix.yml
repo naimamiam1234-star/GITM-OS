@@ -1,0 +1,60 @@
+# Source and publisher must run against the same commit.
+name: Integrate GITM native theme and dock
+on:
+  push:
+    branches: [main]
+    paths: ['install-validation/**', 'overlay/etc/calamares/**', 'plasma-fix/**', 'theme-integration/**', 'diag-integration/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-fix.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: gitm-theme-integration
+  cancel-in-progress: true
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stop superseded builds from this integration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for run_id in $(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$GITHUB_SHA" --jq ' .workflow_runs[] | select(.name=="Build GITM Plasma 6 preview" or .name=="Build GITM development ISO") | .id'); do
+            gh api -X POST repos/${{ github.repository }}/actions/runs/$run_id/cancel || true
+          done
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          run-id: '38248858347'
+          github-token: ${{ github.token }}
+          path: input
+      - name: Repack existing Ubuntu 26.04 image
+        run: sudo bash plasma-fix/repack.sh
+      - name: Test BIOS UEFI and applications
+        run: sudo env GITM_GALLERY=1 python3 plasma-fix/boot-smoke.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-Plasma6-preview-amd64
+          path: dist/
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-Plasma6-gallery
+          path: dist/gallery/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-Plasma6-diagnostics
+          path: |
+            dist/*.png
+            dist/*.log
+            dist/*.txt
+            dist/*.sha256
+
+
+
