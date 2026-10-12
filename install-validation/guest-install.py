@@ -9,7 +9,7 @@ except BlockingIOError: raise SystemExit(0)
 serial=open('/dev/ttyS0','w',buffering=1)
 def mark(s): serial.write('GITM_INSTALL_TEST|'+s+'\n')
 def run(args, env=None, check=True):
-    return subprocess.run(args,env=env,check=check,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True).stdout
+    return subprocess.run(args,env=env,check=check,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=45).stdout
 
 def session(timeout=600):
     end=time.monotonic()+timeout
@@ -61,6 +61,8 @@ def main():
         dest=P('/etc/calamares')/name; dest.parent.mkdir(parents=True,exist_ok=True); dest.write_text(text)
         evidence=out/'config'/name; evidence.parent.mkdir(parents=True,exist_ok=True); evidence.write_text(text)
     env=session(); time.sleep(25); env.update(HOME='/root',USER='root',LOGNAME='root')
+    for command in [['xset','s','off'],['xset','-dpms'],['xset','s','reset']]:
+        run(command,env,check=False)
     run(['xrandr','--output','Virtual-1','--mode','1280x800'],env,check=False)
     log=(out/'calamares-debug.log').open('w')
     proc=subprocess.Popen(['/usr/bin/calamares','--debug'],env=env,stdout=log,stderr=subprocess.STDOUT)
@@ -75,7 +77,8 @@ def main():
     x('windowsize',win,1024,520); x('windowmove',win,128,153)
     def frame(label):
         # Force a compositor repaint before the host captures the page.
-        x('windowminimize',win); time.sleep(.5); x('windowmap',win); x('windowactivate','--sync',win)
+        run(['loginctl','unlock-sessions'],check=False)
+        x('windowminimize',win); time.sleep(.5); x('windowmap',win); x('windowactivate',win)
         time.sleep(2); mark('FRAME|'+label); time.sleep(8)
     def click(a,b): x('mousemove','--sync',a,b); x('click',1); time.sleep(3)
     frame('welcome')
@@ -97,6 +100,8 @@ def main():
     click(1000,733); frame('confirmation'); click(744,458); mark('INSTALL_CONFIRMED')
     injected=False; end=time.monotonic()+1500
     while time.monotonic()<end:
+        # Keep the disposable X11 test session active while file copying runs.
+        x('mousemove',640,80)
         mounts=json.loads(run(['findmnt','-J','-o','SOURCE,TARGET']))['filesystems']
         def flatten(items):
             for d in items:
@@ -116,6 +121,9 @@ def main():
             if not link.exists(): link.symlink_to('../gitm-installed-verifier.service')
             if not injected: mark('TARGET_ROOT_PROOF|'+m['source']+'|'+str(root)); injected=True
         logs=(out/'calamares-debug.log').read_text(errors='replace')
+        if 'Skipping non-emergency job' in logs:
+            frame('installation-failed')
+            raise RuntimeError('Calamares skipped remaining normal jobs after an installation failure')
         if P('/run/gitm-install-jobs-complete').is_file():
             if not injected: raise RuntimeError('Installation finished without target-root proof')
             frame('installation-complete'); archive(); mark('INSTALL_PASS'); return

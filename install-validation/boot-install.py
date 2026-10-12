@@ -44,6 +44,7 @@ def boot(stage,live):
                 r=command({'execute':'screendump','arguments':{'filename':str(ppm)}})
                 if 'error' in r: raise RuntimeError(r)
                 Image.open(ppm).save(ppm.with_suffix('.png')); ppm.unlink()
+                print('INSTALL_FRAME|'+stage+'|'+label,flush=True)
             if 'GITM_INSTALL_TEST|ARCHIVE_END' in text:
                 chunks=re.findall(r'GITM_INSTALL_TEST\|DATA\|([A-Za-z0-9+/=]+)',text)
                 (root/(stage+'-guest-evidence.tar.gz')).write_bytes(base64.b64decode(''.join(chunks),validate=True))
