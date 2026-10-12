@@ -43,21 +43,33 @@ class Worker(QThread):
 class Graph(QWidget):
  def __init__(self):
   super().__init__();self.points=deque(maxlen=600);self.series={};self.label="";self.setMinimumHeight(100)
+ @staticmethod
+ def padded_range(values):
+  lo,hi=min(values),max(values);padding=(hi-lo)*.1 if hi>lo else max(abs(lo)*.05,1.0)
+  return lo-padding,hi+padding
+ @staticmethod
+ def graduations(start,end):return [start+(end-start)*i/4 for i in range(5)]
  def paintEvent(self,event):
   p=QPainter(self);p.fillRect(self.rect(),self.palette().base());p.setPen(self.palette().text().color());p.drawText(10,19,self.label)
   if not self.series:p.drawText(self.rect(),Qt.AlignCenter,t('nodata'));return
-  panels=list(self.series.items());height=max(32,(self.height()-28)/len(panels))
+  colors=('#168aad','#d67821','#8b5fc7','#228b61','#c44b73')
+  panels=list(self.series.items());height=max(160,(self.height()-28)/len(panels))
   for index,(pid,series) in enumerate(panels):
-   top=28+index*height;bottom=top+height-22;left=66;right=self.width()-14;values=series['values'];times=series['elapsed'];lo=min(values);hi=max(values);span=hi-lo or 1
-   p.setPen(self.palette().text().color());p.drawText(8,int(top+14),str(pid));p.drawText(left,int(top+14),series['unit']+' · '+triple('أدنى / متوسط / أعلى','Min / moyenne / max','Min / mean / max')+' '+('/'.join(format(series[k],'.5g') for k in ('min','mean','max'))))
-   timed=[(x,y) for x,y in zip(times,values) if x is not None];p.setPen(QPen(self.palette().mid().color(),1));p.drawLine(left,int(top+20),left,int(bottom));p.drawLine(left,int(bottom),right,int(bottom))
-   if len(timed)<2:
-    p.setPen(self.palette().text().color());p.drawText(left,int(bottom+17),triple('وقت العينات غير متاح أو غير كاف','Horodatages indisponibles ou insuffisants','Sample timestamps unavailable or insufficient'));continue
+   top=28+index*height;plot_top=top+28;bottom=top+height-35;left=78;right=max(left+1,self.width()-24);values=series['values'];times=series['elapsed'];lo,hi=self.padded_range(values)
+   color=QColor(colors[index%len(colors)]);p.setPen(color);p.drawText(8,int(top+16),str(pid));p.drawText(left,int(top+16),series['unit']+' · '+triple('أدنى / متوسط / أعلى','Min / moyenne / max','Min / mean / max')+' '+('/'.join(format(series[k],'.5g') for k in ('min','mean','max'))))
+   for tick in self.graduations(lo,hi):
+    y=int(bottom-(tick-lo)*(bottom-plot_top)/(hi-lo));p.setPen(QPen(self.palette().mid().color(),1));p.drawLine(left,y,right,y);p.setPen(self.palette().text().color());p.drawText(4,y+4,format(tick,'.5g'))
+   timed=[(x,y) for x,y in zip(times,values) if x is not None]
+   if not timed:
+    p.setPen(self.palette().text().color());p.drawText(left,int(bottom+20),triple('وقت العينات غير متاح','Horodatages indisponibles','Sample timestamps unavailable'));continue
    start=min(x for x,y in timed);end=max(x for x,y in timed);duration=end-start
-   if duration<=0:continue
-   p.setPen(QPen(self.palette().highlight().color(),2))
-   for (x1,y1),(x2,y2) in zip(timed,timed[1:]):p.drawLine(int(left+(x1-start)*(right-left)/duration),int(bottom-(y1-lo)*max(1,bottom-top-20)/span),int(left+(x2-start)*(right-left)/duration),int(bottom-(y2-lo)*max(1,bottom-top-20)/span))
-   p.setPen(self.palette().text().color());p.drawText(left,int(bottom+17),format(start,'.3g')+' – '+format(end,'.3g')+' '+triple('ثانية فعلية · مقياس مستقل','secondes réelles · échelle indépendante','actual seconds · independent scale'))
+   for tick in self.graduations(start,end) if duration>0 else [start]:
+    x=int(left+(tick-start)*(right-left)/duration) if duration>0 else int((left+right)/2);p.setPen(self.palette().text().color());p.drawLine(x,int(bottom),x,int(bottom+4));p.drawText(x-10,int(bottom+18),format(tick,'.4g'))
+   p.drawText(left,int(bottom+32),triple('ثانية فعلية · مقياس مستقل','secondes réelles · échelle indépendante','actual seconds · independent scale'))
+   coords=[(int(left+(x-start)*(right-left)/duration) if duration>0 else int((left+right)/2),int(bottom-(y-lo)*(bottom-plot_top)/(hi-lo))) for x,y in timed]
+   p.setPen(QPen(color,2));p.setBrush(color)
+   for first,second in zip(coords,coords[1:]):p.drawLine(*first,*second)
+   for x,y in coords:p.drawEllipse(x-2,y-2,4,4)
 
 class Workspace(QWidget):
  def __init__(self,window):
@@ -78,7 +90,7 @@ class Workspace(QWidget):
   self.status=QLabel(t('idle'));self.status.setWordWrap(True);root.addWidget(self.status);self.progress=QProgressBar();self.progress.setRange(0,0);self.progress.setTextVisible(False);self.progress.setMaximumHeight(6);self.progress.hide();root.addWidget(self.progress);self.tabs=QTabWidget();root.addWidget(self.tabs,1)
   summary_card=InfoCard(t('summary'));self.summary=QTextEdit();self.summary.setReadOnly(True);self.summary.setPlaceholderText(triple('اختر السيارة والمحول، ثم ابدأ الفحص لعرض النتائج هنا.','Choisir véhicule et adaptateur, puis lancer le diagnostic.','Choose a vehicle and adapter, then start a scan to view results here.'));summary_card.body.addWidget(self.summary);self.tabs.addTab(summary_card,t('summary'))
   self.dtc=self.table(['ECU','Class','Status','DTC / error']);dtc_page=QWidget();dtc_layout=QVBoxLayout(dtc_page);self.dtc_search=QLineEdit();self.dtc_search.setPlaceholderText(triple('بحث بالرمز أو وحدة التحكم أو الحالة','Rechercher code, calculateur ou état','Search code, ECU or status'));self.dtc_search.textChanged.connect(self.filter_dtc);dtc_layout.addWidget(self.dtc_search);dtc_layout.addWidget(self.dtc,2);definition=QPushButton(t('definition'));definition.clicked.connect(self.lookup_dtc);dtc_layout.addWidget(definition);self.actions.append(definition);self.dtc_reference=QTextEdit();self.dtc_reference.setReadOnly(True);self.dtc_reference.setMaximumHeight(200);dtc_layout.addWidget(self.dtc_reference,1);self.dtc.cellDoubleClicked.connect(lambda row,col:self.lookup_dtc(row));self.tabs.addTab(dtc_page,'DTC')
-  page=QWidget();l=QVBoxLayout(page);line=QHBoxLayout();l.addLayout(line);line.addWidget(QLabel(h('ECU')));self.ecus=QComboBox();line.addWidget(self.ecus);self.ecus.currentIndexChanged.connect(self.update_graph);self.pid_checks={};self.pids=QComboBox();self.pids.currentIndexChanged.connect(self.update_graph);self.pids.setPlaceholderText(t('scanfirst'));self.pids.setMinimumWidth(100);self.pids.setMaximumWidth(260);line.addWidget(self.pids,1);b=action_button(triple('بيانات حية','Direct','Live'));b.clicked.connect(self.toggle_live);line.addWidget(b);self.record=QCheckBox(t('record'));line.addWidget(self.record);b=QPushButton('CSV');b.clicked.connect(self.export_live);line.addWidget(b);options=QHBoxLayout();self.pid_menu=QMenu(self);self.pid_button=action_button(triple('معلمات إضافية (حتى 5)','Paramètres (5 max)','Parameters (up to 5)'));self.pid_button.setMenu(self.pid_menu);options.addWidget(self.pid_button);self.pause_graph=QCheckBox(triple('إيقاف الرسم مؤقتاً','Pause du graphique','Pause graph'));self.pause_graph.toggled.connect(self.update_graph);options.addWidget(self.pause_graph);l.addLayout(options);self.graph=Graph();graph_area=QScrollArea();graph_area.setWidgetResizable(True);graph_area.setMinimumHeight(110);graph_area.setWidget(self.graph);l.addWidget(graph_area,1);self.live_table=self.table(['Time','ECU','PID','Name','Value','Unit','Error']);self.live_table.setColumnWidth(0,150);l.addWidget(self.live_table);self.tabs.addTab(page,t('live'))
+  page=QWidget();l=QVBoxLayout(page);line=QHBoxLayout();l.addLayout(line);line.addWidget(QLabel(h('ECU')));self.ecus=QComboBox();line.addWidget(self.ecus);self.ecus.currentIndexChanged.connect(self.update_graph);self.pid_checks={};self.pids=QComboBox();self.pids.currentIndexChanged.connect(self.update_graph);self.pids.setPlaceholderText(t('scanfirst'));self.pids.setMinimumWidth(100);self.pids.setMaximumWidth(260);line.addWidget(self.pids,1);b=action_button(triple('بيانات حية','Direct','Live'));b.clicked.connect(self.toggle_live);line.addWidget(b);self.record=QCheckBox(t('record'));line.addWidget(self.record);b=QPushButton('CSV');b.clicked.connect(self.export_live);line.addWidget(b);options=QHBoxLayout();self.pid_menu=QMenu(self);self.pid_button=action_button(triple('معلمات إضافية (حتى 5)','Paramètres (5 max)','Parameters (up to 5)'));self.pid_button.setMenu(self.pid_menu);options.addWidget(self.pid_button);self.pause_graph=QCheckBox(triple('إيقاف الرسم مؤقتاً','Pause du graphique','Pause graph'));self.pause_graph.toggled.connect(self.update_graph);options.addWidget(self.pause_graph);l.addLayout(options);self.graph=Graph();graph_area=QScrollArea();graph_area.setWidgetResizable(True);graph_area.setMinimumHeight(110);graph_area.setMaximumHeight(280);graph_area.setWidget(self.graph);l.addWidget(graph_area,1);self.live_table=self.table(['Time','ECU','PID','Name','Value','Unit','Error']);self.live_table.setMinimumHeight(140);self.live_table.setColumnWidth(0,150);l.addWidget(self.live_table);self.tabs.addTab(page,t('live'))
   self.ready=self.table(['ECU','MIL','DTC count','Monitor','Supported','Complete']);ready_page=QWidget();ready_layout=QVBoxLayout(ready_page);ready_line=QHBoxLayout();self.readiness_cards={}
   for key,title in [('complete',t('complete')),('incomplete',triple('غير مكتمل','Incomplet','Incomplete')),('unsupported',t('unsupported')),('unknown',triple('غير معروف','Inconnu','Unknown'))]:
    card=MetricCard(title);ready_line.addWidget(card);self.readiness_cards[key]=card
@@ -265,18 +277,18 @@ class Workspace(QWidget):
     except (TypeError,ValueError,OverflowError):clock.append(None)
    known=[stamp for stamp in clock if stamp is not None];origin=min(known) if known else None
    self.graph.series[selected]={'values':values,'elapsed':[stamp-origin if stamp is not None else None for stamp in clock],'unit':str(rows[-1].get('unit') or PIDS.get(selected,('', ''))[1]),'min':min(values),'mean':sum(values)/len(values),'max':max(values)}
-  self.graph.setMinimumHeight(max(100,len(self.graph.series)*100));self.graph.update();self.sync_split()
+  self.graph.setMinimumHeight(max(188,len(self.graph.series)*188));self.graph.update();self.sync_split()
  def show_split(self):
   if not hasattr(self,'split_page'):
    self.split_page=QSplitter(Qt.Horizontal);left=InfoCard(triple('آخر فحص','Dernière analyse','Last scan'));self.split_dtc=self.table(['ECU','Class','Status','DTC / error']);left.body.addWidget(self.split_dtc,1);self.split_page.addWidget(left)
-   right=InfoCard(triple('بيانات حية من الجلسة نفسها','Données de la même session','Live data from this session'));controls=QHBoxLayout();self.split_ecus=QComboBox();self.split_ecus.currentIndexChanged.connect(lambda index:self.ecus.setCurrentIndex(self.ecus.findData(self.split_ecus.itemData(index))));controls.addWidget(self.split_ecus);live=action_button(triple('بدء / إيقاف','Démarrer / arrêter','Start / stop'));live.clicked.connect(self.toggle_live);controls.addWidget(live);parameters=action_button(triple('المعلمات','Paramètres','Parameters'));parameters.setMenu(self.pid_menu);controls.addWidget(parameters);right.body.addLayout(controls);self.split_graph=Graph();split_area=QScrollArea();split_area.setWidgetResizable(True);split_area.setMinimumHeight(110);split_area.setWidget(self.split_graph);right.body.addWidget(split_area,1);self.split_live=self.table(['Time','ECU','PID','Name','Value','Unit','Error']);right.body.addWidget(self.split_live,1);self.split_page.addWidget(right);self.tabs.addTab(self.split_page,triple('عرض منقسم','Vue divisée','Split view'))
+   right=InfoCard(triple('بيانات حية من الجلسة نفسها','Données de la même session','Live data from this session'));controls=QHBoxLayout();self.split_ecus=QComboBox();self.split_ecus.currentIndexChanged.connect(lambda index:self.ecus.setCurrentIndex(self.ecus.findData(self.split_ecus.itemData(index))));controls.addWidget(self.split_ecus);live=action_button(triple('بدء / إيقاف','Démarrer / arrêter','Start / stop'));live.clicked.connect(self.toggle_live);controls.addWidget(live);parameters=action_button(triple('المعلمات','Paramètres','Parameters'));parameters.setMenu(self.pid_menu);controls.addWidget(parameters);right.body.addLayout(controls);self.split_graph=Graph();split_area=QScrollArea();split_area.setWidgetResizable(True);split_area.setMinimumHeight(110);split_area.setMaximumHeight(280);split_area.setWidget(self.split_graph);right.body.addWidget(split_area,1);self.split_live=self.table(['Time','ECU','PID','Name','Value','Unit','Error']);self.split_live.setMinimumHeight(140);right.body.addWidget(self.split_live,1);self.split_page.addWidget(right);self.tabs.addTab(self.split_page,triple('عرض منقسم','Vue divisée','Split view'))
   self.sync_split();self.tabs.setCurrentWidget(self.split_page)
  def sync_split(self):
   if not hasattr(self,'split_page'):return
   self.rows(self.split_dtc,[[self.dtc.item(row,col).text() if self.dtc.item(row,col) else '' for col in range(self.dtc.columnCount())] for row in range(self.dtc.rowCount())]);self.split_ecus.blockSignals(True);self.split_ecus.clear()
   for index in range(self.ecus.count()):self.split_ecus.addItem(self.ecus.itemText(index),self.ecus.itemData(index))
   self.split_ecus.setCurrentIndex(self.split_ecus.findData(self.ecus.currentData()));self.split_ecus.blockSignals(False)
-  self.split_graph.label=self.graph.label;self.split_graph.points=deque(self.graph.points,maxlen=600);self.split_graph.series=dict(self.graph.series);self.split_graph.setMinimumHeight(max(100,len(self.split_graph.series)*100));self.split_graph.update()
+  self.split_graph.label=self.graph.label;self.split_graph.points=deque(self.graph.points,maxlen=600);self.split_graph.series=dict(self.graph.series);self.split_graph.setMinimumHeight(max(188,len(self.split_graph.series)*188));self.split_graph.update()
   self.rows(self.split_live,[[display_time(row.get('at'),short=True)]+[row.get(key,'—') for key in ('ecu','pid','name','value','unit','error')] for row in self.samples if row.get('ecu')==self.ecus.currentData()])
  def lookup_dtc(self,row=None):
   if isinstance(row,bool) or row is None:row=self.dtc.currentRow() if self.dtc.selectedItems() else -1

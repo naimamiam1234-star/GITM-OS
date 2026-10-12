@@ -4,7 +4,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 try:
  from PySide6.QtWidgets import QApplication,QWidget
- from diagnostic_workspace import Workspace
+ from diagnostic_workspace import Workspace, Graph
 except ImportError:
  Workspace=None
 @unittest.skipIf(Workspace is None,'Qt runtime not on Python path')
@@ -208,3 +208,24 @@ class ProfessionalWorkspaceTests(unittest.TestCase):
   with patch.object(session,'live') as live:self.ui.show_split();live.assert_not_called()
   self.assertIs(self.ui.session,session);self.assertEqual(self.ui.tabs.currentIndex(),6);self.assertEqual(self.ui.split_dtc.item(0,3).text(),'P0100')
   self.ui.live_result([{'ecu':'7E8','pid':12,'value':1726,'at':'2026-10-12T12:00:00Z'}]);self.assertEqual(list(self.ui.split_graph.points),[1726]);self.assertEqual(self.ui.split_live.item(0,4).text(),'1726')
+
+@unittest.skipIf(Workspace is None,'Qt runtime not on Python path')
+class GraphScaleTests(unittest.TestCase):
+ def test_constant_and_variable_ranges_have_padding_and_five_ticks(self):
+  for values in ([1726,1726],[0,0],[-10,-10],[1000,2000]):
+   lo,hi=Graph.padded_range(values);ticks=Graph.graduations(lo,hi)
+   self.assertLess(lo,min(values));self.assertGreater(hi,max(values));self.assertEqual(len(ticks),5)
+   self.assertEqual(ticks[0],lo);self.assertEqual(ticks[-1],hi)
+ def test_elapsed_ticks_preserve_irregular_acquisition_times(self):
+  self.assertEqual(Graph.graduations(0,9),[0,2.25,4.5,6.75,9])
+
+@unittest.skipIf(Workspace is None,'Qt runtime not on Python path')
+class GraphLayoutTests(unittest.TestCase):
+ setUpClass=classmethod(WorkspaceTests.setUpClass.__func__)
+ setUp=WorkspaceTests.setUp
+ tearDown=WorkspaceTests.tearDown
+ def test_live_table_and_scroll_bounds(self):
+  self.assertGreaterEqual(self.ui.live_table.minimumHeight(),140)
+  self.assertLessEqual(self.ui.graph.parentWidget().parentWidget().maximumHeight(),280)
+  self.ui.show_split();self.assertGreaterEqual(self.ui.split_live.minimumHeight(),140)
+  self.assertLessEqual(self.ui.split_graph.parentWidget().parentWidget().maximumHeight(),280)
