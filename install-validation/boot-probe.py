@@ -52,3 +52,5 @@ finally:
 compare=subprocess.run(['qemu-img','compare',str(baseline),str(disk)],capture_output=True,text=True)
 (root/'disk-unchanged.txt').write_text(compare.stdout+compare.stderr+'exit='+str(compare.returncode)+'\n')
 if compare.returncode: raise RuntimeError('Startup-only probe changed virtual disk content')
+
+if "GITM_INSTALL_PROBE|ERROR|" in text: raise RuntimeError("Guest evidence collector failed; inspect markers and archive")

@@ -30,4 +30,5 @@ ln -sf /etc/systemd/system/gitm-installer-probe.service "$rootmnt/etc/systemd/sy
 HOOK
 chmod 755 "$payload/scripts/casper-bottom/99gitm-installer-probe"
 cp "$dest/initrd.original" "$dest/initrd"
+chmod u+w "$dest/initrd"
 (cd "$payload"; find . -print0 | cpio --null -o --format=newc 2>/dev/null | gzip -1) >> "$dest/initrd"
