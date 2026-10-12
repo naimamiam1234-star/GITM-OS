@@ -51,7 +51,8 @@ class Shell:
   self.appearance.setMenu(am);self.appearance.setMaximumWidth(46);hl.addWidget(self.appearance)
   self.split=action_button('▥');self.split.setAccessibleName(t('تقسيم الشاشة','Écran partagé','Split screen'));sm=QMenu(self.split);sm.addAction(t('مقارنة تقريرين','Comparer deux rapports','Compare reports'),lambda:self.navigate('reports'));sm.addAction(t('الأعطال والبيانات الحية','DTC et données','DTC and live data'),self.split_view);unsupported=sm.addAction(t('سيارتان: دعم غير معتمد','Deux véhicules: non validé','Two vehicles: not validated'));unsupported.setEnabled(False);self.split.setMenu(sm);self.split.setMaximumWidth(46);hl.addWidget(self.split)
   self.bell=action_button('●');self.bell.setAccessibleName(t('الإشعارات','Notifications','Notifications'));nm=QMenu(self.bell);nm.aboutToShow.connect(self.alert_menu);self.bell.setMenu(nm);self.bell.setMaximumWidth(42);hl.addWidget(self.bell);outer.addWidget(header)
-  for button,kind in ((toggle,'menu'),(self.appearance,'appearance'),(self.split,'split'),(self.bell,'notifications')):button.setText('');button.setIcon(header_icon(kind));button.setIconSize(QSize(24,24))
+  self.header_buttons=((toggle,'menu'),(self.appearance,'appearance'),(self.split,'split'),(self.bell,'notifications'))
+  for button,kind in self.header_buttons:button.setText('');button.setIcon(header_icon(kind));button.setIconSize(QSize(24,24))
   middle=QHBoxLayout();middle.setContentsMargins(0,0,0,0);outer.addLayout(middle,1);self.sidebar=QWidget();self.sidebar.setObjectName('sidebar');self.sidebar.setFixedWidth(172);side=QVBoxLayout(self.sidebar);side.setContentsMargins(8,12,8,12);home=action_button(t('الرئيسية','Accueil','Home'),icon='home');home.clicked.connect(self.home);side.addWidget(home)
   for i,group in enumerate(GROUPS):
    b=action_button(t(*group));menu=QMenu(b)
@@ -152,6 +153,7 @@ class Shell:
  def apply_theme(self):
   self.dark=self.theme=='dark' or self.theme=='auto' and (time.localtime().tm_hour>=19 or time.localtime().tm_hour<7);self.w.setProperty('gitmDark',self.dark);colors=palette(self.dark);pal=self.w.palette()
   for role,key in [(QPalette.Window,'background'),(QPalette.Base,'surface'),(QPalette.Text,'text'),(QPalette.WindowText,'text'),(QPalette.Button,'surface'),(QPalette.ButtonText,'text'),(QPalette.Highlight,'primary'),(QPalette.HighlightedText,'on_primary'),(QPalette.Mid,'muted')]:pal.setColor(role,QColor(colors[key]))
+  for button,kind in self.header_buttons:button.setIcon(header_icon(kind,colors['header_text']))
   self.w.setPalette(pal);self.w.setStyleSheet(styles(self.dark,self.font));self.w.base_style=self.w.styleSheet()
  def set_language(self,index):
   if getattr(self.w,'_obd_worker',None) is not None or getattr(self.w,'task',None) is not None and self.w.task.isRunning():

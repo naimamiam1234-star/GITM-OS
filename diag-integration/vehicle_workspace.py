@@ -25,20 +25,23 @@ class Workspace(QWidget):
    if not pix.isNull():
     # Source brand marks are often black; a neutral tile stays readable in both themes.
     logo=pix.scaled(28,20,Qt.KeepAspectRatio,Qt.SmoothTransformation);tile=QPixmap(32,24);tile.fill(Qt.transparent);painter=QPainter(tile);painter.setRenderHint(QPainter.Antialiasing);painter.setPen(Qt.NoPen);painter.setBrush(QColor('#f4f6f8'));painter.drawRoundedRect(0,0,32,24,3,3);painter.drawPixmap((32-logo.width())//2,(24-logo.height())//2,logo);painter.end();button.setIcon(QIcon(tile))
-   button.clicked.connect(lambda checked=False,n=name:self.fields['make'].setText(n));self.buttons[name]=button
+   button.setCheckable(True);button.clicked.connect(lambda checked=False,n=name:self.fields['make'].setText(n));self.buttons[name]=button
   self.search.textChanged.connect(self.reflow);self.only_favorites.toggled.connect(self.reflow)
   self.fields={};form=QFormLayout();root.addLayout(form)
   saved=dict(getattr(window,'vehicle',{}) or store.cache('vehicle_selection') or {})
   if saved and not getattr(window,'vehicle',{}):window.vehicle=dict(saved)
   for key,label in [('make',text('الماركة','Marque','Make')),('model',text('الموديل','Modèle','Model')),('year',text('السنة','Année','Year')),('engine',text('المحرك','Moteur','Engine')),('vin','VIN')]:
    entry=QLineEdit(str(saved.get(key,'') or ''));entry.setObjectName('vehicle_'+key);form.addRow(label,entry);self.fields[key]=entry
+  self.fields['make'].textChanged.connect(self.refresh_state);self.refresh_state()
   self.consent=QCheckBox(text('أوافق على إرسال VIN إلى NHTSA','Autoriser l’envoi du VIN à NHTSA','Allow sending VIN to NHTSA'));root.addWidget(self.consent)
   actions=QHBoxLayout();root.addLayout(actions)
   for label,fn in [(text('اعتماد الاختيار','Enregistrer sélection','Save selection'),self.save_selection),(text('تبديل المفضلة','Basculer favori','Toggle favorite'),self.favorite),(text('بحث VIN','Rechercher VIN','Look up VIN'),self.lookup)]:
    b=action_button(label);b.clicked.connect(fn);actions.addWidget(b);self.actions.append(b)
   self.status=QLabel();root.addWidget(self.status);scope=QLabel(text('اختيار يدوي؛ دعم وحدات OEM غير مثبت. OBD عام حسب المحول والسيارة.','Sélection manuelle ; support OEM non établi. OBD générique selon véhicule et adaptateur.','Manual identity; OEM module support is not established. Generic OBD depends on vehicle and adapter.'));scope.setWordWrap(True);root.addWidget(scope)
   self.log=QTextEdit();self.log.setReadOnly(True);self.log.setMaximumHeight(100);root.addWidget(self.log);self.reflow()
- def refresh_state(self):pass
+ def refresh_state(self):
+  selected=self.fields['make'].text().strip().casefold()
+  for name,button in self.buttons.items():button.setChecked(name.casefold()==selected)
  @staticmethod
  def columns_for(width):return 5 if width>=1600 else 4 if width>=1150 else 3 if width>=800 else 2
  def columns(self):return self.columns_for(self.window.width() if self.parentWidget() is not None else self.width())
