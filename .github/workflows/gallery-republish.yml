@@ -1,3 +1,4 @@
+# Isolated artifact publication; unrelated legacy workflows are omitted on this branch.
 name: Publish reviewed source14 gallery recapture
 on:
   push:
