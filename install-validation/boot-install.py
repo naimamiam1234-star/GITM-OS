@@ -10,7 +10,8 @@ subprocess.run(['qemu-img','create','-f','qcow2',str(disk),'40G'],check=True)
 def boot(stage,live):
     qmp=root/(stage+'.qmp'); serial=root/(stage+'-serial.log')
     args=['qemu-system-x86_64','-machine','q35,accel=kvm:tcg','-cpu','max','-m','6144','-smp','2',
-          '-drive','file='+str(disk)+',format=qcow2,if=virtio,serial=GITM-CI-ONLY',
+          '-drive','file='+str(disk)+',format=qcow2,if=none,id=install-disk',
+          '-device','virtio-blk-pci,drive=install-disk,serial=GITM-CI-ONLY',
           '-display','none','-serial','file:'+str(serial),'-qmp','unix:'+str(qmp)+',server=on,wait=off',
           '-device','virtio-vga','-nic','user,model=virtio-net-pci','-no-reboot']
     if live: args+=['-cdrom',str(iso),'-kernel',str(root/'vmlinuz'),'-initrd',str(root/'initrd'),'-append','boot=casper console=tty0 console=ttyS0,115200 ---']
@@ -20,10 +21,15 @@ def boot(stage,live):
     s=None; text=''; seen=set(); success='INSTALL_PASS' if live else 'DISK_BOOT_PASS'
     deadline=time.monotonic()+(2400 if live else 900)
     try:
-        while not qmp.exists():
-            if p.poll() is not None or time.monotonic()>deadline: raise RuntimeError('QEMU failed to start')
-            time.sleep(.2)
-        s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(30); s.connect(str(qmp)); f=s.makefile('rwb',buffering=0); f.readline()
+        while True:
+            if p.poll() is not None or time.monotonic()>deadline:
+                raise RuntimeError('QEMU failed to start: '+(root/(stage+'-qemu.log')).read_text())
+            s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(30)
+            try:
+                s.connect(str(qmp)); break
+            except (FileNotFoundError, ConnectionRefusedError):
+                s.close(); s=None; time.sleep(.2)
+        f=s.makefile('rwb',buffering=0); f.readline()
         def command(v):
             f.write((json.dumps(v)+'\n').encode())
             while True:
