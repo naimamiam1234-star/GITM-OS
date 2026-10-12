@@ -7,6 +7,7 @@ work=$(mktemp -d /var/tmp/gitm-plasma-fix.XXXXXX)
 source=$(find input -name '*.iso' -print -quit)
 xorriso -osirrox on -indev "$source" -extract /casper/filesystem.squashfs "$work/original.squashfs"
 unsquashfs -d "$work/root" "$work/original.squashfs"
+install -D -m644 overlay/etc/calamares/branding/gitm/branding.desc "$work/root/etc/calamares/branding/gitm/branding.desc"
 install -m755 plasma-fix/gitm-desktop "$work/root/usr/local/bin/gitm-desktop"
 install -D -m600 plasma-fix/network-manager.yaml "$work/root/etc/netplan/01-gitm-network-manager.yaml"
 install -m755 plasma-fix/network-smoke.py "$work/root/usr/local/bin/gitm-network-smoke"

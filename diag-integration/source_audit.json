@@ -203,8 +203,8 @@
     "full_suite": {
       "command": "python3 ui-work/diag-integration/run-tests.py",
       "exit_code": 0,
-      "tests_run": 135,
-      "result": "GITM_DIAGNOSTIC_TESTS_PASS|135"
+      "tests_run": 137,
+      "result": "GITM_DIAGNOSTIC_TESTS_PASS|137"
     }
   },
   "transport_identity": "Transport evidence records raw, overlay-only, and production digests. Production applies inspected commit-pinned patch-source.py transport block (adapter flock reservation and GITM_NO_AUTODISCOVER) before install.patch_transport. No hardware assertion."

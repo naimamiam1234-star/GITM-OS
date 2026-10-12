@@ -351,7 +351,10 @@ class Desktop(QWidget):
    env.remove('QT_STYLE_OVERRIDE');env.remove('QT_QPA_PLATFORMTHEME')
   env.insert('LANG','ar_MA.UTF-8') if argv[0]=='systemsettings' else None
   p.setProcessEnvironment(env);p.setProgram(argv[0]);p.setArguments(argv[1:]);p.setWorkingDirectory(str(ROOT))
-  STATE.mkdir(parents=True,exist_ok=True);p.setStandardErrorFile(str(STATE/(key+'.log')),QIODevice.Append)
+  STATE.mkdir(parents=True,exist_ok=True)
+  if key=='install':
+   p.setProcessChannelMode(QProcess.MergedChannels);p.setStandardOutputFile(str(STATE/(key+'.log')),QIODevice.Append)
+  else:p.setStandardErrorFile(str(STATE/(key+'.log')),QIODevice.Append)
   p.errorOccurred.connect(lambda error:QMessageBox.warning(self,'GITM','تعذر تشغيل '+key))
   p.finished.connect(lambda code,status:QMessageBox.warning(self,'GITM',f'توقف {key} برمز {code}. سجل التفاصيل: {STATE/(key+".log")}') if code else None)
   self.processes[key]=p;p.start()
@@ -438,5 +441,3 @@ def main():
   QTimer.singleShot(4000,visible_marker)
  return app.exec()
 if __name__=='__main__':sys.exit(main())
-
-

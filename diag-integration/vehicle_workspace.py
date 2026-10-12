@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 from PySide6.QtCore import QSize,Qt
-from PySide6.QtGui import QPixmap,QIcon
+from PySide6.QtGui import QPixmap,QIcon,QPainter,QColor
 from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QScrollArea,QLineEdit,QFormLayout,QCheckBox,QTextEdit,QLabel
 import native,store,source_gateway
 from professional_components import triple,action_button
@@ -21,8 +21,10 @@ class Workspace(QWidget):
    try:logos=json.loads((base/'data/logos.json').read_text())
    except (OSError,ValueError):logos={}
   for name,data in logos.items():
-   button=action_button(name);button.setMinimumHeight(80);button.setIconSize(QSize(64,48));pix=QPixmap(str(base/str(data.get('path','')).lstrip('/')))
-   if not pix.isNull():button.setIcon(QIcon(pix.scaled(64,48,Qt.KeepAspectRatio,Qt.SmoothTransformation)))
+   button=action_button(name);button.setObjectName('vehicleBrand');button.setIconSize(QSize(32,24));pix=QPixmap(str(base/str(data.get('path','')).lstrip('/')))
+   if not pix.isNull():
+    # Source brand marks are often black; a neutral tile stays readable in both themes.
+    logo=pix.scaled(28,20,Qt.KeepAspectRatio,Qt.SmoothTransformation);tile=QPixmap(32,24);tile.fill(Qt.transparent);painter=QPainter(tile);painter.setRenderHint(QPainter.Antialiasing);painter.setPen(Qt.NoPen);painter.setBrush(QColor('#f4f6f8'));painter.drawRoundedRect(0,0,32,24,3,3);painter.drawPixmap((32-logo.width())//2,(24-logo.height())//2,logo);painter.end();button.setIcon(QIcon(tile))
    button.clicked.connect(lambda checked=False,n=name:self.fields['make'].setText(n));self.buttons[name]=button
   self.search.textChanged.connect(self.reflow);self.only_favorites.toggled.connect(self.reflow)
   self.fields={};form=QFormLayout();root.addLayout(form)
