@@ -131,7 +131,16 @@
       "sha256": "0794782dcf629676cdd9fef2430cd259e2aa5aab894aa405e1735c17bb4f31a3",
       "app_path": "transport.py",
       "installed_sha256": "6a963af158b0c29f7a5635ffe640c539d9602f03e3a9c3867ca2fa0f6975fe23",
-      "installed_transform": "install.patch_transport adds connection-generation constructor and close guards"
+      "installed_transform": "install.patch_transport adds connection-generation constructor and close guards",
+      "expected_production_sha256": "17b0a37a2262d377a527558f9d35ca988e7a86ce70d4faf0f2a2f54bd67adab6",
+      "production_transform": {
+        "source_url": "https://github.com/naimamiam1234-star/GITM-OS/blob/eda30658a2534a1c57a0884e89b53a9e780612a5/scripts/patch-source.py",
+        "github_blob_sha": "3301e9bc80db6c558927248e0948730f4d2080da",
+        "revision": "eda30658a2534a1c57a0884e89b53a9e780612a5",
+        "pipeline": "raw transport -> exact inspected scripts/patch-source.py transport block -> install.patch_transport",
+        "transport_block": "p=root/'transport.py';s=p.read_text().replace('  # Do not send the GITM/ELM handshake', \"  if os.environ.get('GITM_NO_AUTODISCOVER')=='1':return self.info()\\n  # Do not send the GITM/ELM handshake\")\ns=s.replace('  self.io=self.fd=self.family', '  if self.reservation is not None:self.reservation.close();self.reservation=None\\n  self.io=self.fd=self.family')\n# Reserve each adapter across processes, including primary/secondary windows.\ns=s.replace('self.lock=threading.RLock()', 'self.lock=threading.RLock(); self.reservation=None')\ns=s.replace(' def close(self):', ' def close(self):')\ns=s.replace('   self.close()\\n   if kind', \"   self.close()\\n   import fcntl,hashlib\\n   from pathlib import Path\\n   scope=Path(os.environ.get('XDG_RUNTIME_DIR',str(Path.home()/'.local/share/gitm')))/'vci-locks';scope.mkdir(parents=True,exist_ok=True)\\n   key=hashlib.sha256((str(kind)+':'+str(target)).encode()).hexdigest()\\n   self.reservation=(scope/(key+'.lock')).open('a')\\n   try:fcntl.flock(self.reservation,fcntl.LOCK_EX|fcntl.LOCK_NB)\\n   except BlockingIOError:raise ConnectionError('Adapter already in use by another GITM session')\\n   if kind\")\np.write_text(s)\n",
+        "verification": "Reproduced exact pipeline against raw transport in memory; result matches failed ISO build actual digest. No digest accepted from build alone."
+      }
     },
     {
       "path": "source/GearDiag-Raw-Build/app/requirements-odx.txt",
@@ -198,5 +207,5 @@
       "result": "GITM_DIAGNOSTIC_TESTS_PASS|135"
     }
   },
-  "transport_identity": "transport.py records separate raw-build and installed install.patch_transport hashes; installed evidence verification accepts only these two recorded identities. Neither hash proves hardware operation."
+  "transport_identity": "Transport evidence records raw, overlay-only, and production digests. Production applies inspected commit-pinned patch-source.py transport block (adapter flock reservation and GITM_NO_AUTODISCOVER) before install.patch_transport. No hardware assertion."
 }

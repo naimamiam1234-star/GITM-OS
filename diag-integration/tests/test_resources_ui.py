@@ -62,7 +62,7 @@ class ResourceTests(unittest.TestCase):
   self.assertEqual(len(audit['bundled_libraries']),2)
   for evidence in audit['evidence']:
    digest=hashlib.sha256((base/evidence['app_path']).read_bytes()).hexdigest()
-   self.assertIn(digest,{evidence['sha256'],evidence.get('installed_sha256',evidence['sha256'])})
+   self.assertIn(digest,{evidence['sha256'],evidence.get('installed_sha256',evidence['sha256']),evidence.get('expected_production_sha256',evidence['sha256'])})
   self.assertTrue(all(row['integration_verified'] is False for row in resources.load_sources()[0]))
 
  def test_odx_dependency_loading_is_real_and_offline(self):

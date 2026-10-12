@@ -50,3 +50,22 @@ It identifies the audited source; it does not certify the installed patched
 transport. Exact runtime environment, commands, exit codes and dependency-load
 output are recorded in the manifest. The full suite also passed:
 `GITM_DIAGNOSTIC_TESTS_PASS|134` (134 tests, no skips).
+
+Installed verification resolves each `app_path` against `native.ROOT` (or the
+native module directory), so repository paths are not required in the installed
+application. The transport record additionally stores the expected digest of
+`install.patch_transport(raw_code)`; verification accepts its recorded raw or
+installed identity. Other evidence files must match their original digest.
+
+Production also applies the transport block from repository revision
+`eda30658a2534a1c57a0884e89b53a9e780612a5`,
+[scripts/patch-source.py](https://github.com/naimamiam1234-star/GITM-OS/blob/eda30658a2534a1c57a0884e89b53a9e780612a5/scripts/patch-source.py),
+GitHub blob `3301e9bc80db6c558927248e0948730f4d2080da`. This adds adapter
+process reservation with `flock` and `GITM_NO_AUTODISCOVER` before the diagnostic
+overlay adds generation guards. The exact inspected block is recorded in the
+manifest. Reproducing that block in memory against the raw source followed by
+`install.patch_transport` produced
+`17b0a37a2262d377a527558f9d35ca988e7a86ce70d4faf0f2a2f54bd67adab6`,
+matching the actual production build digest. Verification accepts only the three
+recorded raw, overlay-only, and production identities. The build's reported
+digest was compared with the reproduced transformation, not accepted alone.
