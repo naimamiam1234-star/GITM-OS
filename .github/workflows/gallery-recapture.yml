@@ -1,0 +1,51 @@
+name: Source14 gallery fixture recapture
+on:
+  push:
+    branches: [gallery-recapture-20261012]
+    paths: ['.github/workflows/gallery-recapture.yml', 'gallery-recapture/**']
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Exact final source14 ISO artifact run
+        default: '38286238342'
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  gallery-recapture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          run-id: ${{ inputs.source_run || '38286238342' }}
+          github-token: ${{ github.token }}
+          path: input
+      - name: Install fixture tools
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 qemu-utils ovmf xorriso squashfs-tools python3-pil python3-zstandard
+      - name: Stage exact ISO without modification
+        run: |
+          mkdir -p dist
+          source=$(find input -type f -name '*.iso' -print -quit)
+          test -n "$source"
+          cp "$source" dist/GITM-OS-3.3.0-integration-amd64.iso
+          sha256sum dist/GITM-OS-3.3.0-integration-amd64.iso > dist/source14-iso.sha256
+      - name: Original ISO BIOS and UEFI boots plus fixture-cleaned gallery
+        run: sudo python3 gallery-recapture/boot-gallery-recapture.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: GITM-source14-gallery-recapture-evidence
+          path: |
+            dist/*.png
+            dist/*.log
+            dist/*.sha256
+            dist/fixture-boot-smoke.py
+            dist/gallery/*.png
+            dist/gallery/*.txt
+            dist/gallery-driver-fixture/*.py
+            dist/gallery-driver-fixture/*.json
+          retention-days: 14
