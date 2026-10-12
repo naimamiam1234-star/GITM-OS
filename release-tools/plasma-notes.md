@@ -1,12 +1,11 @@
-# GITM OS — AutoDiag diagnostic workspace preview
+# GITM OS — professional AutoDiag interface preview
 
-Built on Ubuntu with native Plasma/KWin, keeping AutoDiag separate. Includes the verified popup controls from preview8.
+Ubuntu with native Plasma/KWin and a separate diagnostic application. The bottom dock uses Plasma Dodge Windows to avoid covering application content.
 
-New native AutoDiag workspace: CAN OBD per-responder scan, stored/pending/permanent DTC, VIN, readiness, freeze frame00, 27 numeric PID decoders, live graph and bounded CSV recording, offline HTML/JSON exports, local scan persistence. Documented ECU profile reads are now accessible in the native app with exact make/model/year/engine gates. UDS response validation and adapter cleanup corrected.
+Professional shared UI: native cached navigation, light/dark themes, Arabic/French/English, measured vehicle/adapter context, per-ECU diagnostic cards, DTC filters, up to five distinct PID graphs with actual timestamps, readiness states, freeze-frame cards and same-session split view. Customer records support multiple cars/plates and explicit selection. Invoices use precise decimal calculations, configurable tax/discount, MAD, preserved legacy currency, PDF/printing and vehicle-checked report association.
 
-Verification: installed-module test suite, real loopback TCP ELM transport including11/29-bit CAN and repeated addressed reads, actual ISO guest simulator scan/live/export, BIOS/UEFI visible Plasma session, keyboard/popups and full public download SHA256/range tests. Screenshot gallery includes explicitly labeled simulator data.
+General camera, calculator, PDF, media, system settings and updates are shared GITM OS services. AutoDiag provides handoffs rather than duplicating general applications. Camera and update center are separate OS windows; Okular, KCalc, VLC and native System Settings provide the general utilities.
 
-Known limits: no physical vehicle, serial/Bluetooth/BLE adapter, OEM coverage, flash/coding/active test, 41 maintenance, TPMS/ADAS/key/EV-specific function validation. No OEM ECU definitions bundled. Cross-packet UDS P2* pending wait not implemented. Generic OBD is emissions scope only. Requires SSSE3/SSE4.1/SSE4.2/POPCNT CPU features for bundled Qt. This is a development preview, not proof of universal diagnostic coverage.
+Verification before ISO assembly: 116 tests passed without skips; installed overlay twice and opened all major page types; light/dark layouts rendered at 1024x768, 1280x800, 1366x768 and 1920x1080. ISO boot/publication results are recorded separately after those checks run. Guest gallery includes explicitly labelled simulator scans.
 
-
-Readability: localized acquisition states, unsupported monitors never claim completion, readable UTC times and fitted static table columns.
+Limits: no physical vehicle or USB/Bluetooth/BLE/CAN/camera validation. No universal OEM coding, flashing, active tests, 41 maintenance functions, TPMS, ADAS, keys or EV coverage. No OEM ECU database bundled. Invoice fields are configurable and do not certify accounting compliance. Bundled Qt requires SSSE3/SSE4.1/SSE4.2/POPCNT. Generic OBD covers emissions diagnostics. This is a development preview.

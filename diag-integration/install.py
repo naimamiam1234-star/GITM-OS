@@ -1,7 +1,7 @@
 """Overlay tested engines and wire native AutoDiag pages; fail on source drift."""
 import pathlib, shutil, sys, py_compile
 
-MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform')
+MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','vehicle_workspace','workshop_workspace','ai_workspace','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace')
 def patch_transport(code):
     if 'self.generation=0;' not in code:
         marker=' def __init__(self): self.io='
@@ -33,6 +33,11 @@ def install(target):
     if marker+guard not in code:
         if marker not in code:raise RuntimeError('Native worker source drift')
         code=code.replace(marker,marker+guard)
+    marker='        self.timer.timeout.connect(self.poll_live)\n'
+    hook='        import professional_ui\n        professional_ui.install(self)\n'
+    if marker+hook not in code:
+        if marker not in code:raise RuntimeError('Native initialization source drift')
+        code=code.replace(marker,marker+hook,1)
     p.write_text(code)
     p=target/'transport.py';p.write_text(patch_transport(p.read_text()));py_compile.compile(str(p),doraise=True)
     for name in (*MODULES,'native'):py_compile.compile(str(target/(name+'.py')),doraise=True)

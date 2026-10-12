@@ -13,7 +13,10 @@ def setup(w,steps,emit):
         w.diagnosis_page();w.diagnostic_workspace.scan()
     def tab(index):
         ui=w.diagnostic_workspace
-        w.pages.setCurrentWidget(ui.parentWidget())
+        page=ui
+        while page is not None and w.pages.indexOf(page)<0:page=page.parentWidget()
+        if page is None:raise RuntimeError('Diagnostic workspace is outside the page stack')
+        w.pages.setCurrentWidget(page)
         if not ui.report or ui.report['status']!='complete' or ui.report.get('evidence')!='simulator':raise RuntimeError('Guest simulator scan did not complete')
         if index==2:
             ui.tabs.setCurrentIndex(2);ui.pids.setCurrentIndex(ui.pids.findData(12));ui.record.setChecked(True);ui.toggle_live()

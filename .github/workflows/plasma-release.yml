@@ -17,7 +17,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       SOURCE_RUN: 'auto'
-      RELEASE_TAG: gitm-os-3.3.0-plasma10
+      RELEASE_TAG: gitm-os-3.3.0-plasma11
     steps:
       - uses: actions/checkout@v4
       - name: Require successful source build

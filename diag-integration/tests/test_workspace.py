@@ -65,7 +65,8 @@ class WorkspaceTests(unittest.TestCase):
   from PySide6.QtWidgets import QMessageBox
   result={'before':{'id':'before'},'after':{'id':'after','status':'complete','ecus':[],'errors':[]},'status':'partial','acknowledgements':['7E8'],'verification_scope':'Stored and pending emissions DTC readback only; permanent DTC not cleared','errors':[{'error':'Missing 7E9 acknowledgement'}],'trace':[{'command':'04','response':'44'}]}
   def launch(fn,done):done(result)
-  with patch('diagnostic_workspace.QMessageBox.question',return_value=QMessageBox.Yes),patch.object(self.ui,'launch',side_effect=launch):self.ui.clear()
+  with patch('diagnostic_workspace.QMessageBox.question',return_value=QMessageBox.Yes),patch.object(self.ui,'launch',side_effect=launch),patch.object(self.ui,'update_actions'):
+   self.ui.clear_button.setEnabled(True);self.ui.clear()
   self.assertEqual(self.ui.report['status'],'partial');self.assertIn('permanent DTC not cleared',self.ui.report['clear_action']['scope']);self.assertEqual(self.ui.report['clear_action']['before_id'],'before');self.assertIn('Missing 7E9 acknowledgement',self.ui.summary.toPlainText());self.assertEqual(self.ui.report['errors'][0]['section'],'clear-operation')
  def test_localized_acquisition_readiness_and_readable_times(self):
   from unittest.mock import patch
@@ -122,3 +123,81 @@ class SimulatorWorkspace(unittest.TestCase):
   while getattr(self.window,'_obd_worker',None) is not None and time.monotonic()<stop:self.app.processEvents();time.sleep(.01)
   self.assertIsNone(getattr(self.window,'_obd_worker',None))
   self.ui=Workspace(self.window)
+
+@unittest.skipIf(Workspace is None,'Qt runtime not on Python path')
+class ProfessionalWorkspaceTests(unittest.TestCase):
+ @classmethod
+ def setUpClass(cls):cls.app=QApplication.instance() or QApplication([])
+ setUp=WorkspaceTests.setUp
+ tearDown=WorkspaceTests.tearDown
+ def test_empty_actions_and_unknown_metrics(self):
+  self.assertFalse(self.ui.export_button.isEnabled());self.assertFalse(self.ui.clear_button.isEnabled());self.assertTrue(self.ui.cancel_button.isHidden())
+  self.assertEqual(self.ui.metrics['dtc'].value_label.text(),'—');self.assertEqual(self.ui.metrics['mil'].value_label.text(),'—')
+ def test_partial_results_keep_unknown_counts_and_filter_raw_evidence(self):
+  report={'status':'partial','evidence':'simulator','ecus':[{'id':'7E8','dtc':{'stored':{'status':'ok','codes':['P0100']},'pending':{'status':'error','error':'NO DATA','codes':[]}}}]}
+  self.ui.display(report);self.assertEqual(self.ui.metrics['dtc'].value_label.text(),'—');self.assertTrue(self.ui.export_button.isEnabled());self.assertFalse(self.ui.clear_button.isEnabled())
+  self.ui.dtc_search.setText('P0100');self.assertFalse(self.ui.dtc.isRowHidden(0));self.assertTrue(self.ui.dtc.isRowHidden(1));self.assertIs(self.ui.report,report);self.assertFalse(self.ui.simulator_badge.isHidden())
+ def test_clear_requires_current_complete_connected_scan(self):
+  from unittest.mock import patch
+  import transport
+  with patch.object(transport.LINK,'info',return_value={'connected':True}):
+   self.ui.connection_identity=self.ui.connection_key();self.ui.display({'status':'complete','ecus':[{'id':'7E8','dtc':{'stored':{'status':'ok','codes':[]}}}]})
+   self.assertTrue(self.ui.clear_button.isEnabled())
+   with patch.object(transport.LINK,'generation',getattr(transport.LINK,'generation',0)+1,create=True):self.ui.refresh_connection();self.assertFalse(self.ui.clear_button.isEnabled())
+
+ def test_running_action_state_and_completion(self):
+  import time
+  def operation(cancel,progress):
+   progress('Responder discovery')
+   cancel.wait(2)
+   return {'status':'cancelled','ecus':[]}
+  self.ui.launch(operation,self.ui.display)
+  self.assertFalse(self.ui.cancel_button.isHidden());self.assertFalse(self.ui.progress.isHidden());self.assertEqual(self.ui.progress.maximum(),0);self.assertFalse(self.ui.export_button.isEnabled())
+  self.ui.stop();until=time.monotonic()+5
+  while self.ui.worker is not None and time.monotonic()<until:self.app.processEvents();time.sleep(.01)
+  self.assertIsNone(self.ui.worker);self.assertTrue(self.ui.cancel_button.isHidden());self.assertTrue(self.ui.progress.isHidden());self.assertTrue(self.ui.export_button.isEnabled());self.assertFalse(self.ui.clear_button.isEnabled())
+
+ def test_changed_vehicle_cannot_clear_cached_report(self):
+  from unittest.mock import patch
+  import transport
+  self.window.vehicle={'make':'Renault','model':'Clio','year':2022}
+  with patch.object(transport.LINK,'info',return_value={'connected':True}):
+   self.ui.connection_identity=self.ui.connection_key();self.ui.display({'status':'complete','vehicle':dict(self.window.vehicle),'ecus':[{'id':'7E8','dtc':{'stored':{'status':'ok','codes':[]}}}]})
+   self.assertTrue(self.ui.clear_button.isEnabled())
+   self.window.vehicle={'make':'Renault','model':'Megane','year':2022};self.ui.refresh_connection()
+   self.assertFalse(self.ui.clear_button.isEnabled());self.assertTrue(self.ui.export_button.isEnabled())
+   with patch('diagnostic_workspace.QMessageBox.question') as confirmation:self.ui.clear();confirmation.assert_not_called()
+ def test_graph_real_time_and_statistics_do_not_blend_ecus(self):
+  self.ui.display({'status':'complete','ecus':[{'id':'7E8','supported_pids':[5,12]},{'id':'7E9','supported_pids':[12]}]})
+  self.ui.pids.setCurrentIndex(self.ui.pids.findData(12));self.ui.set_pid_selected(5,True)
+  self.ui.live_result([{'ecu':'7E8','pid':12,'value':1000,'unit':'rpm','at':'2026-10-12T12:00:00Z'},{'ecu':'7E9','pid':12,'value':9000,'unit':'rpm','at':'2026-10-12T12:00:01Z'},{'ecu':'7E8','pid':12,'value':2000,'unit':'rpm','at':'2026-10-12T12:00:05Z'},{'ecu':'7E8','pid':5,'value':85,'unit':'°C','at':'2026-10-12T12:00:05Z'}])
+  self.assertEqual(self.ui.graph.series[12]['elapsed'],[0.0,5.0]);self.assertEqual(self.ui.graph.series[12]['mean'],1500);self.assertEqual(self.ui.graph.series[12]['max'],2000);self.assertEqual(self.ui.graph.series[5]['unit'],'°C')
+  self.ui.pause_graph.setChecked(True);self.ui.record.setChecked(True);self.ui.live_result([{'ecu':'7E8','pid':12,'value':3000,'at':'2026-10-12T12:00:09Z'}]);self.assertEqual(self.ui.graph.series[12]['max'],2000);self.assertEqual(self.ui.recorded[-1]['value'],3000)
+  self.ui.pause_graph.setChecked(False);self.assertEqual(self.ui.graph.series[12]['max'],3000)
+ def test_multi_pid_selection_is_bounded_and_missing_clock_is_unknown(self):
+  self.ui.display({'status':'complete','ecus':[{'id':'7E8','supported_pids':[5,12,13,15,17,20]}]})
+  for pid in (5,12,13,15,17,20):self.ui.set_pid_selected(pid,True)
+  self.assertLessEqual(len(self.ui.selected_pids()),5)
+  self.ui.pids.setCurrentIndex(self.ui.pids.findData(12));self.ui.live_result([{'ecu':'7E8','pid':12,'value':1000}]);self.assertIsNone(self.ui.graph.series[12]['elapsed'][0])
+
+ def test_worker_archives_captured_vehicle_after_selection_changes(self):
+  import threading,time
+  from unittest.mock import patch
+  started=threading.Event();release=threading.Event();self.window.vehicle={'make':'A'}
+  def scan(vehicle,cancel,progress):
+   started.set();release.wait(3);return {'status':'complete','vehicle':vehicle,'ecus':[]}
+  with patch.object(self.ui.session,'scan',side_effect=scan),patch('diagnostic_workspace.store.save') as save:
+   self.ui.scan();self.assertTrue(started.wait(2));self.window.vehicle={'make':'B'};release.set();until=time.monotonic()+5
+   while self.ui.worker is not None and time.monotonic()<until:self.app.processEvents();time.sleep(.01)
+   self.assertIsNone(self.ui.worker);self.assertEqual(save.call_args.args[0],{'make':'A'});self.assertEqual(self.ui.report['vehicle'],{'make':'A'});self.assertFalse(self.ui.clear_button.isEnabled())
+ def test_readiness_states_and_freeze_values_are_observed(self):
+  self.ui.display({'status':'partial','ecus':[{'id':'7E8','readiness':{'monitors':[{'name':'A','supported':True,'complete':True},{'name':'B','supported':True,'complete':False},{'name':'C','supported':False,'complete':None},{'name':'D','supported':True,'complete':None}]},'freeze':{'values':[{'pid':12,'value':1726,'unit':'rpm'},{'pid':5,'value':85,'unit':'°C'}]}}]})
+  for key in ('complete','incomplete','unsupported','unknown'):self.assertEqual(self.ui.readiness_cards[key].value_label.text(),'1')
+  self.assertIn('1726',self.ui.freeze_cards[12].value_label.text());self.assertIn('7E8',self.ui.freeze_cards[12].detail_label.text());self.assertEqual(self.ui.freeze_cards[13].value_label.text(),'—')
+ def test_split_view_reuses_session_and_samples_without_acquisition(self):
+  from unittest.mock import patch
+  self.ui.display({'status':'complete','ecus':[{'id':'7E8','supported_pids':[12],'dtc':{'stored':{'status':'ok','codes':['P0100']}}}]})
+  session=self.ui.session
+  with patch.object(session,'live') as live:self.ui.show_split();live.assert_not_called()
+  self.assertIs(self.ui.session,session);self.assertEqual(self.ui.tabs.currentIndex(),6);self.assertEqual(self.ui.split_dtc.item(0,3).text(),'P0100')
+  self.ui.live_result([{'ecu':'7E8','pid':12,'value':1726,'at':'2026-10-12T12:00:00Z'}]);self.assertEqual(list(self.ui.split_graph.points),[1726]);self.assertEqual(self.ui.split_live.item(0,4).text(),'1726')

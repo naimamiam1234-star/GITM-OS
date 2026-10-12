@@ -396,7 +396,7 @@ class Desktop(QWidget):
   d,v=self.panel('مركز التحديثات')
   label=QLabel('تحديث حزم النظام عبر Ubuntu، وتحديث AutoDiag عبر حزمة موقّعة.\nفي جلسة Live دون تخزين دائم، تضيع التغييرات بعد إعادة التشغيل.');label.setWordWrap(True);v.addWidget(label)
   self.action(v,'فحص تحديثات النظام','system-update',['plasma-discover'])
-  b=QPushButton('فتح تحديثات AutoDiag الموقعة');b.clicked.connect(lambda:self.launch('autodiag',[sys.executable,str(ROOT/'start_release.py'),'--windowed','--skip-intro','--tool','update']));v.addWidget(b)
+  b=QPushButton('مركز تحديثات GITM OS وAutoDiag');b.clicked.connect(lambda:self.launch('shared-updates',[sys.executable,str(ROOT/'system_services.py'),'updates']));v.addWidget(b)
   d.show()
  def power(self):
   d,v=self.panel('خيارات الطاقة')

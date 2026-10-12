@@ -33,8 +33,9 @@ xorriso -osirrox on -indev "$source" -extract / "$work/iso"
 mv "$work/fixed.squashfs" "$work/iso/casper/filesystem.squashfs"
 rm -f "$work/iso/boot.catalog"
 grub-mkrescue -o dist/GITM-OS-3.3.0-integration-amd64.iso "$work/iso" -- -volid GITM_OS_33
-cp input/*.txt dist/
+for evidence in input/*.txt; do
+  [[ $(basename "$evidence") == diagnostic-tests.txt ]] || cp "$evidence" dist/
+done
 chroot "$work/root" dpkg-query -W -f='${binary:Package} ${Version}\n' > dist/packages.txt
 cd dist
 sha256sum GITM-OS-3.3.0-integration-amd64.iso > GITM-OS-3.3.0-integration-amd64.iso.sha256
-

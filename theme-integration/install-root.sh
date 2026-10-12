@@ -29,7 +29,7 @@ fi
 chroot "$root" env DEBIAN_FRONTEND=noninteractive bash <<'FIREFOX'
 set -Eeuo pipefail
 apt-get update
-apt-get install -y ca-certificates curl gnupg pavucontrol pulseaudio-utils bluedevil plasma-nm x11-utils kde-spectacle
+apt-get install -y ca-certificates curl gnupg kcalc okular vlc pavucontrol pulseaudio-utils bluedevil plasma-nm x11-utils kde-spectacle
 test -x /usr/bin/spectacle
 install -d -m755 /etc/apt/keyrings
 curl -fL --retry 3 https://packages.mozilla.org/apt/repo-signing-key.gpg -o /etc/apt/keyrings/packages.mozilla.org.asc
@@ -123,7 +123,7 @@ Icon=$icon
 NoDisplay=true
 DESKTOP
 done
-# Native calculator from desktop; AutoDiag retains its clearly scoped workshop calculator.
+# General utilities are central GITM OS services, shared by AutoDiag.
 install -m644 patches/gallery_runner.py "$root/opt/gitm/gallery_runner.py"
 python3 - "$root/opt/gitm/gallery_runner.py" <<'PY'
 from pathlib import Path
@@ -152,6 +152,17 @@ PY
 
 # Tested native diagnosis overlay. Run tests against installed modules, not repo copies.
 python3 diag-integration/install.py "$root/opt/gitm"
+# Shared services have OS launchers; AutoDiag invokes these same services.
+for service in camera updates; do
+cat > "$root/usr/share/applications/gitm-system-$service.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=GITM OS $service
+Exec=/opt/gitm-venv/bin/python /opt/gitm/system_services.py $service
+Icon=utilities-system-monitor
+Categories=Utility;
+DESKTOP
+done
 install -m644 diag-integration/gallery-bench.py "$root/opt/gitm/gallery_bench.py"
 install -m644 patches/gallery_native.py "$root/opt/gitm/gallery_native.py"
 mkdir -p "$root/var/tmp/gitm-diag-tests"
