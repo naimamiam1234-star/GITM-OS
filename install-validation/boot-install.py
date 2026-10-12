@@ -8,11 +8,14 @@ if disk.exists(): raise RuntimeError('Refusing an existing fixture disk')
 subprocess.run(['qemu-img','create','-f','qcow2',str(disk),'40G'],check=True)
 
 def boot(stage,live):
-    qmp=root/(stage+'.qmp'); serial=root/(stage+'-serial.log')
+    qmp=root/(stage+'.qmp'); serial=root/(stage+'-serial.log'); evidence=root/(stage+'-evidence.log')
     args=['qemu-system-x86_64','-machine','q35,accel=kvm:tcg','-cpu','max','-m','6144','-smp','2',
           '-drive','file='+str(disk)+',format=qcow2,if=none,id=install-disk',
           '-device','virtio-blk-pci,drive=install-disk,serial=GITM-CI-ONLY',
           '-display','none','-serial','file:'+str(serial),'-qmp','unix:'+str(qmp)+',server=on,wait=off',
+          '-chardev','file,id=evidence,path='+str(evidence),
+          '-device','virtio-serial-pci',
+          '-device','virtserialport,chardev=evidence,name=gitm-test-evidence',
           '-device','virtio-vga','-nic','user,model=virtio-net-pci','-no-reboot']
     if live: args+=['-cdrom',str(iso),'-kernel',str(root/'vmlinuz'),'-initrd',str(root/'initrd'),'-append','boot=casper console=tty0 console=ttyS0,115200 ---']
     else: args+=['-boot','c']
@@ -37,7 +40,10 @@ def boot(stage,live):
                 if 'return' in r or 'error' in r: return r
         command({'execute':'qmp_capabilities'})
         while time.monotonic()<deadline:
-            text=serial.read_text(errors='replace') if serial.exists() else ''
+            console=serial.read_text(errors='replace') if serial.exists() else ''
+            text=evidence.read_text(errors='replace') if evidence.exists() else ''
+            if 'gitm-installer-probe.service: Failed with result' in console:
+                raise RuntimeError('Guest test helper failed; inspect serial log')
             for label in re.findall(r'GITM_INSTALL_TEST\|FRAME\|([a-z-]+)',text):
                 if label in seen: continue
                 seen.add(label); ppm=root/(stage+'-'+label+'.ppm')

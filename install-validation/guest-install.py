@@ -6,7 +6,11 @@ out=P('/run/gitm-install-evidence'); out.mkdir(exist_ok=True)
 lock=open('/run/gitm-install-test.lock','w')
 try: fcntl.flock(lock,fcntl.LOCK_EX | fcntl.LOCK_NB)
 except BlockingIOError: raise SystemExit(0)
-serial=open('/dev/ttyS0','w',buffering=1)
+port=P('/dev/virtio-ports/gitm-test-evidence')
+for _ in range(60):
+    if port.exists(): break
+    time.sleep(1)
+serial=port.open('w',buffering=1)
 def mark(s): serial.write('GITM_INSTALL_TEST|'+s+'\n')
 def run(args, env=None, check=True):
     return subprocess.run(args,env=env,check=check,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=45).stdout
