@@ -2,7 +2,7 @@ name: Publish verified Plasma 6 preview
 on:
   push:
     branches: [main]
-    paths: ['install-validation/**', 'overlay/etc/calamares/**', 'release-tools/**', 'diag-integration/**', 'theme-integration/**', 'plasma-fix/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-release.yml']
+    paths: ['install-validation/**', 'overlay/etc/calamares/**', 'release-tools/**', 'diag-integration/**', 'theme-integration/**', 'plasma-fix/**', 'patches/**', 'plasma-transition/patches/**', '.github/workflows/plasma-fix.yml', '.github/workflows/plasma-release.yml']
   workflow_dispatch:
 permissions:
   contents: write

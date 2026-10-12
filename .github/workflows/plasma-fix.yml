@@ -1,3 +1,4 @@
+# Source and publisher must run against the same commit.
 name: Integrate GITM native theme and dock
 on:
   push:
