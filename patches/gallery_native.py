@@ -25,6 +25,7 @@ def next():
  except Exception as e:emit('GITM_GALLERY_ERROR|'+name+'|'+str(e))
  QTimer.singleShot(10000 if name=='diag-bench-summary' else 6000 if name=='diag-bench-live' else 4000,lambda:capture(name))
 def capture(name):
+ subprocess.run(['xdotool','mousemove','640','80'],check=False)
  for cmd in [['xset','s','off'],['xset','-dpms'],['xset','s','reset']]:subprocess.run(cmd,check=False)
  emit('GITM_GALLERY_FRAME|'+name);QTimer.singleShot(2000,next)
 QTimer.singleShot(4000,next);sys.exit(app.exec())
