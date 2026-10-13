@@ -18,6 +18,9 @@ on:
 permissions:
   contents: read
   actions: read
+concurrency:
+  group: gitm-autodiag-application-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   disk-install:
     runs-on: ubuntu-24.04

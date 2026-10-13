@@ -51,10 +51,17 @@ class SessionAssistant(QWidget):
    if row>=0 and ws.dtc.item(row,0) and ws.dtc.item(row,3):ecu=ws.dtc.item(row,0).text();code=ws.dtc.item(row,3).text()
    elif ws.ecus.currentData():ecu=ws.ecus.currentData()
    pids=ws.selected_pids()
-  self.context=core.snapshot(report,getattr(self.window,'vehicle',{}),ecu,code,getattr(ws,'samples',()),pids,self.symptoms.toPlainText())
+  current=core.snapshot(report,getattr(self.window,'vehicle',{}),ecu,code,getattr(ws,'samples',()),pids,self.symptoms.toPlainText())
+  if self.context is None or self.context['session_id']!=current['session_id']:
+   note=''
+   for row in core.history(current['session_id']):
+    if row['kind']=='assistant_context':note=row['payload'].get('symptoms','');break
+   self.symptoms.setPlainText(note);current=core.snapshot(report,getattr(self.window,'vehicle',{}),ecu,code,getattr(ws,'samples',()),pids,note)
+  if self.context is None or self.context['fingerprint']!=current['fingerprint']:core.record(current['session_id'],'assistant_context',current)
+  self.context=current
   self.sources=core.local_sources(self.context)
   for row in core.history(self.context['session_id']):
-   if row['kind']=='search_results':self.sources+=row['payload'].get('results',[]);break
+   if row['kind']=='search_results' and row['payload'].get('context_fingerprint')==self.context['fingerprint']:self.sources+=row['payload'].get('results',[]);break
   self.cloud.attachment=self.context;self.cloud.approve.setChecked(False);self.cloud.approve.show();self.cloud.preview.setPlainText(json.dumps(self.context,ensure_ascii=False,indent=2));self.cloud.preview.show()
   bound=dict(self.context)
   self.cloud.on_complete=lambda value:core.record(bound['session_id'],'cloud_analysis',dict(value,context_fingerprint=bound['fingerprint']))

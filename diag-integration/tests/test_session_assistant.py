@@ -72,8 +72,9 @@ class PanelTests(unittest.TestCase):
  def test_restore_sources_and_note_for_same_session(self):
   w,s=self.window();w.vehicle={'make':'A','model':'Journal test'};s.show_assistant();panel=s.assistant_panel
   import assistant_core as c
-  c.record(panel.context['session_id'],'search_results',{'query':'a','provider':'brave','results':[{'title':'Known result','text':'Snippet','url':'https://example.com/a','provider':'brave','content_type':'search_snippet'}]})
+  c.record(panel.context['session_id'],'search_results',{'query':'a','provider':'brave','context_fingerprint':panel.context['fingerprint'],'results':[{'title':'Known result','text':'Snippet','url':'https://example.com/a','provider':'brave','content_type':'search_snippet'}]})
   panel.capture();self.assertIn('Known result',panel.results.toPlainText())
+  panel.symptoms.setPlainText('A different symptom');panel.capture();self.assertNotIn('Known result',panel.results.toPlainText())
  def test_contextual_live_uses_live_ecu_instead_of_old_dtc(self):
   w,s=self.window();s.navigate('diagnosis');ws=w.diagnostic_workspace
   ws.display({'id':'selection-test','vehicle':{'make':'A'},'evidence':'simulator','ecus':[{'id':'7E8','supported_pids':[12]},{'id':'7E9','supported_pids':[12]}]})
@@ -92,3 +93,7 @@ class PanelTests(unittest.TestCase):
   w,s=self.window();w.resize(1600,1000);s.navigate('diagnosis');w.show();self.app.processEvents();ws=w.diagnostic_workspace;s.show_assistant();panel=s.assistant_panel
   with patch.object(ws,'stop') as stop:
    panel.toggle_expanded();self.app.processEvents();self.assertFalse(w.pages.isHidden());stop.assert_not_called();panel.toggle_expanded();self.app.processEvents();stop.assert_not_called()
+ def test_notes_restore_for_session_and_clear_on_new_session(self):
+  w,s=self.window();w.vehicle={'make':'Notes','vin':'session-one'};s.show_assistant();panel=s.assistant_panel;panel.symptoms.setPlainText('Cold start symptom');panel.capture()
+  w2,s2=self.window();w2.vehicle=dict(w.vehicle);s2.show_assistant();panel=s2.assistant_panel;self.assertEqual(panel.symptoms.toPlainText(),'Cold start symptom')
+  w2.vehicle={'make':'Notes','vin':'session-two'};panel.capture();self.assertEqual(panel.symptoms.toPlainText(),'');self.assertNotEqual(panel.context['session_id'],'')
