@@ -55,7 +55,7 @@ class ShellTests(unittest.TestCase):
   except ImportError:self.fail('Professional shell is missing')
   w=native.Window();professional_ui.install(w);self.addCleanup(w.close);return w,w.professional_shell
  def test_dashboard_and_navigation_keep_single_cached_page(self):
-  w,s=self.shell();s.navigate('diagnosis');first=w.pages.currentWidget();s.navigate('reports');s.navigate('diagnosis');self.assertIs(w.pages.currentWidget(),first);self.assertEqual(w.windowTitle(),'GearDiag');self.assertEqual(s.sidebar.width(),60);s.sidebar.reveal(True);self.assertEqual(s.sidebar.width(),192);s.sidebar.reveal(False);self.assertEqual(s.sidebar.width(),60)
+  w,s=self.shell();s.navigate('diagnosis');first=w.pages.currentWidget();s.navigate('reports');s.navigate('diagnosis');self.assertIs(w.pages.currentWidget(),first);self.assertEqual(w.windowTitle(),'GearDiag');self.assertEqual(s.sidebar.width(),8);s.sidebar.reveal(True);self.assertEqual(s.sidebar.width(),192);s.sidebar.reveal(False);self.assertEqual(s.sidebar.width(),8)
  def test_unknown_footer_measurement_and_split_actions(self):
   w,s=self.shell();s.refresh();self.assertNotIn('12.6',s.context.text());self.assertEqual(w.menuBar().actions(),[]);self.assertGreaterEqual(len(s.split.menu().actions()),2)
  def test_close_cancels_cloud_task_without_destroying_running_thread(self):
