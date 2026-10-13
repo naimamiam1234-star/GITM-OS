@@ -34,7 +34,7 @@ class VehicleGeometryTests(unittest.TestCase):
    page.setStyleSheet(styles());page.resize(1024, 900);page.show();APP.processEvents()
    QTest.mouseClick(page.buttons['Toyota'], Qt.LeftButton)
    self.assertEqual(page.fields['make'].text(), 'Toyota')
-   page.buttons['BMW'].setFocus();QTest.keyClick(page.buttons['BMW'], Qt.Key_Space)
+   page.tabs.setCurrentIndex(0);APP.processEvents();page.buttons['BMW'].setFocus();QTest.keyClick(page.buttons['BMW'], Qt.Key_Space)
    self.assertEqual(page.fields['make'].text(), 'BMW')
    page.favorite();page.only_favorites.setChecked(True)
    self.assertEqual(page.grid.count(), 1)

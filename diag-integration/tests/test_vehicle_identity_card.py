@@ -10,6 +10,14 @@ class IdentityCardTests(unittest.TestCase):
   self.window=QWidget();self.window.vehicle={}
   with patch('vehicle_workspace.store.cache',return_value=None):self.page=v.Workspace(self.window,logos={})
  def tearDown(self):self.page.close();self.page.deleteLater();self.window.deleteLater();APP.processEvents()
+ def test_brand_opens_a_new_model_page_and_only_catalog_years_follow(self):
+  row={'make':'Test','model':'Synthetic model','generation':'A','market':'Test fixture','source':'Synthetic fixture','years':[2024,2026],'engines':[{'name':'Fixture engine','fuel':'Diesel','source':'Synthetic fixture','years':[2026]}]}
+  self.page.catalog=[row];self.page.choose_make('Test');self.assertEqual(self.page.tabs.currentIndex(),1)
+  self.page.choose_model(row);self.assertEqual(self.page.tabs.currentIndex(),2)
+  self.page.choose_year(2026);self.assertEqual(self.page.tabs.currentIndex(),3)
+  self.page.choose_engine(row['engines'][0]);self.assertEqual(self.page.tabs.currentIndex(),4);self.assertEqual(self.page.fields['fuel'].text(),'Diesel')
+ def test_save_disabled_until_review(self):
+  self.assertFalse(self.page.actions[0].isEnabled());self.page.tabs.setCurrentIndex(4);self.assertTrue(self.page.actions[0].isEnabled())
  def test_manual_unknown_model_and_fuel_remain_editable(self):
   self.page.fields['model'].setText('Private model');self.page.fields['fuel'].setText('Hydrogen');self.assertEqual(self.page.fields['model'].text(),'Private model')
   with patch('vehicle_workspace.store.cache'):self.page.save_selection()
