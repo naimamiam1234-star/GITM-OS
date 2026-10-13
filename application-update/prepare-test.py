@@ -13,7 +13,7 @@ replacement="""            import hashlib
             user=pwd.getpwnam('gitmtest');sentinel=P(user.pw_dir)/'.local/share/gitm/update-preservation-sentinel.txt';sentinel.parent.mkdir(parents=True,exist_ok=True);os.chown(sentinel.parent,user.pw_uid,user.pw_gid);sentinel.write_text('Synthetic CI fixture, not customer data');os.chown(sentinel,user.pw_uid,user.pw_gid)
             transaction('install-app-package',['apt-get','install','-y',str(candidate)])
             if sentinel.read_text()!='Synthetic CI fixture, not customer data':raise RuntimeError('User sentinel modified')
-            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.3.1-1':raise RuntimeError('Candidate version not installed')
+            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.3.2-1':raise RuntimeError('Candidate version not installed')
 """.replace('EXPECTED_CANDIDATE',repr(digest))
 code=code[:start]+replacement+code[end:]
 anchor="            lib=root/'usr/local/lib/gitm-probe'; lib.mkdir(parents=True,exist_ok=True)"
@@ -31,6 +31,16 @@ proof="""        user=pwd.getpwnam('gitmtest');sentinel=P(user.pw_dir)/'.local/s
         (out/'signing-key-sha256.txt').write_text(after)
 """
 assert code.count(anchor)==1;code=code.replace(anchor,proof+anchor);ast.parse(code);helper.write_text(code)
+anchor='            except subprocess.TimeoutExpired: app.kill(); app.wait()\n'
+bench="""            bench=P(user.pw_dir)/'.local/share/gitm/assistant-bench-3.3.2'
+            result=subprocess.run(['/opt/gitm-venv/bin/python','/opt/gitm/assistant-bench.py',str(bench)],env={**env,'GITM_BENCH_WIDTH':'1280','GITM_BENCH_HEIGHT':'800'},stdout=log,stderr=subprocess.STDOUT,preexec_fn=demote,timeout=90)
+            if result.returncode:raise RuntimeError('Installed assistant simulator bench failed')
+            for artifact in bench.iterdir():
+                if artifact.suffix in ('.png','.json'): (out/('assistant-'+artifact.name)).write_bytes(artifact.read_bytes())
+            proof=__import__('json').loads((bench/'proof.json').read_text())
+            if not proof['reading_continues_with_panel'] or proof['sample_count']<4:raise RuntimeError('Assistant interrupted live acquisition')
+"""
+assert code.count(anchor)==1;code=code.replace(anchor,anchor+bench);ast.parse(code);helper.write_text(code)
 spec=importlib.util.spec_from_file_location('inject',root/'install-validation/inject-initrd.py');inject=importlib.util.module_from_spec(spec);spec.loader.exec_module(inject)
 hook=inject.HOOK.replace(b'cp /gitm-probe/guest-probe.py',b'cp /gitm-probe/candidate.deb "$target/var/lib/gitm-app-candidate.deb"\ncp /gitm-probe/guest-probe.py')
 assert b'candidate.deb' in hook
@@ -38,3 +48,4 @@ subprocess.run([sys.executable,str(root/'install-validation/inject-initrd.py'),s
 extra=inject.cpio([('gitm-probe/candidate.deb',0o100644,package.read_bytes()),('scripts/casper-bottom/99gitm-installer-probe',0o100755,hook)])
 with (out/'initrd').open('ab') as stream:stream.write(gzip.compress(extra,mtime=0))
 print('PASS: ephemeral candidate prepared; ISO unchanged',digest)
+

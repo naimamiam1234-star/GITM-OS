@@ -18,6 +18,12 @@ class CloseGuard(QObject):
  def __init__(self,w):super().__init__(w);self.w=w;w.installEventFilter(self)
  def eventFilter(self,obj,event):
   if event.type()==QEvent.Close:
+   for task_name,cancel_name in (('assistant_search_task','assistant_search_cancel'),('cloud_task','ai_cancel')):
+    pending=getattr(self.w,task_name,None)
+    if pending is not None and isValid(pending) and pending.isRunning():
+     cancel=getattr(self.w,cancel_name,None)
+     if cancel is not None:cancel.set()
+     event.ignore();return True
    worker=getattr(self.w,'_obd_worker',None)
    if worker is not None and isValid(worker) and worker.isRunning():
     worker.cancel.set();self.w.professional_shell.context.setText(t('جارٍ إنهاء الطلب بأمان','Fin de requête','Finishing current request'));event.ignore();return True
@@ -41,6 +47,7 @@ class Shell:
   brand=QLabel('GITM AutoDiag');brand.setObjectName('brand');hl.addWidget(brand);self.title=QLabel(t('الرئيسية','Accueil','Home'));self.title.setObjectName('pageTitle');self.title.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Preferred);hl.addWidget(self.title,1)
   self.search=QLineEdit();self.search.setPlaceholderText(t('بحث أو P0401','Recherche ou P0401','Search or P0401'));self.search.setMaximumWidth(230);self.search.textChanged.connect(self.filter);self.search.returnPressed.connect(self.search_action);hl.addWidget(self.search)
   self.lang=QComboBox();self.lang.addItems(['العربية','Français','English']);self.lang.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);self.lang.currentIndexChanged.connect(self.set_language);hl.addWidget(self.lang)
+  self.assistant_button=action_button(t('المساعد التشخيصي','Assistant de session','Session assistant'),icon='ai');self.assistant_button.setObjectName('sessionAssistantButton');self.assistant_button.clicked.connect(self.toggle_assistant);hl.addWidget(self.assistant_button)
   self.appearance=action_button('◐');self.appearance.setAccessibleName(t('المظهر','Apparence','Appearance'));am=QMenu(self.appearance)
   for label,key in [(t('نهاري','Clair','Light'),'light'),(t('ليلي','Sombre','Dark'),'dark'),(t('تلقائي','Auto','Auto'),'auto')]:am.addAction(label,lambda key=key:self.set_theme(key))
   am.addSeparator()
@@ -61,6 +68,7 @@ class Shell:
    b.setMenu(menu);side.addWidget(b)
   side.addStretch();full=action_button(t('ملء الشاشة F11','Plein écran F11','Fullscreen F11'));full.clicked.connect(self.fullscreen);side.addWidget(full);middle.addWidget(self.sidebar)
   w.pages=QStackedWidget();middle.addWidget(w.pages,1);w.pages.currentChanged.connect(self.page_changed)
+  self.middle=middle;self.assistant_panel=None
   self.build_home();footer=QWidget();footer.setObjectName('footer');fl=QHBoxLayout(footer);fl.setContentsMargins(14,7,14,7);self.context=QLabel();self.context.setWordWrap(True);fl.addWidget(self.context,1);w.status=self.context;outer.addWidget(footer)
   w.page=self.page;w.go_home=self.home
   callbacks={'diagnosis_page':'diagnosis','vehicle_page':'vehicle','adapter_page':'adapter','reports_page':'reports','ai_page':'ai','engines_page':'ecu','dtc_page':'dtc','service_page':'service','settings_page':'settings'}
@@ -81,6 +89,16 @@ class Shell:
   self.timer=QTimer(w);self.timer.setInterval(1000);self.timer.timeout.connect(self.refresh);self.timer.start()
   QShortcut(QKeySequence('F11'),w,activated=self.fullscreen);QShortcut(QKeySequence('Ctrl+K'),w,activated=self.search.setFocus)
   self.apply_theme();self.refresh();self.page_changed()
+ def show_assistant(self):
+  if self.assistant_panel is None:
+   from session_assistant import SessionAssistant
+   self.assistant_panel=SessionAssistant(self.w);self.assistant_panel.setMaximumWidth(540);self.assistant_panel.setMinimumWidth(330);self.middle.addWidget(self.assistant_panel)
+  else:self.assistant_panel.capture()
+  self.assistant_panel.show()
+  if self.w.width()<1250 and not self.assistant_panel.expanded:self.assistant_panel.toggle_expanded()
+ def toggle_assistant(self):
+  if self.assistant_panel is not None and not self.assistant_panel.isHidden():self.assistant_panel.hide()
+  else:self.show_assistant()
  def build_home(self):
   w=self.w;home=QWidget();body=QVBoxLayout(home);body.setContentsMargins(14,10,14,10);body.setSpacing(8);self.vehicle_card=InfoCard(t('السيارة الحالية','Véhicule actuel','Current vehicle'));self.vehicle_label=QLabel();self.vehicle_label.setWordWrap(True);self.vehicle_card.body.addWidget(self.vehicle_label);body.addWidget(self.vehicle_card)
   row=QHBoxLayout();allb=action_button(t('الكل','Tout','All'));allb.clicked.connect(lambda:self.select_group(None));row.addWidget(allb)
@@ -102,6 +120,7 @@ class Shell:
   elif module=='can_workspace':self.w.can_workspace=widget
   return widget
  def navigate(self,key):
+  if key=='ai':self.show_assistant();return
   self.current=key
   if key in self.cache:
    page=self.cache[key];self.w.pages.setCurrentWidget(page)

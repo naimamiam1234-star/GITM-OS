@@ -100,6 +100,11 @@ class Workspace(QWidget):
    card=MetricCard(title);freeze_line.addWidget(card);self.freeze_cards[pid]=card
   freeze_layout.addLayout(freeze_line);freeze_layout.addWidget(self.freeze,1);self.tabs.addTab(freeze_page,t('freeze'))
   self.report_view=QTextEdit();self.report_view.setReadOnly(True);self.report_view.setStyleSheet('QTextEdit { background: white; color: #16283b; }');self.tabs.addTab(self.report_view,t('report'));self.tabs.currentChanged.connect(self.update_live_layout);self.refresh_connection();self.update_actions()
+  self.assistant_dtc_button=action_button(triple('أرسل العطل إلى المساعد','Envoyer le DTC','Send fault to assistant'));self.assistant_dtc_button.clicked.connect(self.send_to_assistant);dtc_layout.insertWidget(1,self.assistant_dtc_button)
+  self.assistant_live_button=action_button(triple('حلّل القراءات المحددة','Analyser les mesures','Analyze selected readings'));self.assistant_live_button.clicked.connect(self.send_to_assistant);options.addWidget(self.assistant_live_button)
+ def send_to_assistant(self):
+  shell=getattr(self.window,'professional_shell',None)
+  if shell:shell.show_assistant();shell.assistant_panel.analyze()
  def resizeEvent(self,event):
   super().resizeEvent(event)
   if hasattr(self,'graph_area'):self.update_live_layout()

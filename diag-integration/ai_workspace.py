@@ -47,6 +47,7 @@ class Assistant(QWidget):
    import native
    snapshot=json.loads((Path(native.__file__).parent/'free-models-snapshot.json').read_text());self.model.addItems([m['id'] for m in snapshot['models'] if m['id']!='openrouter/free'])
   except (OSError,ValueError,KeyError):pass
+  self.model.setMinimumContentsLength(12);self.model.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon);self.model.setMaximumWidth(230);self.key.setMinimumWidth(120)
   row.addWidget(self.model,1);layout.addLayout(row)
   self.conversation=QTextBrowser();layout.addWidget(self.conversation,1);self.prompt=QTextEdit();self.prompt.setMaximumHeight(115);self.prompt.setPlaceholderText(triple('اكتب سؤالك دون بيانات شخصية','Question sans données personnelles','Ask without personal information'));layout.addWidget(self.prompt)
   self.consent=QCheckBox(triple('أوافق على إرسال السؤال والمعاينة المعتمدة إلى OpenRouter','J’autorise l’envoi de la question et de l’aperçu approuvé à OpenRouter','I approve sending the question and approved preview to OpenRouter'));layout.addWidget(self.consent)
@@ -54,27 +55,32 @@ class Assistant(QWidget):
   self.approve=QCheckBox(triple('أوافق على إرفاق هذه المعاينة','J’approuve cet aperçu joint','Approve this attachment preview'));self.approve.hide();layout.addWidget(self.approve)
   actions=QHBoxLayout();attach=action_button(triple('معاينة الفحص الحالي','Aperçu du scan actuel','Preview current scan'));attach.clicked.connect(self.attach);actions.addWidget(attach);detach=action_button(triple('إزالة المرفق','Retirer la pièce jointe','Remove attachment'));detach.clicked.connect(self.detach);actions.addWidget(detach);self.send_button=action_button(triple('إرسال','Envoyer','Send'),role='primary');self.send_button.clicked.connect(self.send);actions.addWidget(self.send_button);self.cancel_button=action_button(triple('إلغاء','Annuler','Cancel'));self.cancel_button.clicked.connect(self.cancel);self.cancel_button.setEnabled(False);actions.addWidget(self.cancel_button);layout.addLayout(actions);self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback)
  def attach(self):
+  if hasattr(self,'session_capture'):self.session_capture();return
+  self.evidence_override=None
   scan=current_scan(self.window);self.approve.setChecked(False)
   self.attachment=sanitized_scan(scan) if scan else None
   self.preview.setPlainText(json.dumps(self.attachment,ensure_ascii=False,indent=2) if scan else triple('لا يوجد فحص حالي','Aucun scan actuel','No current scan'));self.preview.show();self.approve.setVisible(bool(scan))
  def detach(self):
-  self.attachment=None;self.preview.hide();self.approve.setChecked(False);self.approve.hide()
+  self.attachment=None;self.evidence_override=None;self.preview.hide();self.approve.setChecked(False);self.approve.hide()
  def cancel(self):
   if self.cancel_event:self.cancel_event.set();self.feedback.setText(triple('جارٍ الإلغاء','Annulation en cours','Cancelling'))
  def hideEvent(self,event):self.cancel();super().hideEvent(event)
  def send(self):
   window=self.window
   if not self.consent.isChecked():self.feedback.setText(triple('الموافقة مطلوبة','Consentement requis','Consent is required'));return
-  if getattr(window,'_obd_worker',None) is not None or (getattr(window,'task',None) is not None and window.task.isRunning()):return
+  if getattr(window,'cloud_task',None) is not None and window.cloud_task.isRunning():return
   key=self.key.text();prompt=self.prompt.toPlainText();model=self.model.currentText()
   if not key or not prompt.strip():self.feedback.setText(triple('المفتاح والسؤال مطلوبان','Clé et question requises','Key and question are required'));return
   if self.attachment is not None and not self.approve.isChecked():self.feedback.setText(triple('اعتمد المعاينة أولاً','Approuver l’aperçu','Approve the attachment preview first'));return
-  evidence=[{'id':'E1','type':'deidentified_observed_scan','data':self.attachment}] if self.attachment else []
+  evidence=getattr(self,'evidence_override',None) or ([{'id':'E1','type':'deidentified_observed_scan','data':self.attachment}] if self.attachment else [])
   from native import ChatTask
   from shiboken6 import isValid
-  self.request_failed=False;self.cancel_event=threading.Event();window.ai_cancel=self.cancel_event;task=ChatTask(key,model,prompt,self.cancel_event,evidence);task.setParent(window);window.task=task
+  self.request_failed=False;self.cancel_event=threading.Event();window.ai_cancel=self.cancel_event;task=ChatTask(key,model,prompt,self.cancel_event,evidence);task.setParent(window);window.cloud_task=task
+  self.response_text='';completion=getattr(self,'on_complete',None)
   self.conversation.append('<p><b>'+triple('أنت','Vous','You')+'</b><br>'+escape(prompt)+'</p><p><b>GITM</b></p>');self.send_button.setEnabled(False);self.cancel_button.setEnabled(True);self.feedback.setText(triple('طلب جارٍ','Requête en cours','Request in progress'))
-  task.chunk.connect(lambda text:self.conversation.insertPlainText(text) if isValid(self) else None)
+  def chunk(text):
+   if isValid(self):self.response_text+=text;self.conversation.insertPlainText(text)
+  task.chunk.connect(chunk)
   def failed(error):
    if isValid(self):self.request_failed=True;self.feedback.setText(str(error).replace(key,'[redacted]'))
   task.failure.connect(failed)
@@ -82,6 +88,9 @@ class Assistant(QWidget):
    if isValid(self):
     self.send_button.setEnabled(True);self.cancel_button.setEnabled(False)
     if not self.request_failed:self.feedback.setText(triple('انتهى الطلب','Requête terminée','Request finished'))
+    if completion:completion({'question':prompt,'answer':self.response_text,'status':'failed' if self.request_failed else 'cancelled' if self.cancel_event.is_set() else 'complete','model':model})
+   if getattr(window,'cloud_task',None) is task:window.cloud_task=None
+   task.deleteLater()
   task.finished.connect(finished);task.start()
 
 def show(window):
