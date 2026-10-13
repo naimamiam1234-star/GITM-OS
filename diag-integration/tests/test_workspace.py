@@ -17,6 +17,12 @@ class WorkspaceTests(unittest.TestCase):
    def adapter_page(self):pass
   self.window=Window();self.ui=Workspace(self.window)
  def tearDown(self):self.ui.deleteLater();self.window.deleteLater();self.app.processEvents()
+ def test_fault_details_preserve_selected_ecu_and_code(self):
+  self.ui.rows(self.ui.dtc,[['7E8','stored','ok','P0100'],['7E9','pending','ok','P0300']])
+  self.ui.dtc.selectRow(1);self.app.processEvents()
+  self.assertIn('7E9',self.ui.dtc_context.text());self.assertIn('P0300',self.ui.dtc_context.text());self.assertNotIn('P0100',self.ui.dtc_context.text())
+  self.ui.tabs.setCurrentIndex(1);self.app.processEvents()
+  self.assertTrue(all(card.isHidden() for card in self.ui.metrics.values()))
  def test_explicit_no_data(self):
   self.ui.display({'status':'partial','ecus':[{'id':'7E8','dtc':{'stored':{'status':'error','codes':[],'error':'NO DATA'}},'errors':['VIN unavailable']}],'errors':[{'section':'VIN','error':'NO DATA'}]})
   self.assertEqual(self.ui.dtc.item(0,3).text(),'NO DATA');self.assertIn('NO DATA',self.ui.summary.toPlainText())
