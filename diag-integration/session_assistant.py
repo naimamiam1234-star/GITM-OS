@@ -32,7 +32,7 @@ class SessionAssistant(QWidget):
   layout.addLayout(actions)
   self.tabs=QTabWidget();layout.addWidget(self.tabs,1)
   self.results=QTextBrowser();self.results.setOpenLinks(False);self.results.setOpenExternalLinks(False);self.results.anchorClicked.connect(self.open_source);self.tabs.addTab(self.results,t('النتائج','Résultats','Results'))
-  self.cloud=Assistant(window);self.cloud.session_capture=self.capture;scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(self.cloud);self.tabs.addTab(scroll,t('سحابي','Cloud','Cloud'));self.tabs.setTabToolTip(1,t('تحليل بالذكاء الاصطناعي السحابي','Analyse IA cloud','Cloud AI analysis'))
+  self.cloud=Assistant(window);self.cloud.session_capture=self.capture;self.tabs.addTab(self.cloud,t('سحابي','Cloud','Cloud'));self.tabs.setTabToolTip(1,t('تحليل بالذكاء الاصطناعي السحابي','Analyse IA cloud','Cloud AI analysis'))
   self.timeline=QTextBrowser();self.timeline.setOpenLinks(False);self.timeline.anchorClicked.connect(self.open_source);self.tabs.addTab(self.timeline,t('السجل','Journal','Journal'));self.tabs.setTabToolTip(2,t('سجل الجلسة','Journal de session','Session journal'))
   settings=QWidget();sl=QVBoxLayout(settings);info=QLabel(t('المفاتيح في ذاكرة الجلسة فقط. البحث يعرض مقتطفات؛ الفيديو يعرض وصفًا دون قراءة النص أو مشاهدة المحتوى.','Clés en mémoire. Extraits de recherche et descriptions vidéo uniquement.','Keys stay in session memory. Search returns excerpts; videos return descriptions, not transcripts or watched content.'));info.setWordWrap(True);sl.addWidget(info)
   self.keys={}

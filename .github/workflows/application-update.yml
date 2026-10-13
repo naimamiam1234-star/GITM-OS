@@ -13,7 +13,7 @@ permissions:
   contents: read
   actions: read
 concurrency:
-  group: gitm-autodiag-application-${{ github.ref }}
+  group: gitm-autodiag-application-${{ github.sha }}
   cancel-in-progress: true
 jobs:
   build:

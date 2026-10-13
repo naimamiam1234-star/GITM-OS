@@ -3,7 +3,7 @@ import json,re,threading
 from pathlib import Path
 from html import escape
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLineEdit,QComboBox,QTextEdit,QTextBrowser,QCheckBox,QLabel,QMessageBox
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLineEdit,QComboBox,QTextEdit,QTextBrowser,QCheckBox,QLabel,QMessageBox,QDialog
 from professional_components import triple,action_button
 
 def sanitized_scan(report):
@@ -42,33 +42,33 @@ class Assistant(QWidget):
  def __init__(self,window):
   super().__init__();self.window=window;self.attachment=None;self.cancel_event=None;layout=QVBoxLayout(self);layout.setSpacing(10)
   info=QLabel(triple('مساعد سحابي يشرح ولا ينفذ أوامر السيارة. المفتاح في ذاكرة الجلسة فقط.','Assistant cloud explicatif, sans commande véhicule. Clé en mémoire de session.','Cloud assistant explains and cannot execute vehicle commands. Key stays in session memory.'));info.setWordWrap(True);layout.addWidget(info)
-  self.connection_settings=QWidget();connection_layout=QVBoxLayout(self.connection_settings);connection_layout.setContentsMargins(0,0,0,0)
-  toggle=action_button(triple('إعداد اتصال الذكاء الاصطناعي','Connexion IA','AI connection settings'));toggle.setCheckable(True);toggle.setChecked(not bool(getattr(window,'openrouter_key','')));toggle.toggled.connect(self.connection_settings.setVisible);layout.addWidget(toggle)
+  self.connection_dialog=QDialog(self);self.connection_dialog.setWindowTitle(triple('اتصال الذكاء الاصطناعي','Connexion IA','AI connection'));self.connection_dialog.resize(620,140);connection_layout=QVBoxLayout(self.connection_dialog)
+  toggle=action_button(triple('إعداد اتصال الذكاء الاصطناعي','Connexion IA','AI connection settings'));toggle.clicked.connect(self.connection_dialog.show);layout.addWidget(toggle)
   row=QHBoxLayout();self.key=QLineEdit(getattr(window,'openrouter_key',''));self.key.setObjectName('openrouterKey');self.key.setEchoMode(QLineEdit.Password);self.key.setPlaceholderText('OpenRouter API key');self.key.setLayoutDirection(Qt.LeftToRight);self.key.textChanged.connect(lambda v:setattr(window,'openrouter_key',v));row.addWidget(self.key,1);self.model=QComboBox();self.model.addItem('openrouter/free')
   try:
    import native
    snapshot=json.loads((Path(native.__file__).parent/'free-models-snapshot.json').read_text());self.model.addItems([m['id'] for m in snapshot['models'] if m['id']!='openrouter/free'])
   except (OSError,ValueError,KeyError):pass
   self.model.setMinimumContentsLength(12);self.model.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon);self.model.setMaximumWidth(230);self.key.setMinimumWidth(120)
-  row.addWidget(self.model,1);connection_layout.addLayout(row);layout.addWidget(self.connection_settings);self.connection_settings.setVisible(toggle.isChecked())
-  self.conversation=QTextBrowser();self.conversation.setObjectName('assistantConversation');self.conversation.setOpenExternalLinks(False);self.conversation.setOpenLinks(False);self.conversation.setPlaceholderText(triple('محادثتك مرتبطة بجلسة التشخيص الحالية','Conversation liée à la session','Conversation linked to this diagnostic session'));layout.addWidget(self.conversation,1);self.prompt=QTextEdit();self.prompt.setObjectName('assistantComposer');self.prompt.setMinimumHeight(72);self.prompt.setMaximumHeight(115);self.prompt.setPlaceholderText(triple('اكتب سؤالك دون بيانات شخصية','Question sans données personnelles','Ask without personal information'));layout.addWidget(self.prompt)
+  row.addWidget(self.model,1);connection_layout.addLayout(row)
+  self.conversation=QTextBrowser();self.conversation.setObjectName('assistantConversation');self.conversation.setMinimumHeight(80);self.conversation.setOpenExternalLinks(False);self.conversation.setOpenLinks(False);self.conversation.setPlaceholderText(triple('محادثتك مرتبطة بجلسة التشخيص الحالية','Conversation liée à la session','Conversation linked to this diagnostic session'));layout.addWidget(self.conversation,1);self.prompt=QTextEdit();self.prompt.setObjectName('assistantComposer');self.prompt.setMinimumHeight(72);self.prompt.setMaximumHeight(115);self.prompt.setPlaceholderText(triple('اكتب سؤالك دون بيانات شخصية','Question sans données personnelles','Ask without personal information'));layout.addWidget(self.prompt)
   self.consent=self.wrapped_consent(triple('أوافق على إرسال السؤال والمعاينة المعتمدة إلى OpenRouter','J’autorise l’envoi de la question et de l’aperçu approuvé à OpenRouter','I approve sending the question and approved preview to OpenRouter'),layout)
-  self.preview=QTextBrowser();self.preview.setMaximumHeight(110);self.preview.hide();layout.addWidget(self.preview)
-  self.approve=QCheckBox(triple('أوافق على إرفاق هذه المعاينة','J’approuve cet aperçu joint','Approve this attachment preview'));self.approve.hide();layout.addWidget(self.approve)
+  self.preview_dialog=QDialog(self);self.preview_dialog.setWindowTitle(triple('معاينة بيانات الجلسة','Aperçu de la session','Session data preview'));self.preview_dialog.resize(700,500);preview_layout=QVBoxLayout(self.preview_dialog);self.preview=QTextBrowser();self.preview.setLayoutDirection(Qt.LeftToRight);preview_layout.addWidget(self.preview)
+  self.approve=QCheckBox(triple('أوافق على إرفاق هذه المعاينة','J’approuve cet aperçu joint','Approve this attachment preview'));self.approve.hide();preview_layout.addWidget(self.approve)
   actions=QGridLayout();attach=action_button(triple('معاينة الفحص الحالي','Aperçu du scan actuel','Preview current scan'));attach.clicked.connect(self.attach);actions.addWidget(attach,0,0);detach=action_button(triple('إزالة المرفق','Retirer la pièce jointe','Remove attachment'));detach.clicked.connect(self.detach);actions.addWidget(detach,0,1);self.send_button=action_button(triple('إرسال','Envoyer','Send'),role='primary');self.send_button.clicked.connect(self.send);actions.addWidget(self.send_button,1,0);self.cancel_button=action_button(triple('إلغاء','Annuler','Cancel'));self.cancel_button.clicked.connect(self.cancel);self.cancel_button.setEnabled(False);actions.addWidget(self.cancel_button,1,1);layout.addLayout(actions);self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback)
  def wrapped_consent(self,text,layout):
   row=QHBoxLayout();check=QCheckBox();check.setAccessibleName(text);row.addWidget(check);label=QLabel(text);label.setWordWrap(True);row.addWidget(label,1);layout.addLayout(row);return check
  def attach(self):
-  if hasattr(self,'session_capture'):self.session_capture();return
+  if hasattr(self,'session_capture'):self.session_capture();self.preview_dialog.show();return
   self.evidence_override=None
   scan=current_scan(self.window);self.approve.setChecked(False)
   self.attachment=sanitized_scan(scan) if scan else None
-  self.preview.setPlainText(json.dumps(self.attachment,ensure_ascii=False,indent=2) if scan else triple('لا يوجد فحص حالي','Aucun scan actuel','No current scan'));self.preview.show();self.approve.setVisible(bool(scan))
+  self.preview.setPlainText(json.dumps(self.attachment,ensure_ascii=False,indent=2) if scan else triple('لا يوجد فحص حالي','Aucun scan actuel','No current scan'));self.preview.show();self.preview_dialog.show();self.approve.setVisible(bool(scan))
  def detach(self):
-  self.attachment=None;self.evidence_override=None;self.preview.hide();self.approve.setChecked(False);self.approve.hide()
+  self.attachment=None;self.evidence_override=None;self.preview_dialog.hide();self.approve.setChecked(False);self.approve.hide()
  def cancel(self):
   if self.cancel_event:self.cancel_event.set();self.feedback.setText(triple('جارٍ الإلغاء','Annulation en cours','Cancelling'))
- def hideEvent(self,event):self.cancel();super().hideEvent(event)
+ def hideEvent(self,event):self.cancel();self.connection_dialog.hide();self.preview_dialog.hide();super().hideEvent(event)
  def send(self):
   window=self.window
   if not self.consent.isChecked():self.feedback.setText(triple('الموافقة مطلوبة','Consentement requis','Consent is required'));return

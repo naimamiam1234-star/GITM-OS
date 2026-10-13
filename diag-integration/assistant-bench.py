@@ -28,7 +28,7 @@ try:
  if len(ws.samples)<before+4:raise RuntimeError('Live acquisition did not continue with assistant open')
  panel.tabs.setCurrentIndex(1);app.processEvents();window.grab().save(str(out/'03-cloud-consent-preview.png'))
  panel.search('youtube');app.processEvents();window.grab().save(str(out/'04-search-settings-unconfigured.png'))
- panel.toggle_expanded();app.processEvents();window.grab().save(str(out/'05-assistant-expanded.png'));panel.toggle_expanded()
+ panel.toggle_expanded();app.processEvents();window.grab().save(str(out/'05-assistant-expanded.png'));panel.tabs.setCurrentIndex(1);app.processEvents();window.grab().save(str(out/'06-chat-expanded.png'));panel.toggle_expanded()
  ws.stop()
  deadline=time.monotonic()+5
  while ws.worker is not None and time.monotonic()<deadline:app.processEvents();time.sleep(.02)
