@@ -167,6 +167,7 @@ class Workspace(QWidget):
    if self.report and vehicle!=selected:self.connection.setText(self.connection.text()+' · '+triple('نتائج السيارة السابقة؛ ابدأ فحصًا جديدًا','Résultats du véhicule précédent; nouveau diagnostic requis','Previous vehicle results; start a new scan'))
   except Exception as e:self.connection.setText(str(e))
   if hasattr(self,'clear_button'):self.update_actions()
+  if hasattr(self.window,'professional_shell'):self.window.professional_shell.refresh()
  def eventFilter(self,obj,event):
   if obj is self.window and event.type()==QEvent.Close and self.worker and self.worker.isRunning():self.stop();event.ignore();return True
   return super().eventFilter(obj,event)

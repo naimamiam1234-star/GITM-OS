@@ -47,7 +47,7 @@ class Shell:
   brand=QLabel('GITM AutoDiag');brand.setObjectName('brand');hl.addWidget(brand);self.title=QLabel(t('الرئيسية','Accueil','Home'));self.title.setObjectName('pageTitle');self.title.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Preferred);hl.addWidget(self.title,1)
   self.search=QLineEdit();self.search.setPlaceholderText(t('بحث أو P0401','Recherche ou P0401','Search or P0401'));self.search.setMaximumWidth(230);self.search.textChanged.connect(self.filter);self.search.returnPressed.connect(self.search_action);hl.addWidget(self.search)
   self.lang=QComboBox();self.lang.addItems(['العربية','Français','English']);self.lang.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);self.lang.currentIndexChanged.connect(self.set_language);hl.addWidget(self.lang)
-  self.assistant_button=action_button(t('المساعد التشخيصي','Assistant de session','Session assistant'),icon='ai');self.assistant_button.setObjectName('sessionAssistantButton');self.assistant_button.clicked.connect(self.toggle_assistant);hl.addWidget(self.assistant_button)
+  self.assistant_button=action_button(t('المساعد','Assistant','Assistant'),role='primary',icon='ai');self.assistant_button.setToolTip(t('المساعد التشخيصي · Ctrl+J','Assistant de session · Ctrl+J','Session assistant · Ctrl+J'));self.assistant_button.setObjectName('sessionAssistantButton');self.assistant_button.clicked.connect(self.toggle_assistant);hl.addWidget(self.assistant_button)
   self.appearance=action_button('◐');self.appearance.setAccessibleName(t('المظهر','Apparence','Appearance'));am=QMenu(self.appearance)
   for label,key in [(t('نهاري','Clair','Light'),'light'),(t('ليلي','Sombre','Dark'),'dark'),(t('تلقائي','Auto','Auto'),'auto')]:am.addAction(label,lambda key=key:self.set_theme(key))
   am.addSeparator()
@@ -88,6 +88,7 @@ class Shell:
   w.close_guard=CloseGuard(w);w.professional_shell=self
   self.timer=QTimer(w);self.timer.setInterval(1000);self.timer.timeout.connect(self.refresh);self.timer.start()
   QShortcut(QKeySequence('F11'),w,activated=self.fullscreen);QShortcut(QKeySequence('Ctrl+K'),w,activated=self.search.setFocus)
+  QShortcut(QKeySequence('Ctrl+J'),w,activated=self.toggle_assistant);QShortcut(QKeySequence('Alt+Home'),w,activated=self.home)
   self.apply_theme();self.refresh();self.page_changed()
  def show_assistant(self):
   if self.assistant_panel is None:
@@ -101,6 +102,10 @@ class Shell:
   else:self.show_assistant()
  def build_home(self):
   w=self.w;home=QWidget();body=QVBoxLayout(home);body.setContentsMargins(14,10,14,10);body.setSpacing(8);self.vehicle_card=InfoCard(t('السيارة الحالية','Véhicule actuel','Current vehicle'));self.vehicle_label=QLabel();self.vehicle_label.setWordWrap(True);self.vehicle_card.body.addWidget(self.vehicle_label);body.addWidget(self.vehicle_card)
+  actions=QHBoxLayout();self.home_actions={}
+  for key,labels,ico in [('vehicle',('اختيار سيارة','Choisir un véhicule','Choose vehicle'),'car'),('adapter',('ربط المحول','Connecter VCI','Connect adapter'),'engine'),('diagnosis',('بدء التشخيص','Diagnostic','Start diagnosis'),'smart'),('ai',('المساعد التشخيصي','Assistant de session','Session assistant'),'ai')]:
+   button=action_button(t(*labels),role='primary' if key=='diagnosis' else 'secondary',icon=ico);button.clicked.connect(lambda checked=False,key=key:self.navigate(key));actions.addWidget(button);self.home_actions[key]=button
+  self.vehicle_card.body.addLayout(actions)
   row=QHBoxLayout();allb=action_button(t('الكل','Tout','All'));allb.clicked.connect(lambda:self.select_group(None));row.addWidget(allb)
   for i,group in enumerate(GROUPS[:5]):
    b=action_button(t(*group));b.clicked.connect(lambda checked=False,i=i:self.select_group(i));row.addWidget(b)
@@ -212,12 +217,16 @@ class Shell:
   menu=self.bell.menu();menu.clear()
   for text in self.notifications[-6:] or [t('لا توجد إشعارات','Aucune notification','No notifications')]:menu.addAction(text).setEnabled(False)
  def refresh(self):
+  intent=store.cache('desktop_launch_intent')
+  if isinstance(intent,dict) and intent.get('action')=='assistant' and intent.get('id') and intent.get('id')!=getattr(self,'last_launch_intent',None):
+   self.last_launch_intent=intent['id'];store.cache('desktop_launch_intent',{'id':intent['id'],'action':'consumed'});self.show_assistant()
   info=transport.LINK.info();v=self.w.vehicle;vehicle=' · '.join(str(v.get(k,'')) for k in ('make','model','year','engine') if v.get(k));self.vehicle_label.setText(vehicle or t('اختر سيارة أو اتصل بمحول','Choisir véhicule ou adaptateur','Choose a vehicle or adapter'));ui=getattr(self.w,'diagnostic_workspace',None);voltage='—';report=getattr(ui,'report',None)
   if report and info.get('connected') and ui.connection_key()==ui.connection_identity and report.get('vehicle')==v:
    samples=[r for r in ui.samples if r.get('pid')==0x42 and isinstance(r.get('value'),(int,float))]
    if samples:voltage=str(samples[-1]['value'])+' V · '+str(samples[-1].get('at',''))
   protocol=info.get('protocol_number');protocol_names={6:'CAN 11/500',7:'CAN 29/500',8:'CAN 11/250',9:'CAN 29/250'}
-  self.context.setText(('● '+t('متصل','Connecté','Connected') if info.get('connected') else '○ '+t('غير متصل','Déconnecté','Disconnected'))+' · '+str(info.get('adapter') or '—')+' · '+str(info.get('target') or '—')+' · '+protocol_names.get(protocol,'—')+' · '+t('الجهد','Tension','Voltage')+': '+voltage+(' · '+vehicle if vehicle else ''))
+  mode=t('متصل بالمحاكي','Connecté au simulateur','Connected to simulator') if report and report.get('evidence')=='simulator' and ui.connection_key()==ui.connection_identity else t('متصل','Connecté','Connected')
+  self.context.setText(('● '+mode if info.get('connected') else '○ '+t('غير متصل','Déconnecté','Disconnected'))+' · '+str(info.get('adapter') or '—')+' · '+str(info.get('target') or '—')+' · '+protocol_names.get(protocol,'—')+' · '+t('الجهد','Tension','Voltage')+': '+voltage+(' · '+vehicle if vehicle else ''))
   if report and report.get('id')!=self.last_report:self.last_report=report.get('id');self.notifications.append(t('حُفظ فحص؛ راجع الحالة والأخطاء','Scan enregistré; vérifier erreurs','Scan saved; review status and errors'))
   if time.monotonic()-self.recent_check>10:
    self.recent_check=time.monotonic()

@@ -15,6 +15,7 @@ try:
  report=ws.session.scan(vehicle=window.vehicle);ws.display(report);ws.connection_identity=ws.connection_key();window.resize(int(os.environ.get('GITM_BENCH_WIDTH','1600')),int(os.environ.get('GITM_BENCH_HEIGHT','1000')));window.show();app.processEvents();ws.tabs.setCurrentIndex(1)
  for row in range(ws.dtc.rowCount()):
   if ws.dtc.item(row,3).text()=='P0300':ws.dtc.selectRow(row);break
+ shell.refresh();shell.home();app.processEvents();window.grab().save(str(out/'00-home-light.png'));shell.navigate('diagnosis')
  shell.show_assistant();panel=shell.assistant_panel;panel.analyze()
  for theme in ('light','dark'):
   shell.set_theme(theme)

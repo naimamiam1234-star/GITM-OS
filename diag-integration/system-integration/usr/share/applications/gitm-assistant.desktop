@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=GITM Diagnostic Assistant
+Name[ar]=المساعد التشخيصي
+Name[fr]=Assistant diagnostic GITM
+Exec=/opt/gitm-venv/bin/python /opt/gitm/start_release.py --assistant
+Icon=/opt/gitm/assets/tools/ai.svg
+Terminal=false
+Categories=Utility;
+StartupNotify=true

@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
 ROOT = Path(__file__).resolve().parent
 STATE = Path(os.environ.get('GITM_STATE', str(Path.home()/'.local/share/gitm')))
 APPS = [
+ ('assistant','المساعد التشخيصي','تحليل جلسة AutoDiag','ai',None),
  ('autodiag','GITM AutoDiag','تشخيص السيارات','engine',None),
  ('files','الملفات','المجلدات والمستندات','files',['dolphin']),
  ('browser','المتصفح','الإنترنت والمراجع','browser',['firefox']),
@@ -126,7 +127,7 @@ class Desktop(QWidget):
   title=QLabel('GITM <span style="color:#248dff">OS</span><br><span style="font-size:12px;letter-spacing:3px;color:#becce1">YOUR WORKSPACE. YOUR WAY.</span>');title.setStyleSheet('font-size:32px;font-family:DejaVu Sans;font-weight:bold');title.setAlignment(Qt.AlignRight|Qt.AlignVCenter);welcome.addWidget(title);left.addLayout(welcome)
   self.search=QLineEdit();self.search.setPlaceholderText('ابحث عن تطبيق، إعدادات أو أدوات…');self.search.textChanged.connect(self.filter_apps);self.search.setLayoutDirection(Qt.RightToLeft);left.addWidget(self.search)
   container=QWidget();grid=QGridLayout(container);grid.setContentsMargins(0,0,0,0);grid.setSpacing(10);self.app_grid=grid;self.app_container=container
-  order=['autodiag','documents','photos','media','settings','files','browser','updates','calculator','install']
+  order=['autodiag','assistant','documents','photos','media','settings','files','browser','updates','calculator','install']
   for i,key in enumerate(order):
    _,name,desc,icon,command=next(a for a in APPS if a[0]==key)
    card=QWidget();v=QVBoxLayout(card);v.setContentsMargins(2,8,2,8);v.setSpacing(7);v.setAlignment(Qt.AlignCenter)
@@ -359,7 +360,12 @@ class Desktop(QWidget):
   p.finished.connect(lambda code,status:QMessageBox.warning(self,'GITM',f'توقف {key} برمز {code}. سجل التفاصيل: {STATE/(key+".log")}') if code else None)
   self.processes[key]=p;p.start()
  def activate(self,key):
-  if key=='autodiag':self.launch(key,[sys.executable,str(ROOT/'start_release.py'),'--windowed','--skip-intro'])
+  if key in ('autodiag','assistant'):
+   running=getattr(self,'processes',{}).get('autodiag')
+   if key=='assistant' and running and running.state()!=QProcess.NotRunning:
+    import store,uuid
+    store.cache('desktop_launch_intent',{'id':str(uuid.uuid4()),'action':'assistant'})
+   self.launch('autodiag',[sys.executable,str(ROOT/'start_release.py'),'--windowed','--skip-intro']+(['--assistant'] if key=='assistant' else []))
   elif key=='settings':self.settings()
   elif key=='updates':self.updates()
   else:

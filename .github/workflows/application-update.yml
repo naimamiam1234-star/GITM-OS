@@ -42,14 +42,14 @@ jobs:
           python3 application-update/build.py "$source"
       - uses: actions/upload-artifact@v4
         with:
-          name: GITM-AutoDiag-3.3.2-debian-candidate
+          name: GITM-AutoDiag-3.3.3-debian-candidate
           path: dist/app-update/*
           retention-days: 30
       - name: Prepare actual candidate installation test
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           test -n "$source"
-          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.3.2-2_all.deb
+          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.3.3-1_all.deb
       - name: Install to fresh 40GiB disk and boot without ISO
         env:
           BOOT_MODE: ${{ inputs.boot_mode || 'UEFI' }}
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: GITM-AutoDiag-3.3.2-installed-evidence
+          name: GITM-AutoDiag-3.3.3-installed-evidence
           path: |
             dist/disk-install/*.log
             dist/disk-install/*.txt

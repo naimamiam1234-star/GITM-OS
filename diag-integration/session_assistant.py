@@ -3,7 +3,7 @@ import json, threading
 from html import escape
 from PySide6.QtCore import Qt,QThread,Signal,QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QTextBrowser,QTextEdit,QCheckBox,QLineEdit,QTabWidget,QScrollArea,QDialog
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QTextBrowser,QTextEdit,QCheckBox,QLineEdit,QTabWidget,QScrollArea,QDialog
 import assistant_core as core
 from ai_workspace import Assistant
 from professional_components import triple as t,action_button
@@ -19,19 +19,21 @@ class SearchTask(QThread):
 class SessionAssistant(QWidget):
  def __init__(self,window):
   super().__init__();self.window=window;self.context=None;self.sources=[];self.search_task=None;self.search_cancel=None;self.expanded=False
-  layout=QVBoxLayout(self);layout.setContentsMargins(10,10,10,10)
+  self.setObjectName('assistantPanel');layout=QVBoxLayout(self);layout.setContentsMargins(14,14,14,14);layout.setSpacing(10)
   title=QHBoxLayout();label=QLabel(t('المساعد التشخيصي','Assistant de session','Session assistant'));label.setObjectName('pageTitle');title.addWidget(label,1)
   self.expand=action_button(t('توسيع','Agrandir','Expand'));self.expand.clicked.connect(self.toggle_expanded);title.addWidget(self.expand)
   close=action_button('×');close.setAccessibleName(t('إخفاء المساعد','Masquer','Hide assistant'));close.clicked.connect(self.hide);title.addWidget(close);layout.addLayout(title)
-  self.identity=QLabel();self.identity.setWordWrap(True);layout.addWidget(self.identity)
+  self.identity=QLabel();self.identity.setObjectName('sessionIdentity');self.identity.setWordWrap(True);layout.addWidget(self.identity)
   self.symptoms=QTextEdit();self.symptoms.setMaximumHeight(68);self.symptoms.setPlaceholderText(t('الأعراض وملاحظات الفني؛ دون بيانات شخصية','Symptômes sans données personnelles','Symptoms and technician notes; no personal details'));layout.addWidget(self.symptoms)
   self.refresh_button=action_button(t('اعتماد السياق الحالي','Actualiser le contexte','Use current context'));self.refresh_button.clicked.connect(self.capture);layout.addWidget(self.refresh_button)
-  for label,callback in [(t('حلّل بيانات الجلسة','Analyser la session','Analyze session data'),self.analyze),(t('ابحث عن مراجع','Rechercher des références','Find references'),lambda:self.search('brave')),(t('ابحث عن فيديو شرح','Rechercher une vidéo','Find an explanation video'),lambda:self.search('youtube'))]:
-   button=action_button(label);button.clicked.connect(callback);layout.addWidget(button)
+  actions=QGridLayout();actions.setSpacing(8)
+  for i,(label,callback) in enumerate([(t('حلّل بيانات الجلسة','Analyser la session','Analyze session data'),self.analyze),(t('مراجع','Références','References'),lambda:self.search('brave')),(t('فيديو شرح','Vidéo','Video guide'),lambda:self.search('youtube'))]):
+   button=action_button(label,role='primary' if i==0 else 'secondary');button.clicked.connect(callback);actions.addWidget(button,0 if i==0 else 1,0 if i<2 else 1,1,2 if i==0 else 1)
+  layout.addLayout(actions)
   self.tabs=QTabWidget();layout.addWidget(self.tabs,1)
   self.results=QTextBrowser();self.results.setOpenLinks(False);self.results.setOpenExternalLinks(False);self.results.anchorClicked.connect(self.open_source);self.tabs.addTab(self.results,t('النتائج','Résultats','Results'))
-  self.cloud=Assistant(window);self.cloud.session_capture=self.capture;scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(self.cloud);self.tabs.addTab(scroll,t('تحليل سحابي','Analyse cloud','Cloud analysis'))
-  self.timeline=QTextBrowser();self.timeline.setOpenLinks(False);self.timeline.anchorClicked.connect(self.open_source);self.tabs.addTab(self.timeline,t('سجل الجلسة','Journal','Session journal'))
+  self.cloud=Assistant(window);self.cloud.session_capture=self.capture;scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(self.cloud);self.tabs.addTab(scroll,t('سحابي','Cloud','Cloud'));self.tabs.setTabToolTip(1,t('تحليل بالذكاء الاصطناعي السحابي','Analyse IA cloud','Cloud AI analysis'))
+  self.timeline=QTextBrowser();self.timeline.setOpenLinks(False);self.timeline.anchorClicked.connect(self.open_source);self.tabs.addTab(self.timeline,t('السجل','Journal','Journal'));self.tabs.setTabToolTip(2,t('سجل الجلسة','Journal de session','Session journal'))
   settings=QWidget();sl=QVBoxLayout(settings);info=QLabel(t('المفاتيح في ذاكرة الجلسة فقط. البحث يعرض مقتطفات؛ الفيديو يعرض وصفًا دون قراءة النص أو مشاهدة المحتوى.','Clés en mémoire. Extraits de recherche et descriptions vidéo uniquement.','Keys stay in session memory. Search returns excerpts; videos return descriptions, not transcripts or watched content.'));info.setWordWrap(True);sl.addWidget(info)
   self.keys={}
   for provider,title in [('brave','Brave Search API key'),('youtube','YouTube Data API key')]:
@@ -39,7 +41,7 @@ class SessionAssistant(QWidget):
   self.external_consent=QCheckBox(t('أوافق على إرسال استعلام البحث المعروض فقط للخدمة','Autoriser l’envoi de la requête affichée','Approve sending only the displayed search query'));sl.addWidget(self.external_consent)
   self.query=QTextEdit();self.query.setMaximumHeight(110);self.query.textChanged.connect(lambda:self.external_consent.setChecked(False));sl.addWidget(self.query)
   self.cancel_button=action_button(t('إلغاء البحث','Annuler','Cancel search'));self.cancel_button.clicked.connect(self.cancel_search);sl.addWidget(self.cancel_button)
-  browser=action_button(t('فتح البحث في المتصفح فقط','Recherche navigateur uniquement','Open browser search only'));browser.clicked.connect(self.browser_search);sl.addWidget(browser);sl.addStretch();self.tabs.addTab(settings,t('البحث والخصوصية','Recherche et confidentialité','Search and privacy'))
+  browser=action_button(t('فتح البحث في المتصفح فقط','Recherche navigateur uniquement','Open browser search only'));browser.clicked.connect(self.browser_search);sl.addWidget(browser);sl.addStretch();self.tabs.addTab(settings,t('البحث','Recherche','Search'));self.tabs.setTabToolTip(3,t('البحث والخصوصية','Recherche et confidentialité','Search and privacy'))
   self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback);self.tabs.currentChanged.connect(lambda index:self.refresh_history() if index==2 else None);self.capture()
 
  def capture(self):
