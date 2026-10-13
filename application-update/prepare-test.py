@@ -13,7 +13,7 @@ replacement="""            import hashlib
             user=pwd.getpwnam('gitmtest');sentinel=P(user.pw_dir)/'.local/share/gitm/update-preservation-sentinel.txt';sentinel.parent.mkdir(parents=True,exist_ok=True);os.chown(sentinel.parent,user.pw_uid,user.pw_gid);sentinel.write_text('Synthetic CI fixture, not customer data');os.chown(sentinel,user.pw_uid,user.pw_gid)
             transaction('install-app-package',['apt-get','install','-y',str(candidate)])
             if sentinel.read_text()!='Synthetic CI fixture, not customer data':raise RuntimeError('User sentinel modified')
-            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.3.2-1':raise RuntimeError('Candidate version not installed')
+            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.3.2-2':raise RuntimeError('Candidate version not installed')
 """.replace('EXPECTED_CANDIDATE',repr(digest))
 code=code[:start]+replacement+code[end:]
 anchor="            lib=root/'usr/local/lib/gitm-probe'; lib.mkdir(parents=True,exist_ok=True)"

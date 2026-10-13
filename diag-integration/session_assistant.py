@@ -37,7 +37,7 @@ class SessionAssistant(QWidget):
   for provider,title in [('brave','Brave Search API key'),('youtube','YouTube Data API key')]:
    field=QLineEdit(getattr(window,provider+'_key',''));field.setEchoMode(QLineEdit.Password);field.setPlaceholderText(title);field.setLayoutDirection(Qt.LeftToRight);field.textChanged.connect(lambda value,p=provider:setattr(window,p+'_key',value));sl.addWidget(field);self.keys[provider]=field
   self.external_consent=QCheckBox(t('أوافق على إرسال استعلام البحث المعروض فقط للخدمة','Autoriser l’envoi de la requête affichée','Approve sending only the displayed search query'));sl.addWidget(self.external_consent)
-  self.query=QTextEdit();self.query.setMaximumHeight(110);sl.addWidget(self.query)
+  self.query=QTextEdit();self.query.setMaximumHeight(110);self.query.textChanged.connect(lambda:self.external_consent.setChecked(False));sl.addWidget(self.query)
   self.cancel_button=action_button(t('إلغاء البحث','Annuler','Cancel search'));self.cancel_button.clicked.connect(self.cancel_search);sl.addWidget(self.cancel_button)
   browser=action_button(t('فتح البحث في المتصفح فقط','Recherche navigateur uniquement','Open browser search only'));browser.clicked.connect(self.browser_search);sl.addWidget(browser);sl.addStretch();self.tabs.addTab(settings,t('البحث والخصوصية','Recherche et confidentialité','Search and privacy'))
   self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback);self.tabs.currentChanged.connect(lambda index:self.refresh_history() if index==2 else None);self.capture()
@@ -57,7 +57,12 @@ class SessionAssistant(QWidget):
    for row in core.history(current['session_id']):
     if row['kind']=='assistant_context':note=row['payload'].get('symptoms','');break
    self.symptoms.setPlainText(note);current=core.snapshot(report,getattr(self.window,'vehicle',{}),ecu,code,getattr(ws,'samples',()),pids,note)
-  if self.context is None or self.context['fingerprint']!=current['fingerprint']:core.record(current['session_id'],'assistant_context',current)
+  changed=self.context is None or self.context['fingerprint']!=current['fingerprint']
+  if changed:
+   core.record(current['session_id'],'assistant_context',current);self.cloud.conversation.clear();self.cloud.prompt.clear();self.cloud.consent.setChecked(False)
+   for row in reversed(core.history(current['session_id'])):
+    if row['kind']=='cloud_analysis' and row['payload'].get('context_fingerprint')==current['fingerprint']:
+     value=row['payload'];self.cloud.conversation.append('<p><b>'+escape(str(value.get('question','')))+'</b><br>'+escape(str(value.get('answer','')))+'<br>'+escape(str(value.get('status','')))+'</p>')
   self.context=current
   self.sources=core.local_sources(self.context)
   for row in core.history(self.context['session_id']):
@@ -117,7 +122,7 @@ class SessionAssistant(QWidget):
  def open_source(self,url):
   try:value=core.safe_url(url.toString());opened=QDesktopServices.openUrl(QUrl(value))
   except ValueError as error:self.feedback.setText(str(error));return
-  core.record(self.context['session_id'],'opened_source' if opened else 'source_open_failed',{'url':value,'note':self.symptoms.toPlainText()[:1200],'content_read':False});self.refresh_history()
+  core.record(self.context['session_id'],'opened_source' if opened else 'source_open_failed',{'url':value,'note':self.context.get('symptoms',''),'content_read':False});self.refresh_history()
   self.feedback.setText(t('المصدر في المتصفح؛ جلسة التشخيص محفوظة','Source dans le navigateur; session conservée','Source opened in browser; diagnostic session retained') if opened else t('تعذر فتح المتصفح','Navigateur indisponible','Browser could not be opened'))
  def browser_search(self):
   from urllib.parse import urlencode

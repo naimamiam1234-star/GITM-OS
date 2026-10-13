@@ -20,13 +20,13 @@ def main():
   if not (app/'native.py').exists():raise ValueError('Existing GITM application missing')
   run('python3',ROOT/'diag-integration/install.py',app)
   for cache in list(app.rglob('__pycache__')):shutil.rmtree(cache)
-  (app/'gitm-app-release.json').write_text(json.dumps({'version':'3.3.2','debian_version':'3.3.2-1','source_iso_sha256':EXPECTED,'delivery':'local administrative Debian package; not a signed gitmupdate'},indent=2))
+  (app/'gitm-app-release.json').write_text(json.dumps({'version':'3.3.2','debian_version':'3.3.2-2','source_iso_sha256':EXPECTED,'delivery':'local administrative Debian package; not a signed gitmupdate'},indent=2))
   control=stage/'DEBIAN';control.mkdir()
-  (control/'control').write_text('Package: gitm-autodiag\nVersion: 3.3.2-1\nArchitecture: all\nMaintainer: GITM OS Project\nDepends: python3\nDescription: Application-only GITM AutoDiag update for existing GITM OS\n Includes sourced brand assets and model names, retains installed runtime and user data.\n')
+  (control/'control').write_text('Package: gitm-autodiag\nVersion: 3.3.2-2\nArchitecture: all\nMaintainer: GITM OS Project\nDepends: python3\nDescription: Application-only GITM AutoDiag update for existing GITM OS\n Includes sourced brand assets and model names, retains installed runtime and user data.\n')
   pre=control/'preinst';pre.write_text('#!/bin/sh\nset -eu\n[ "$(dpkg --print-architecture)" = amd64 ]\n[ -x /opt/gitm-venv/bin/python ]\n[ -f /opt/gitm/native.py ]\n');pre.chmod(0o755)
   files=[f for f in sorted(app.rglob('*')) if f.is_file()]
   (control/'md5sums').write_text(''.join(hashlib.md5(f.read_bytes()).hexdigest()+'  '+str(f.relative_to(stage))+'\n' for f in files))
-  package=a.output/'gitm-autodiag_3.3.2-1_all.deb';run('dpkg-deb','--root-owner-group','--build',stage,package)
+  package=a.output/'gitm-autodiag_3.3.2-2_all.deb';run('dpkg-deb','--root-owner-group','--build',stage,package)
   manifest={'package':package.name,'sha256':sha(package),'bytes':package.stat().st_size,'source_iso_sha256':EXPECTED,'preserves':'Runtime, system signing key and home directories are outside this package','files':{str(f.relative_to(stage)):sha(f) for f in files}}
   (a.output/'build-manifest.json').write_text(json.dumps(manifest,indent=2));(a.output/'SHA256SUMS').write_text(manifest['sha256']+'  '+package.name+'\n')
   print('PASS: application package built',package,manifest['sha256'])

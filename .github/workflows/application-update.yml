@@ -49,7 +49,7 @@ jobs:
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           test -n "$source"
-          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.3.2-1_all.deb
+          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.3.2-2_all.deb
       - name: Install to fresh 40GiB disk and boot without ISO
         env:
           BOOT_MODE: ${{ inputs.boot_mode || 'UEFI' }}

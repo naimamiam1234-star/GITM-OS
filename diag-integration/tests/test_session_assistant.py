@@ -100,3 +100,14 @@ class PanelTests(unittest.TestCase):
  def test_cloud_side_panel_does_not_require_horizontal_scrolling(self):
   w,s=self.window();w.resize(1600,1000);w.show();s.show_assistant();panel=s.assistant_panel;panel.tabs.setCurrentIndex(1);self.app.processEvents()
   scroll=panel.tabs.widget(1);self.assertEqual(scroll.horizontalScrollBar().maximum(),0)
+ def test_session_switch_clears_previous_cloud_answer(self):
+  w,s=self.window();w.vehicle={'make':'A','vin':'one'};s.show_assistant();panel=s.assistant_panel;panel.cloud.conversation.setPlainText('Vehicle A interpretation')
+  w.vehicle={'make':'B','vin':'two'};panel.capture();self.assertNotIn('Vehicle A interpretation',panel.cloud.conversation.toPlainText())
+ def test_query_consent_reset_on_capture_and_edit(self):
+  w,s=self.window();w.vehicle={'make':'A','vin':'one'};s.show_assistant();panel=s.assistant_panel;panel.external_consent.setChecked(True)
+  w.vehicle={'make':'B','vin':'two'};panel.capture();self.assertFalse(panel.external_consent.isChecked());panel.external_consent.setChecked(True);panel.query.setPlainText('A changed query');self.assertFalse(panel.external_consent.isChecked())
+ def test_opened_source_records_only_approved_redacted_note(self):
+  w,s=self.window();w.vehicle={'make':'A','vin':'VF1AAAAAA12345678'};s.show_assistant();panel=s.assistant_panel;panel.symptoms.setPlainText('VIN VF1AAAAAA12345678');panel.capture();panel.symptoms.setPlainText('Edited after capture: VF1AAAAAA12345678')
+  from PySide6.QtCore import QUrl
+  with patch('session_assistant.QDesktopServices.openUrl',return_value=True):panel.open_source(QUrl('https://example.com/a'))
+  row=next(r for r in panel.events() if r['kind']=='opened_source');self.assertNotIn('VF1AAAAAA12345678',row['payload']['note']);self.assertEqual(row['payload']['note'],panel.context['symptoms'])
