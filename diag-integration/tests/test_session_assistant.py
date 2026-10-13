@@ -97,3 +97,6 @@ class PanelTests(unittest.TestCase):
   w,s=self.window();w.vehicle={'make':'Notes','vin':'session-one'};s.show_assistant();panel=s.assistant_panel;panel.symptoms.setPlainText('Cold start symptom');panel.capture()
   w2,s2=self.window();w2.vehicle=dict(w.vehicle);s2.show_assistant();panel=s2.assistant_panel;self.assertEqual(panel.symptoms.toPlainText(),'Cold start symptom')
   w2.vehicle={'make':'Notes','vin':'session-two'};panel.capture();self.assertEqual(panel.symptoms.toPlainText(),'');self.assertNotEqual(panel.context['session_id'],'')
+ def test_cloud_side_panel_does_not_require_horizontal_scrolling(self):
+  w,s=self.window();w.resize(1600,1000);w.show();s.show_assistant();panel=s.assistant_panel;panel.tabs.setCurrentIndex(1);self.app.processEvents()
+  scroll=panel.tabs.widget(1);self.assertEqual(scroll.horizontalScrollBar().maximum(),0)

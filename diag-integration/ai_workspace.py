@@ -3,7 +3,7 @@ import json,re,threading
 from pathlib import Path
 from html import escape
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLineEdit,QComboBox,QTextEdit,QTextBrowser,QCheckBox,QLabel,QMessageBox
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLineEdit,QComboBox,QTextEdit,QTextBrowser,QCheckBox,QLabel,QMessageBox
 from professional_components import triple,action_button
 
 def sanitized_scan(report):
@@ -50,10 +50,12 @@ class Assistant(QWidget):
   self.model.setMinimumContentsLength(12);self.model.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon);self.model.setMaximumWidth(230);self.key.setMinimumWidth(120)
   row.addWidget(self.model,1);layout.addLayout(row)
   self.conversation=QTextBrowser();layout.addWidget(self.conversation,1);self.prompt=QTextEdit();self.prompt.setMaximumHeight(115);self.prompt.setPlaceholderText(triple('اكتب سؤالك دون بيانات شخصية','Question sans données personnelles','Ask without personal information'));layout.addWidget(self.prompt)
-  self.consent=QCheckBox(triple('أوافق على إرسال السؤال والمعاينة المعتمدة إلى OpenRouter','J’autorise l’envoi de la question et de l’aperçu approuvé à OpenRouter','I approve sending the question and approved preview to OpenRouter'));layout.addWidget(self.consent)
+  self.consent=self.wrapped_consent(triple('أوافق على إرسال السؤال والمعاينة المعتمدة إلى OpenRouter','J’autorise l’envoi de la question et de l’aperçu approuvé à OpenRouter','I approve sending the question and approved preview to OpenRouter'),layout)
   self.preview=QTextBrowser();self.preview.setMaximumHeight(110);self.preview.hide();layout.addWidget(self.preview)
   self.approve=QCheckBox(triple('أوافق على إرفاق هذه المعاينة','J’approuve cet aperçu joint','Approve this attachment preview'));self.approve.hide();layout.addWidget(self.approve)
-  actions=QHBoxLayout();attach=action_button(triple('معاينة الفحص الحالي','Aperçu du scan actuel','Preview current scan'));attach.clicked.connect(self.attach);actions.addWidget(attach);detach=action_button(triple('إزالة المرفق','Retirer la pièce jointe','Remove attachment'));detach.clicked.connect(self.detach);actions.addWidget(detach);self.send_button=action_button(triple('إرسال','Envoyer','Send'),role='primary');self.send_button.clicked.connect(self.send);actions.addWidget(self.send_button);self.cancel_button=action_button(triple('إلغاء','Annuler','Cancel'));self.cancel_button.clicked.connect(self.cancel);self.cancel_button.setEnabled(False);actions.addWidget(self.cancel_button);layout.addLayout(actions);self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback)
+  actions=QGridLayout();attach=action_button(triple('معاينة الفحص الحالي','Aperçu du scan actuel','Preview current scan'));attach.clicked.connect(self.attach);actions.addWidget(attach,0,0);detach=action_button(triple('إزالة المرفق','Retirer la pièce jointe','Remove attachment'));detach.clicked.connect(self.detach);actions.addWidget(detach,0,1);self.send_button=action_button(triple('إرسال','Envoyer','Send'),role='primary');self.send_button.clicked.connect(self.send);actions.addWidget(self.send_button,1,0);self.cancel_button=action_button(triple('إلغاء','Annuler','Cancel'));self.cancel_button.clicked.connect(self.cancel);self.cancel_button.setEnabled(False);actions.addWidget(self.cancel_button,1,1);layout.addLayout(actions);self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback)
+ def wrapped_consent(self,text,layout):
+  row=QHBoxLayout();check=QCheckBox();check.setAccessibleName(text);row.addWidget(check);label=QLabel(text);label.setWordWrap(True);row.addWidget(label,1);layout.addLayout(row);return check
  def attach(self):
   if hasattr(self,'session_capture'):self.session_capture();return
   self.evidence_override=None

@@ -1,4 +1,5 @@
 name: GITM AutoDiag application package and installed update
+# Side assistant geometry and context isolation verified before packaging.
 on:
   push:
     branches: [autodiag-expansion-20261012]
