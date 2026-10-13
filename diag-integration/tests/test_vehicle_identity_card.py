@@ -16,6 +16,9 @@ class IdentityCardTests(unittest.TestCase):
   self.page.choose_model(row);self.assertEqual(self.page.tabs.currentIndex(),2)
   self.page.choose_year(2026);self.assertEqual(self.page.tabs.currentIndex(),3)
   self.page.choose_engine(row['engines'][0]);self.assertEqual(self.page.tabs.currentIndex(),4);self.assertEqual(self.page.fields['fuel'].text(),'Diesel')
+ def test_brand_page_has_no_review_actions(self):
+  self.assertEqual(self.page.tabs.currentIndex(),0);self.assertTrue(self.page.back.isHidden());self.assertTrue(all(button.isHidden() for button in self.page.actions));self.assertTrue(self.page.scope.isHidden())
+  self.page.choose_make('RENAULT');self.assertEqual(self.page.tabs.currentIndex(),1);self.assertTrue(all(button.isHidden() for button in self.page.actions))
  def test_save_disabled_until_review(self):
   self.assertFalse(self.page.actions[0].isEnabled());self.page.tabs.setCurrentIndex(4);self.assertTrue(self.page.actions[0].isEnabled())
  def test_manual_unknown_model_and_fuel_remain_editable(self):

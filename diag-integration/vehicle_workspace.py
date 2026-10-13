@@ -2,13 +2,21 @@
 import json,hashlib,datetime
 from pathlib import Path
 from PySide6.QtCore import QSize,Qt
-from PySide6.QtGui import QPixmap,QIcon,QPainter,QColor
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QScrollArea,QLineEdit,QFormLayout,QCheckBox,QTextEdit,QLabel,QComboBox,QTabWidget,QFileDialog,QStackedWidget
+from PySide6.QtGui import QPixmap,QIcon,QPainter,QColor,QFontMetrics
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QScrollArea,QLineEdit,QFormLayout,QCheckBox,QTextEdit,QLabel,QComboBox,QTabWidget,QFileDialog,QStackedWidget,QPushButton,QStylePainter,QStyleOptionButton,QStyle
 import native,store,source_gateway
 from professional_components import triple,action_button,InfoCard
 from vci_workspace import Workspace as ConnectionWorkspace
 
 def text(ar,fr,en):return triple(ar,fr,en)
+class BrandTile(QPushButton):
+ def __init__(self,name):
+  super().__init__(name);self.setAccessibleName(name);self.setMinimumHeight(88)
+ def paintEvent(self,event):
+  painter=QStylePainter(self);option=QStyleOptionButton();self.initStyleOption(option);option.text='';option.icon=QIcon();painter.drawControl(QStyle.CE_PushButton,option)
+  pix=self.icon().pixmap(self.iconSize());painter.drawPixmap((self.width()-pix.width())//2,14,pix)
+  painter.setPen(self.palette().buttonText().color());label=self.fontMetrics().elidedText(self.text(),Qt.ElideRight,max(1,self.width()-16));painter.drawText(8,44,self.width()-16,self.height()-48,Qt.AlignCenter,label)
+
 class Choice(QComboBox):
  def __init__(self,value='',choices=()):
   super().__init__();self.setEditable(True);self.addItems(['']+list(choices));self.setText(value)
@@ -28,16 +36,16 @@ class Workspace(QWidget):
   import vehicle_definitions
   try:self.catalog=vehicle_definitions.load(store.BASE/'vehicle-definitions.json')
   except (OSError,ValueError) as error:self.catalog_error=str(error)
-  navigation=QHBoxLayout();back=action_button(text('رجوع','Retour','Back'));back.clicked.connect(lambda:self.tabs.setCurrentIndex(max(0,self.tabs.currentIndex()-1)));navigation.addWidget(back);self.stage_title=QLabel(text('الماركة ← الموديل ← السنة ← المحرك ← مراجعة','Marque → Modèle → Année → Moteur → Révision','Make → Model → Year → Engine → Review'));self.stage_title.setWordWrap(True);navigation.addWidget(self.stage_title,1);root.insertLayout(0,navigation);brand_layout=QVBoxLayout(brands);detail_layout=QVBoxLayout(details);self.search=QLineEdit();self.search.setPlaceholderText(text('ابحث عن الماركة','Rechercher une marque','Search makes'));brand_layout.addWidget(self.search)
+  navigation=QHBoxLayout();back=action_button(text('رجوع','Retour','Back'));back.clicked.connect(lambda:self.tabs.setCurrentIndex(max(0,self.tabs.currentIndex()-1)));self.back=back;navigation.addWidget(back);self.stage_title=QLabel(text('الماركة ← الموديل ← السنة ← المحرك ← مراجعة','Marque → Modèle → Année → Moteur → Révision','Make → Model → Year → Engine → Review'));self.stage_title.setWordWrap(True);navigation.addWidget(self.stage_title,1);root.insertLayout(0,navigation);brand_layout=QVBoxLayout(brands);detail_layout=QVBoxLayout(details);self.search=QLineEdit();self.search.setPlaceholderText(text('ابحث عن الماركة','Rechercher une marque','Search makes'));brand_layout.addWidget(self.search)
   self.favorites=set(store.cache('vehicle_favorites') or []);self.only_favorites=QCheckBox(text('المفضلة فقط','Favoris seulement','Favorites only'));brand_layout.addWidget(self.only_favorites)
   self.scroll=QScrollArea();self.scroll.setWidgetResizable(True);brand_layout.addWidget(self.scroll,1);container=QWidget();self.grid=QGridLayout(container);self.scroll.setWidget(container);self.buttons={}
-  importer=action_button(text('استيراد تعريفات الموديلات والسنوات والمحركات','Importer les définitions véhicules','Import sourced vehicle definitions'));importer.clicked.connect(self.import_definitions);brand_layout.addWidget(importer)
+  importer=action_button(text('استيراد تعريفات الموديلات والسنوات والمحركات','Importer les définitions véhicules','Import sourced vehicle definitions'));importer.clicked.connect(self.import_definitions);detail_layout.addWidget(importer)
   base=Path(native.__file__).parent
   if logos is None:
    try:logos=json.loads((base/'data/logos.json').read_text())
    except (OSError,ValueError):logos={}
   for name,data in logos.items():
-   button=action_button(name);button.setObjectName('vehicleBrand');button.setIconSize(QSize(32,24));pix=QPixmap(str(base/str(data.get('path','')).lstrip('/')))
+   button=BrandTile(name);button.setObjectName('vehicleBrand');button.setIconSize(QSize(32,24));pix=QPixmap(str(base/str(data.get('path','')).lstrip('/')))
    if not pix.isNull():
     # Source brand marks are often black; a neutral tile stays readable in both themes.
     logo=pix.scaled(28,20,Qt.KeepAspectRatio,Qt.SmoothTransformation);tile=QPixmap(32,24);tile.fill(Qt.transparent);painter=QPainter(tile);painter.setRenderHint(QPainter.Antialiasing);painter.setPen(Qt.NoPen);painter.setBrush(QColor('#f4f6f8'));painter.drawRoundedRect(0,0,32,24,3,3);painter.drawPixmap((32-logo.width())//2,(24-logo.height())//2,logo);painter.end();button.setIcon(QIcon(tile))
@@ -56,10 +64,14 @@ class Workspace(QWidget):
   for label,fn in [(text('اعتماد الاختيار','Enregistrer sélection','Save selection'),self.save_selection),(text('تبديل المفضلة','Basculer favori','Toggle favorite'),self.favorite),(text('بحث VIN','Rechercher VIN','Look up VIN'),self.lookup)]:
    b=action_button(label);b.clicked.connect(fn);actions.addWidget(b);self.actions.append(b)
   self.vin_candidate=None;self.vin_apply=action_button(text('اعتماد بيانات VIN المعروضة','Appliquer les données VIN','Apply displayed VIN identity'));self.vin_apply.setEnabled(False);self.vin_apply.hide();self.vin_apply.clicked.connect(self.apply_vin);detail_layout.addWidget(self.vin_apply)
-  self.status=QLabel();root.addWidget(self.status);scope=QLabel(text('اختيار يدوي؛ دعم وحدات OEM غير مثبت. OBD عام حسب المحول والسيارة.','Sélection manuelle ; support OEM non établi. OBD générique selon véhicule et adaptateur.','Manual identity; OEM module support is not established. Generic OBD depends on vehicle and adapter.'));scope.setWordWrap(True);root.addWidget(scope)
+  self.status=QLabel();root.addWidget(self.status);scope=QLabel(text('اختيار يدوي؛ دعم وحدات OEM غير مثبت. OBD عام حسب المحول والسيارة.','Sélection manuelle ; support OEM non établi. OBD générique selon véhicule et adaptateur.','Manual identity; OEM module support is not established. Generic OBD depends on vehicle and adapter.'));scope.setWordWrap(True);self.scope=scope;root.addWidget(scope)
   self.log=QTextEdit();self.log.setReadOnly(True);self.log.setMaximumHeight(70);self.log.hide();root.addWidget(self.log);self.reflow();self.tabs.currentChanged.connect(self.stage_actions);self.stage_actions()
  def stage_actions(self,*args):
-  self.actions[0].setEnabled(self.tabs.currentIndex()==4 and self.worker is None)
+  index=self.tabs.currentIndex();self.back.setVisible(index>0);self.tabs.setMaximumHeight(520 if index==4 else 16777215)
+  titles=[text('اختيار الماركة','Choisir la marque','Choose make'),text('اختيار الموديل','Choisir le modèle','Choose model'),text('اختيار السنة','Choisir l’année','Choose year'),text('اختيار المحرك','Choisir le moteur','Choose engine'),text('مراجعة السيارة','Vérifier le véhicule','Review vehicle')]
+  self.stage_title.setText(titles[index]);self.scope.setVisible(index==4)
+  for button in self.actions:button.setVisible(index==4)
+  self.actions[0].setEnabled(index==4 and self.worker is None)
  def import_definitions(self):
   import vehicle_definitions
   filename,_=QFileDialog.getOpenFileName(self,text('تعريفات سيارات مع مصادر','Définitions avec sources','Vehicle definitions with sources'),'','JSON (*.json)')
