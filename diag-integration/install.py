@@ -1,7 +1,7 @@
 """Overlay tested engines and wire native AutoDiag pages; fail on source drift."""
 import pathlib, shutil, sys, py_compile
 
-MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','vehicle_workspace','vehicle_definitions','workshop_workspace','ai_workspace','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace')
+MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','adapter_registry','vehicle_workspace','vehicle_definitions','workshop_workspace','ai_workspace','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace')
 def patch_legacy_main(code):
     marker='    from desktop_shell import Dock\n'
     if marker not in code:return code

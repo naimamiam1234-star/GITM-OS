@@ -23,7 +23,9 @@ class Workspace(QWidget):
   self.status=QLabel();root.addWidget(self.status);self.identity=MetricCard(text('هوية المحول','Identité','Adapter identity'));root.addWidget(self.identity)
   self.inventory=QTableWidget(0,4);self.inventory.setHorizontalHeaderLabels([text('جهاز','Appareil','Device'),text('منفذ','Port','Port'),text('هوية','Identité','Identity'),text('دليل','Preuve','Evidence')]);configure_table(self.inventory);root.addWidget(self.inventory,1);self.inventory.cellClicked.connect(self.select_device);self.devices=[]
   self.log=QTextEdit();self.log.setReadOnly(True);self.log.setMaximumHeight(110);root.addWidget(self.log)
-  details=QGroupBox(text('تفاصيل تقنية','Détails techniques','Technical details'));details.setCheckable(True);details.setChecked(False);dl=QVBoxLayout(details);self.raw=QTextEdit();self.raw.setReadOnly(True);self.raw.setMaximumHeight(130);self.raw.hide();dl.addWidget(self.raw);details.toggled.connect(self.raw.setVisible);root.addWidget(details);self.refresh_state()
+  details=QGroupBox(text('تفاصيل تقنية','Détails techniques','Technical details'));details.setCheckable(True);details.setChecked(False);dl=QVBoxLayout(details);self.raw=QTextEdit();self.raw.setReadOnly(True);self.raw.setMaximumHeight(130);
+  from adapter_registry import default_registry
+  self.adapter_registry=default_registry();self.raw.setPlainText(json.dumps({'adapter_connectors':self.adapter_registry.catalog()},ensure_ascii=False,indent=2));self.raw.hide();dl.addWidget(self.raw);details.toggled.connect(self.raw.setVisible);root.addWidget(details);self.refresh_state()
  def launch(self,fn,done):
   if any(getattr(self.window,k,None) is not None for k in ('diagnostic_worker','_obd_worker')) or (getattr(self.window,'task',None) is not None and self.window.task.isRunning()):
    self.status.setText(text('طلب جارٍ','Opération en cours','Operation in progress'));return
