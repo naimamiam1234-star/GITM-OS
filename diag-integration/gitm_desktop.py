@@ -103,7 +103,7 @@ class Desktop(QWidget):
   self.personal_wallpaper=None;self.wallpaper=QPixmap(str(branding.default_wallpaper(self.appearance['mode']) or ROOT/'assets/desktop/wallpaper.png'));self.background=QPixmap();self.blurred=QPixmap()
   try:
    personal_path=(STATE/'wallpaper-path.txt').read_text().strip();personal=QPixmap(personal_path)
-   if not personal.isNull():self.wallpaper=personal;self.personal_wallpaper=personal_path
+   if not personal.isNull() and not branding.is_legacy_wallpaper(personal_path):self.wallpaper=personal;self.personal_wallpaper=personal_path
   except OSError:pass
   for f in (ROOT/'assets').glob('Tajawal-*.ttf'):QFontDatabase.addApplicationFont(str(f))
   self.setWindowIcon(self.icon('settings'))
@@ -305,7 +305,7 @@ class Desktop(QWidget):
     parsed=urlparse(image)
     if parsed.scheme not in ('','file'):continue
     path=Path(unquote(parsed.path))
-    if str(path).startswith('/usr/share/wallpapers/GITM/') or path.is_relative_to(branding.ROOT):continue
+    if str(path).startswith('/usr/share/wallpapers/GITM/') or path.is_relative_to(branding.ROOT) or branding.is_legacy_wallpaper(path):continue
     if path.is_dir():
      candidates=list((path/'contents/images').glob('*'))
      path=next((x for x in candidates if x.is_file()),path)

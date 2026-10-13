@@ -26,3 +26,6 @@ def symbol_pixmap(size=40):
 def brand_icon():
  from PySide6.QtGui import QIcon
  return QIcon(symbol_pixmap(128))
+
+def is_legacy_wallpaper(path,root=None):
+ return Path(path).resolve()==((root or ROOT).parent/"desktop/wallpaper.png").resolve()

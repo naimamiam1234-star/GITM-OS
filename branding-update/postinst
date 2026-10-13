@@ -12,7 +12,8 @@ if [ -f "$base/spinner.plymouth" ]; then
   case "$name" in watermark.png|spinner.plymouth) continue;; esac
   [ ! -f "$file" ] || cp -a "$file" "$theme/$name"
  done
- sed -e "s|$base|$theme|g" -e 's/^Name=.*/Name=GITM OS/' -e 's/^UseFirmwareBackground=.*/UseFirmwareBackground=false/' -e 's/^BackgroundStartColor=.*/BackgroundStartColor=0x071829/' -e 's/^BackgroundEndColor=.*/BackgroundEndColor=0x102c40/' "$base/spinner.plymouth" > "$theme/gitm.plymouth"
+ sed -e "s|^ImageDir=.*|ImageDir=$theme|" -e 's/^Name=.*/Name=GITM OS/' -e 's/^UseFirmwareBackground=.*/UseFirmwareBackground=false/' -e 's/^BackgroundStartColor=.*/BackgroundStartColor=0x071829/' -e 's/^BackgroundEndColor=.*/BackgroundEndColor=0x102c40/' "$base/spinner.plymouth" > "$theme/gitm.plymouth"
+ grep -Fxq "ImageDir=$theme" "$theme/gitm.plymouth"
  update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth "$theme/gitm.plymouth" 200
  update-alternatives --set default.plymouth "$theme/gitm.plymouth"
  update-initramfs -u -k all

@@ -7,12 +7,13 @@ case "$1" in remove|purge|disappear|upgrade)
   previous=/var/lib/gitm/branding/previous-plymouth
   if [ -f "$previous" ]; then
    target=$(cat "$previous")
-   case "$target" in /usr/share/plymouth/themes/*) if [ -f "$target" ]; then update-alternatives --set default.plymouth "$target" || true;  if command -v update-grub >/dev/null 2>&1; then update-grub; fi
- fi;; esac
+   case "$target" in
+    /usr/share/plymouth/themes/*) if [ -f "$target" ]; then update-alternatives --set default.plymouth "$target" || true; fi;;
+   esac
   fi
   for file in /usr/share/plymouth/themes/gitm/*; do [ ! -f "$file" ] || rm -f -- "$file"; done
   if command -v update-initramfs >/dev/null 2>&1; then update-initramfs -u -k all; fi
   if command -v update-grub >/dev/null 2>&1; then update-grub; fi
- fi;; esac
-
+ fi;;
+esac
 if [ "$1" = purge ]; then rm -f /var/lib/gitm/branding/previous-plymouth; fi

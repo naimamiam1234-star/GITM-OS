@@ -15,3 +15,10 @@ class BrandingTests(unittest.TestCase):
   self.assertTrue(branding.should_play_intro([],{}))
   for argv,prefs in [(['--smoke'],{}),(['--skip-intro'],{}),([] ,{'reduce_motion':True}),([] ,{'performance':True}),([] ,{'boot_video':False})]:
    self.assertFalse(branding.should_play_intro(argv,prefs))
+
+ def test_migrate_only_the_known_bundled_wallpaper(self):
+  import branding
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d)/'assets/branding'
+   self.assertTrue(branding.is_legacy_wallpaper(Path(d)/'assets/desktop/wallpaper.png',root))
+   self.assertFalse(branding.is_legacy_wallpaper(Path(d)/'my-wallpaper.png',root))

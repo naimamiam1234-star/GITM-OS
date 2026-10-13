@@ -23,21 +23,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: GITM-Plasma6-preview-amd64
-          run-id: ${{ inputs.source_run || '38286238342' }}
+          name: GITM-AutoDiag-3.4.0-debian-candidate
+          run-id: '38433095167'
           github-token: ${{ github.token }}
           path: input
-      - name: Install VM tools
-        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 qemu-utils xorriso squashfs-tools python3-pil python3-zstandard ovmf
       - name: Verify public resource service
         run: |
           curl --fail --retry 6 --retry-delay 10 https://gitm-branding-preview.naimamiam1234.workers.dev/manifest.json -o /tmp/portal.json
           python3 -c "import json; j=json.load(open('/tmp/portal.json')); assert j['version']=='3.4.0' and len(j['assets'])==22"
       - name: Fetch pinned identity and resource archives
         run: python3 branding-update/fetch-assets.py
-      - name: Build application-only candidate from exact existing ISO
+      - name: Build application-only candidate from SHA-pinned existing package
         run: |
-          source=$(find input -type f -name '*.iso' -print -quit)
+          source=$(find input -type f -name 'gitm-autodiag_3.4.0-1_all.deb' -print -quit)
           python3 application-update/build.py "$source"
           python3 branding-update/build-resources.py dist/app-update
       - uses: actions/upload-artifact@v4
@@ -72,7 +70,7 @@ jobs:
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           test -n "$source"
-          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.4.0-1_all.deb dist/app-update/gitm-sdk-sources_2026.10.13-1_all.deb dist/app-update/gitm-obdb-data_2026.10.13-1_all.deb
+          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.4.0-2_all.deb dist/app-update/gitm-sdk-sources_2026.10.13-1_all.deb dist/app-update/gitm-obdb-data_2026.10.13-1_all.deb
       - name: Install to fresh 40GiB disk and boot without ISO
         env:
           BOOT_MODE: ${{ matrix.boot_mode }}

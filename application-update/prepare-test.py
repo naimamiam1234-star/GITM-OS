@@ -18,9 +18,12 @@ replacement="""            import hashlib
                 file=P('/var/lib')/name
                 if hashlib.sha256(file.read_bytes()).hexdigest()!=digest:raise RuntimeError('Resource package hash mismatch')
                 resources.append(str(file))
+            splash=P('/etc/xdg/ksplashrc')
+            owner=subprocess.run(['dpkg-query','-S',str(splash)],capture_output=True,text=True)
+            (out/'ksplash-before.txt').write_text(owner.stdout+owner.stderr+(splash.read_text() if splash.is_file() else 'No prior global splash configuration'))
             transaction('install-app-package',['apt-get','install','-y',str(candidate)]+resources)
             if sentinel.read_text()!='Synthetic CI fixture, not customer data':raise RuntimeError('User sentinel modified')
-            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.4.0-1':raise RuntimeError('Candidate version not installed')
+            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.4.0-2':raise RuntimeError('Candidate version not installed')
             shortcut=P('/usr/share/applications/gitm-assistant.desktop')
             if not shortcut.is_file() or '--assistant' not in shortcut.read_text():raise RuntimeError('Assistant launcher missing')
 """.replace('EXPECTED_CANDIDATE',repr(digest)).replace('RESOURCE_DIGESTS',repr(resource_digests))
@@ -44,6 +47,11 @@ proof="""        user=pwd.getpwnam('gitmtest');sentinel=P(user.pw_dir)/'.local/s
         theme=P('/usr/share/plymouth/themes/default.plymouth').resolve()
         if str(theme)!='/usr/share/plymouth/themes/gitm/gitm.plymouth':raise RuntimeError('Branding theme not selected')
         if not P('/usr/share/plymouth/themes/gitm/watermark.png').is_file():raise RuntimeError('Boot logo missing')
+        config=theme.read_text()
+        if 'ImageDir=/usr/share/plymouth/themes/gitm' not in config.splitlines():raise RuntimeError('Boot images still point at native Ubuntu theme')
+        (out/'plymouth-theme.txt').write_text(config)
+        native=P(user.pw_dir)/'.config/plasma-org.kde.plasma.desktop-appletsrc'
+        if native.is_file():(out/'plasma-wallpaper-config.txt').write_text(native.read_text())
         (out/'boot-branding-selected.txt').write_text(str(theme))
 """
 assert code.count(anchor)==1;code=code.replace(anchor,proof+anchor);ast.parse(code);helper.write_text(code)
