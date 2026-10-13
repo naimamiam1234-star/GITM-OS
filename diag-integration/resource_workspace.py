@@ -121,6 +121,26 @@ class WiringWorkspace(QWidget):
    for col,value in enumerate((pin,assigned.get(pin,unspecified),limitation)):self.table.setItem(pin-1,col,QTableWidgetItem(str(value)))
   note=QLabel(t('الأطراف 6/14 لا تثبت دعم CAN FD أو جميع وحدات ECU. هذا المرجع لا ينفذ أوامر أو تشغيل محركات.','Les broches 6/14 ne prouvent ni CAN FD ni couverture de tous les calculateurs. Aucune commande ou activation moteur.','Pins 6/14 do not establish CAN FD or full ECU coverage. This reference issues no commands or motor activations.'));note.setWordWrap(True);root.addWidget(note)
 
+class VehicleInformation(QWidget):
+ def __init__(self,window,kind="sources"):
+  super().__init__();self.window=window;self.kind=kind;root=QVBoxLayout(self)
+  self.identity=QLabel();self.identity.setWordWrap(True);root.addWidget(self.identity)
+  self.search=QLineEdit();self.search.setPlaceholderText(t('ابحث في معلومات هذه السيارة','Rechercher pour ce véhicule','Search this vehicle information'));root.addWidget(self.search)
+  self.content=QTextEdit();self.content.setReadOnly(True);root.addWidget(self.content,1)
+  self.search.textChanged.connect(self.refresh_state);self.refresh_state()
+ def refresh_state(self,*args):
+  import knowledge
+  vehicle=dict(getattr(self.window,'vehicle',{}))
+  self.identity.setText(' · '.join(str(vehicle.get(k) or '—') for k in ('make','model','year','engine')))
+  if not all(vehicle.get(k) for k in ('make','model','year')):
+   self.content.setPlainText(t('اختر السيارة أو استكمل هويتها بعد الاتصال لعرض معلوماتها.','Identifier le véhicule pour afficher ses informations.','Identify the vehicle to display its information.'));return
+  rows=knowledge.evidence(vehicle);query=self.search.text().strip().casefold()
+  texts=[row['text'] for row in rows if query in row['text'].casefold() and (self.kind!='wiring' or row.get('kind')=='wiring_diagram')]
+  self.content.setPlainText(('\n\n'+'─'*30+'\n\n').join(texts) if texts else t('لا توجد معلومات مطابقة لهوية هذه السيارة في البيانات المتاحة.','Aucune information correspondante disponible.','No matching information is available for this vehicle.'))
+ def showEvent(self,event):
+  self.refresh_state();super().showEvent(event)
+
 def show(window,kind='sources'):
  if kind not in ('sources','wiring'):raise ValueError('Unknown resource page')
- layout=window.page(t('المصادر','Sources','Sources') if kind=='sources' else t('مرجع توصيل VCI','Référence VCI','VCI connector reference'));page=SourcesWorkspace(window) if kind=='sources' else WiringWorkspace(window);layout.addWidget(page);return page
+ layout=window.page(t('معلومات السيارة','Informations véhicule','Vehicle information') if kind=='sources' else t('مخططات السيارة','Schémas véhicule','Vehicle diagrams'))
+ page=VehicleInformation(window,kind);layout.addWidget(page);return page

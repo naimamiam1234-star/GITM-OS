@@ -99,7 +99,7 @@ class SessionAssistant(QWidget):
   parts=[]
   for n,row in enumerate(self.sources,2):
    title=escape(row['title']);url=row.get('url','');link='<a href="'+escape(url,quote=True)+'">'+title+'</a>' if url else title
-   parts.append('<p><b>[E'+str(n)+'] '+link+'</b><br>'+escape(row['content_type'])+' · '+escape(row['provider'])+'<br>'+escape(row['text'])+'</p>')
+   parts.append('<p><b>[E'+str(n)+'] '+link+'</b><br>'+escape(row['text'])+'</p>')
   self.results.setHtml(''.join(parts) or t('لا توجد مراجع مسترجعة لهذا السياق بعد','Aucune référence récupérée','No references retrieved for this context yet'))
   self.cloud.evidence_override=[{'id':'E1','type':'deidentified_session_snapshot','data':self.context}]+[{'id':'E'+str(i+2),'type':row['content_type'],'data':row} for i,row in enumerate(self.sources)]
   self.cloud.attachment=self.cloud.evidence_override;self.cloud.preview.setPlainText(json.dumps(self.cloud.attachment,ensure_ascii=False,indent=2));self.cloud.approve.setChecked(False)
