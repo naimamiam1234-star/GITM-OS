@@ -1,0 +1,2 @@
+VehicleSpecs logos: https://github.com/vehiclespecs/brand-logos — unmodified source assets for identification. Repository MIT license excludes logo image ownership; brand trademarks belong to their owners. No OEM endorsement.
+NHTSA model names: downloaded user-provided GetModelsForMakeId responses, US vPIC coverage. Model names only, no production-year/generation/engine proof and no diagnostic coverage.

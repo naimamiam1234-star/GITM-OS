@@ -1,7 +1,7 @@
 """Overlay tested engines and wire native AutoDiag pages; fail on source drift."""
 import pathlib, shutil, sys, py_compile
 
-MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','adapter_registry','vehicle_workspace','vehicle_definitions','workshop_workspace','ai_workspace','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace')
+MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','adapter_registry','vehicle_workspace','vehicle_definitions','vehicle_resources','workshop_workspace','ai_workspace','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace')
 def patch_legacy_main(code):
     marker='    from desktop_shell import Dock\n'
     if marker not in code:return code
@@ -49,6 +49,7 @@ def install(target):
     p.write_text(patch_legacy_main(code))
     p=target/'transport.py';p.write_text(patch_transport(p.read_text()));py_compile.compile(str(p),doraise=True)
     for name in (*MODULES,'native'):py_compile.compile(str(target/(name+'.py')),doraise=True)
+    shutil.copytree(source/'vehicle-data',target/'vehicle-data',dirs_exist_ok=True)
     docs=target/'diagnostic-docs';docs.mkdir(exist_ok=True)
     for name in ('SOURCES.md','SOURCES_AUDIT.md','COVERAGE.md','QUICKSTART_AR.md'):shutil.copy2(source/name,docs/name)
     print('GITM_DIAGNOSTIC_OVERLAY_INSTALLED',flush=True)

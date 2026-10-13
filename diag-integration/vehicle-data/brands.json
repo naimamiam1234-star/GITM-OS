@@ -1,0 +1,922 @@
+[
+  {
+    "name": "AITO",
+    "path": "logos/aito-logo.svg",
+    "sha256": "a705a1191846c2cec755590f9aa507a0967cc7b08c3ebbb8ae6cf0f025f364dd"
+  },
+  {
+    "name": "Abarth",
+    "path": "logos/abarth-logo.svg",
+    "sha256": "02c73b67f0b3123061dd3546b9eae87f0b4ebe5537960059cb666e49941c2e9b"
+  },
+  {
+    "name": "Acura",
+    "path": "logos/acura-logo.svg",
+    "sha256": "e4226fa8377fcf4aa9c3aca75e2f475a7db4959a1c6ccd3ec329105cfdf53d8c"
+  },
+  {
+    "name": "Aion",
+    "path": "logos/aion-logo.svg",
+    "sha256": "0367057d34d0dd4ddbb9d92720cdd4262c3f7afdd89acb5ffe5bfb551c75936a"
+  },
+  {
+    "name": "Aiways",
+    "path": "logos/aiways-logo.svg",
+    "sha256": "adeb9473c2e2c51949965de380cbc801a9ecef401e97965037ef4969821aea0e"
+  },
+  {
+    "name": "Aixam",
+    "path": "logos/aixam-logo.svg",
+    "sha256": "655997539f0539a39589cd5ce0c09450f6d69bfd3f5f473933e872d444f20526"
+  },
+  {
+    "name": "Alfa Romeo",
+    "path": "logos/alfa-romeo-logo.svg",
+    "sha256": "6b5c8119431c56d6bce2bf19ac264ee6856ff8efb326514b849f6c47e0e3395a"
+  },
+  {
+    "name": "Alpina",
+    "path": "logos/alpina-logo.svg",
+    "sha256": "7741e2726db784a4f88a5bdc372bc2cce354282030b45a72f549373e5a4b2702"
+  },
+  {
+    "name": "Alpine",
+    "path": "logos/alpine-logo.svg",
+    "sha256": "14ebe96e7acd90ac6e1f125e734d63c2e0139a1a92483345e5c75214924386d6"
+  },
+  {
+    "name": "Ariel",
+    "path": "logos/ariel-logo.svg",
+    "sha256": "4671a3238e67e7eda23dd39b22d68d04c6d8b2d069245f767265c50bc05b0de6"
+  },
+  {
+    "name": "Aro",
+    "path": "logos/aro-logo.svg",
+    "sha256": "f6d15c670d0334a3c93b6630356e03a563431f16b108efeafabebed967f58c5a"
+  },
+  {
+    "name": "Aston Martin",
+    "path": "logos/aston-martin-logo.svg",
+    "sha256": "99b00743a6b723ea887c8d26a4768964c1be844f4c00061230286a2fbc4de445"
+  },
+  {
+    "name": "Audi",
+    "path": "logos/audi-logo.svg",
+    "sha256": "9076b14ed426ac9cdcd29a4060e1ad2251b0193db9c092b3091eb55642f3acb5"
+  },
+  {
+    "name": "Austin",
+    "path": "logos/austin-logo.svg",
+    "sha256": "0797e2d16cc7e9b7c3aa1b78e093af6343f398639e13bce066fa09cd5970495b"
+  },
+  {
+    "name": "Autobianchi",
+    "path": "logos/autobianchi-logo.svg",
+    "sha256": "1f0313ab2c134f1243ea31ffe311b481175d76f502ef863b9d76151d35069074"
+  },
+  {
+    "name": "Avatr",
+    "path": "logos/avatr-logo.svg",
+    "sha256": "1c852080aeb2e472bb5b3fbc0e9b60f74ab71f58e5b8836e883ba8ef2cb007cc"
+  },
+  {
+    "name": "BAC",
+    "path": "logos/bac-logo.svg",
+    "sha256": "3337205a6641d1b78221352cbcf6f491ef0a0c4c6cdc65c32e0126a7532d3d50"
+  },
+  {
+    "name": "BAIC",
+    "path": "logos/baic-logo.svg",
+    "sha256": "61573d54e2131c1916c1e35c21ab0aabdef6b3a4da0742c365d23e1e7df4fc41"
+  },
+  {
+    "name": "BAW",
+    "path": "logos/baw-logo.svg",
+    "sha256": "bf091100b38073f3bda6e514ccf8f3a59ad2912cf44e6cb8e69c07a68ac63ca1"
+  },
+  {
+    "name": "BMW",
+    "path": "logos/bmw-logo.svg",
+    "sha256": "aafad991a0aa01e08253062560f7dfbb2c5cc18c152c006cfa512547b849aba6"
+  },
+  {
+    "name": "BYD",
+    "path": "logos/byd-logo.svg",
+    "sha256": "532ce729e2ecf9cfeddbc020262a99391079479613799c92c30ea36da5dad9fb"
+  },
+  {
+    "name": "Bentley",
+    "path": "logos/bentley-logo.svg",
+    "sha256": "bc1622d53e30cc62b6efd12cfdc04ca863e17803d9a09dd2f16773e2f5ac3111"
+  },
+  {
+    "name": "Bertone",
+    "path": "logos/bertone-logo.svg",
+    "sha256": "b275d3a473914c132f8061eafd8064ffd2b1f5f565ea8844e3d32fc66e54ab35"
+  },
+  {
+    "name": "Bollinger",
+    "path": "logos/bollinger-logo.svg",
+    "sha256": "f380f46a7806fa66f0e0eba692dd4e504d443df8c34605b7498f1c1f6ad35cbc"
+  },
+  {
+    "name": "Brabham",
+    "path": "logos/brabham-logo.svg",
+    "sha256": "090ae7a87c47a3d129646567e80ae38b447cebef2d34c1eaeb6a637b75f3703d"
+  },
+  {
+    "name": "Brilliance",
+    "path": "logos/brilliance-logo.png",
+    "sha256": "6da6a5581086ba65676d49385e01831733bfd074a234e316c31876324c256177"
+  },
+  {
+    "name": "Bugatti",
+    "path": "logos/bugatti-logo.svg",
+    "sha256": "3fb185d9a2b0a22111f5602ac191d0e2cbb0e2e509e3847a93791ece33964dc1"
+  },
+  {
+    "name": "Buick",
+    "path": "logos/buick-logo.png",
+    "sha256": "7f8652f3017f2b7a0fac58a4b9a7066eb2f62886dadc0c1e747a907f59e802cb"
+  },
+  {
+    "name": "Cadillac",
+    "path": "logos/cadillac-logo.png",
+    "sha256": "e9639c0c2f0fe846c57533ab20e343b84489167a96af84644a3f18b96987c889"
+  },
+  {
+    "name": "Callaway",
+    "path": "logos/callaway-logo.svg",
+    "sha256": "3946575cd4e2ed04a6bc3b7644239485c3700caae7491b9313b72eb1860ea0f0"
+  },
+  {
+    "name": "Caterham",
+    "path": "logos/caterham-logo.svg",
+    "sha256": "b0ee7413af30cbfd2faf5cca1d3c5b4a847d7d293fc44aefc56b83f1b3027952"
+  },
+  {
+    "name": "ChangAn",
+    "path": "logos/changan-logo.png",
+    "sha256": "c460e32488051b2b11c81b47aef95b8ad97d0243d82a7920e6ed361c191f9288"
+  },
+  {
+    "name": "Chery",
+    "path": "logos/chery-logo.png",
+    "sha256": "2a75c2fae96e604b95f6d09a36fdabeaccdb66eaad67acee4b5c4aadb85f7740"
+  },
+  {
+    "name": "Chevrolet",
+    "path": "logos/chevrolet-logo.png",
+    "sha256": "d29a2bf3f3eca14214a4809b399a793d0034e3ac58c6a4e8fc926bc9e5a97909"
+  },
+  {
+    "name": "Chrysler",
+    "path": "logos/chrysler-logo.svg",
+    "sha256": "afaa011d7cdc683d9d13519d43652549b17cf947c905841028051db79e86d6f0"
+  },
+  {
+    "name": "Citroen",
+    "path": "logos/citroen-logo.svg",
+    "sha256": "83cc9d20a175437759c02296f003c57dd238e1a9596736904440b5461b7e4a79"
+  },
+  {
+    "name": "Cupra",
+    "path": "logos/cupra-logo.svg",
+    "sha256": "27ff4f603e847c8e1594cc59489a67625bdfbecc9e1e8e64a1b23c1d0c2a3a77"
+  },
+  {
+    "name": "DFSK",
+    "path": "logos/dfsk-logo.svg",
+    "sha256": "80c283f2874f3a30aeb2d0f61774faff5df8859fbaad2bc8613bbb25f200e130"
+  },
+  {
+    "name": "DS",
+    "path": "logos/ds-logo.svg",
+    "sha256": "69af324d8c6920c61adf48f926dc744308c5ecc37826bc4fa915a00491dbaf6a"
+  },
+  {
+    "name": "Dacia",
+    "path": "logos/dacia-logo.svg",
+    "sha256": "43e1f87b07825c356f89f3c9785a4c8ce9f35fa75e51b64fca20a20e8fd24ea3"
+  },
+  {
+    "name": "Dadi",
+    "path": "logos/dadi-logo.svg",
+    "sha256": "b4023feec0e823330bfb498b7731379baae72c0b4d702adabda25a4ed2488388"
+  },
+  {
+    "name": "Daewoo",
+    "path": "logos/daewoo-logo.png",
+    "sha256": "f3448afe7433b447e52092a3fc8cf796b200f2bfd288793631c3951cb28ebdee"
+  },
+  {
+    "name": "Daihatsu",
+    "path": "logos/daihatsu-logo.svg",
+    "sha256": "4e10f5fceb9b50a86cfc255262acdf952cd1f1f83188f80d46749def453728d5"
+  },
+  {
+    "name": "Daimler",
+    "path": "logos/daimler-logo.svg",
+    "sha256": "5e3f1f49e8427040f1cad429d9022dce215ceb0d6f26d8c35bac7a1f175795e0"
+  },
+  {
+    "name": "Datsun",
+    "path": "logos/datsun-logo.png",
+    "sha256": "e1485e89f75c5193168a2ffa9a8fb7bb6e63042660b539c18b1ebe2eeb6a683b"
+  },
+  {
+    "name": "De Lorean",
+    "path": "logos/de-lorean-logo.svg",
+    "sha256": "960e33d38c5337e4b1203455477bd0f7917d28d6f7aa735db07f2588bb667a47"
+  },
+  {
+    "name": "De Tomaso",
+    "path": "logos/de-tomaso-logo.png",
+    "sha256": "f02f13b2263fbc85e53ebb9a313b23f989f530615acd1b4873c20bd018ad6282"
+  },
+  {
+    "name": "DeSoto",
+    "path": "logos/desoto-logo.png",
+    "sha256": "6b800cf52e56d4f3baac8599b71df994b0380642ab40cca4b0d2035dfd096ddd"
+  },
+  {
+    "name": "Deepal",
+    "path": "logos/deepal-logo.svg",
+    "sha256": "1151621a269e338864a58336ab5b752b95f4ef578431a05c88d8a20a528765c0"
+  },
+  {
+    "name": "Denza",
+    "path": "logos/denza-logo.svg",
+    "sha256": "4d5eda8fff7699a40996183e257ee7d7169a18814d17f13304ceaa4fc5afc26d"
+  },
+  {
+    "name": "Dodge",
+    "path": "logos/dodge-logo.png",
+    "sha256": "173d21cdca3056b60313e969209ee93e0cf3bda5ac14f9a27d905bb388903ae4"
+  },
+  {
+    "name": "DongFeng",
+    "path": "logos/dongfeng-logo.png",
+    "sha256": "e49e1ab3d79ae9144be3f72d680afbd050b8cdb816c3709d98ffb9b30f4eb3e5"
+  },
+  {
+    "name": "EMC",
+    "path": "logos/emc-logo.svg",
+    "sha256": "13ac956b11297f4e0640347cd93f1f6c351a5de548153d2f6328a2448a219114"
+  },
+  {
+    "name": "EVO",
+    "path": "logos/evo-logo.svg",
+    "sha256": "811bc47a7d22cc4270a8fc3b61983d8e51e792c5639dd861427fb95eee6a1e99"
+  },
+  {
+    "name": "FAW",
+    "path": "logos/faw-logo.svg",
+    "sha256": "b41b4c61d659181203ef871243bd9d4a25a966ca0f7c8272f762bee8b395349d"
+  },
+  {
+    "name": "Ferrari",
+    "path": "logos/ferrari-logo.svg",
+    "sha256": "0acaebf66371d4fdd0efd798568b98679942a07a1b453753676aec59ea39a44a"
+  },
+  {
+    "name": "Fiat",
+    "path": "logos/fiat-logo.svg",
+    "sha256": "920b8e10ea4f0421155f251371bc3a1f88f4e8558e172662b623d66d76d4c4bc"
+  },
+  {
+    "name": "Fisker",
+    "path": "logos/fisker-logo.png",
+    "sha256": "f6c3f527afdf2902e03cd5a135a1161547538a2b687fa3327952002ecde37bea"
+  },
+  {
+    "name": "Ford",
+    "path": "logos/ford-logo.png",
+    "sha256": "1ef4c73b180d78e2b0670bd6ba23d6c7c7a6c96ea792b75cad62fc9b38ffd59d"
+  },
+  {
+    "name": "GAZ",
+    "path": "logos/gaz-logo.png",
+    "sha256": "e72a4de89339a7e66a97995806d44f3f1cae05b7494233a140895a352adc6454"
+  },
+  {
+    "name": "GMC",
+    "path": "logos/gmc-logo.png",
+    "sha256": "f9e18c32ece1f2974c837a1174d61b614912f2023f4e6cb66e0202df4a7e4e83"
+  },
+  {
+    "name": "Geely",
+    "path": "logos/geely-logo.svg",
+    "sha256": "12c94accf6dc02dc3d96780c447b68d6a9b7f33f775206f6497a55455a51aafa"
+  },
+  {
+    "name": "Genesis",
+    "path": "logos/genesis-logo.svg",
+    "sha256": "8e8d52dfd1d85550df4f637b87b1c9386911c6f571bc9760a6279934244c19c7"
+  },
+  {
+    "name": "Geo",
+    "path": "logos/geo-logo.svg",
+    "sha256": "fa9f4d11692e0709c00b70d1d161ed684e35786a6b69d02ff2c4baf4069f5394"
+  },
+  {
+    "name": "Geometry",
+    "path": "logos/geometry-logo.svg",
+    "sha256": "cdc33b4562e2e8387391a33b969df7b17b02e20c9f25aabed63fbf9511b86555"
+  },
+  {
+    "name": "Ginetta",
+    "path": "logos/ginetta-logo.svg",
+    "sha256": "1b9a3b7896784b6ab13b2fb2002e7335b215f32f012640a5e5ffc4053fdfeac8"
+  },
+  {
+    "name": "Great Wall",
+    "path": "logos/great-wall-logo.png",
+    "sha256": "585464d5c7caa53f87b38f6357198432b6120f9b36bb6f99e79c417616cfba33"
+  },
+  {
+    "name": "Haval",
+    "path": "logos/haval-logo.png",
+    "sha256": "95e0cc9792373a83a9cf848c1cabf9a798fd7da51b7e6f15d6c54ab445b49471"
+  },
+  {
+    "name": "Hennessey",
+    "path": "logos/hennessey-logo.svg",
+    "sha256": "0b2a390d408a67db804ab0c11942ba70c9835e0b4162a0230f8faa979851d2e1"
+  },
+  {
+    "name": "Hispano Suiza",
+    "path": "logos/hispano-suiza-logo.png",
+    "sha256": "f3f442aa246310bd50f3aa09a437910e192225a6794b40049300910dece7f540"
+  },
+  {
+    "name": "Holden",
+    "path": "logos/holden-logo.svg",
+    "sha256": "b55ff9b3077c48a347f8c2ef017e8b8b8511cc9a0c52dd0eccd483a40b53867f"
+  },
+  {
+    "name": "Honda",
+    "path": "logos/honda-logo.png",
+    "sha256": "52d18a212aab6f210bbd49aebebb111ad2c3ec6d298da44afd994c13493ed836"
+  },
+  {
+    "name": "Hongqi",
+    "path": "logos/hongqi-logo.png",
+    "sha256": "970db32ed061ac4a9fe7649ea25397c73d62569cd93cf84579262afc49a5aa0f"
+  },
+  {
+    "name": "Hummer",
+    "path": "logos/hummer-logo.svg",
+    "sha256": "fd5eff58aa57f82c813a518f11cf0e9c1110600bd89bd4f963d1151d70519a2d"
+  },
+  {
+    "name": "Hyundai",
+    "path": "logos/hyundai-logo.svg",
+    "sha256": "a5da4c0375eb9a03875c5258e955e5b9a4cdcd7b7fad620ada471eff8f0f758e"
+  },
+  {
+    "name": "ICH-X",
+    "path": "logos/ich-x-logo.svg",
+    "sha256": "fe2fa05018f2e0816548286c8f7061793a43cdf6136f731eb96d64e17315ec4e"
+  },
+  {
+    "name": "IMSA",
+    "path": "logos/imsa-logo.svg",
+    "sha256": "59b36f9cfe4fd66892add5be24799c51114f4c9d624d0d90bd3829c6cc8973ca"
+  },
+  {
+    "name": "INEOS",
+    "path": "logos/ineos-logo.svg",
+    "sha256": "a7b6da723a434be9a7e63bf9d73d733f23062d9825bf78c18968e1ded0af3f99"
+  },
+  {
+    "name": "Infiniti",
+    "path": "logos/infiniti-logo.svg",
+    "sha256": "dde0441e56c80f69972109409ee4cf40a9cc0007b35c252318872cf880b624fa"
+  },
+  {
+    "name": "Invicta",
+    "path": "logos/invicta-logo.svg",
+    "sha256": "35fc2530106ea33b88e8f7df69074f202e24fad4969a50b974b0fbc0f6b203de"
+  },
+  {
+    "name": "Isdera",
+    "path": "logos/isdera-logo.svg",
+    "sha256": "ae98b09eb2e5bc5f4a8e8161abae790d7d109ca0fa700b363a53aa95fcc5c042"
+  },
+  {
+    "name": "Isuzu",
+    "path": "logos/isuzu-logo.svg",
+    "sha256": "67140058dfbb66b2224e37a117659dd9b9a143fe0e812670687cff158a90fa93"
+  },
+  {
+    "name": "JAC",
+    "path": "logos/jac-logo.png",
+    "sha256": "f1de01bbf35bd03866342f2194a5eeb3527ea0aa697d07af783b736473219870"
+  },
+  {
+    "name": "Jaecoo",
+    "path": "logos/jaecoo-logo.svg",
+    "sha256": "edd5029346aeb1f699c9f86ddc1402e63faba797d1f7610d1107123e0cd62365"
+  },
+  {
+    "name": "Jaguar",
+    "path": "logos/jaguar-logo.svg",
+    "sha256": "5c13bd0a29250954e0a07d35760e1bdaf6f8522a766f38cde270f57b17ac300d"
+  },
+  {
+    "name": "Jeep",
+    "path": "logos/jeep-logo.svg",
+    "sha256": "c94d49833d8f03d799b246d661380c33362faacaaad68691301e837ad942dc45"
+  },
+  {
+    "name": "Jetour",
+    "path": "logos/jetour-logo.svg",
+    "sha256": "eabd1a1e885553e8db17bc6e78340e5fa1918ddc1814e6f4de6d9f2470c4d9b5"
+  },
+  {
+    "name": "KGM",
+    "path": "logos/kgm-logo.svg",
+    "sha256": "df0b88f6c7e88f9aa11542147a80e1e09526685b333243851a362c8706a7ae62"
+  },
+  {
+    "name": "Karma",
+    "path": "logos/karma-logo.png",
+    "sha256": "c780f95f6dadb9e4fe787fe8130e7d167e4892736edefdf017f3f2ec339b49a5"
+  },
+  {
+    "name": "Kia",
+    "path": "logos/kia-logo.svg",
+    "sha256": "2117b4092f24549328505028a54ed9b8ca95a160834ed16069aac3ad0a39065d"
+  },
+  {
+    "name": "Koenigsegg",
+    "path": "logos/koenigsegg-logo.svg",
+    "sha256": "c207520c97d1d96ee9177f0cfdfdbeea7f961028d0e2c0fb7bb7f426a27bca63"
+  },
+  {
+    "name": "Lada",
+    "path": "logos/lada-logo.svg",
+    "sha256": "cb28532da3efbbc08790303235d2e28c9949875ff7f8cca5479b22922aafc6d0"
+  },
+  {
+    "name": "Lamborghini",
+    "path": "logos/lamborghini-logo.png",
+    "sha256": "539c17c534c65661139d270a5ca1924d8ec8939c12fb0e2e25476de6b3eccb30"
+  },
+  {
+    "name": "Lancia",
+    "path": "logos/lancia-logo.png",
+    "sha256": "b7cffa1a878f88b9600c7f14c9446f3b8bb7997d411ffbd42c0c0e2545b2882b"
+  },
+  {
+    "name": "Land Rover",
+    "path": "logos/land-rover-logo.svg",
+    "sha256": "84ab01ac40493bc5bbcf6796e9fab757c8cac438f67605a1485bf129c5de128c"
+  },
+  {
+    "name": "Leapmotor",
+    "path": "logos/leapmotor-logo.png",
+    "sha256": "2cae4e5fbe444fb4db5004cbf8732436737b0b4005ad5f85ccefadc1d77468c4"
+  },
+  {
+    "name": "Lexus",
+    "path": "logos/lexus-logo.png",
+    "sha256": "9113ee94052cafb3520029d9bdd66aebf87f6fb0320d407f8178b29e72a25fa1"
+  },
+  {
+    "name": "Ligier",
+    "path": "logos/ligier-logo.png",
+    "sha256": "15ddfc429e5e84fefa528fcd1a300134dcd07278f1683a5b0529716031eaaf1b"
+  },
+  {
+    "name": "Lincoln",
+    "path": "logos/lincoln-logo.svg",
+    "sha256": "3d849dba3715836a5fc9a9aa2a579b2cb499a23f3b27e1dc84ad04b26e912aa6"
+  },
+  {
+    "name": "Lister",
+    "path": "logos/lister-logo.png",
+    "sha256": "e87f9a0596c76c4a76b6165a9345d9610ab62d40bb101623c3ff5948ca7a86ab"
+  },
+  {
+    "name": "Lotus",
+    "path": "logos/lotus-logo.svg",
+    "sha256": "b87732b96913f141487191b1be257970623537ad9c00d021be9537793823e5cf"
+  },
+  {
+    "name": "Lucid",
+    "path": "logos/lucid-logo.png",
+    "sha256": "de92a8e021a762a87de3c60078e2554f92d02646f70847885593347627bd13ae"
+  },
+  {
+    "name": "MG",
+    "path": "logos/mg-logo.png",
+    "sha256": "e970978160c01b876ab032c6887e5a23f377be26954d90069b9a66f66c99fb5c"
+  },
+  {
+    "name": "Mahindra",
+    "path": "logos/mahindra-logo.png",
+    "sha256": "0bf40c2c44846f6c6fce54febe0ae3a1f080d84642ddab52679c82b286b066a8"
+  },
+  {
+    "name": "Maruti",
+    "path": "logos/maruti-logo.svg",
+    "sha256": "8646b154eb130dff0b64b0d5bf6ae08a8fb34fa32b7e495859d9bdb694db7fd3"
+  },
+  {
+    "name": "Maserati",
+    "path": "logos/maserati-logo.png",
+    "sha256": "ee8dc19fbd55a3f3fcbc60b794b128b5f15b74cfd8868a9fe1170d8e8fafe5eb"
+  },
+  {
+    "name": "Maxus",
+    "path": "logos/maxus-logo.png",
+    "sha256": "6da016ea01c444bb0af2621405aed35da447e182918a5e3aac8ed6c55e5a1925"
+  },
+  {
+    "name": "Maybach",
+    "path": "logos/maybach-logo.png",
+    "sha256": "6622c49858fbf3d813dc4262d281a7cd3be7619500c05ada9938e648dce45888"
+  },
+  {
+    "name": "Mazda",
+    "path": "logos/mazda-logo.svg",
+    "sha256": "097c79bff478dcbebb17e0b23c957997829ae8376830054162c81e1f33a029f5"
+  },
+  {
+    "name": "McLaren",
+    "path": "logos/mclaren-logo.svg",
+    "sha256": "f4d125b35bb6e1db08b13087b303b1e3afa9513314f57ee82843b4d332c97833"
+  },
+  {
+    "name": "Mercedes-Benz",
+    "path": "logos/mercedes-benz-logo.svg",
+    "sha256": "24912128b7f9b461abb0a20da3429ddea36d11256e490067772a284450827b90"
+  },
+  {
+    "name": "Mercury",
+    "path": "logos/mercury-logo.png",
+    "sha256": "cf52f8f497d7c95993c7d8c7f163b262c00cd95384f4853f388343a625dd08df"
+  },
+  {
+    "name": "Mini",
+    "path": "logos/mini-logo.svg",
+    "sha256": "099c069d0491dcd51fc8bd6feaac26af61b1efe4e8d73f42f0e7e0cf21533b68"
+  },
+  {
+    "name": "Mitsubishi",
+    "path": "logos/mitsubishi-logo.svg",
+    "sha256": "fe854795b344c5e2c74648d3f2f0d4b1ebe09b9330820fe49ded27e6870ae970"
+  },
+  {
+    "name": "Mitsuoka",
+    "path": "logos/mitsuoka-logo.png",
+    "sha256": "941531411ab47e0e33242fef7b3e35b187152619ae45231c2b4b778abf70b7c0"
+  },
+  {
+    "name": "Morgan",
+    "path": "logos/morgan-logo.png",
+    "sha256": "d4802000576e91d2a2eba2308715655f4821e277bc51c5a2dbd80cc82a8bea4b"
+  },
+  {
+    "name": "Morris",
+    "path": "logos/morris-logo.png",
+    "sha256": "034be173cb1abdf7227c7327aa657abb74baf245f0c6f86bb511a1f7dadc7517"
+  },
+  {
+    "name": "NIO",
+    "path": "logos/nio-logo.png",
+    "sha256": "8d4812ad7d05e0ad986c89d7e07d35953cef320dd90ea1e709f42a35f15c8926"
+  },
+  {
+    "name": "Nissan",
+    "path": "logos/nissan-logo.svg",
+    "sha256": "0f572d61f6660d3f9908ce9e5254622d933e0ed7990ddf84bfcffda089cb8163"
+  },
+  {
+    "name": "Noble",
+    "path": "logos/noble-logo.png",
+    "sha256": "d89a3d189aa20311ad8eeaf164b730fabcb9b02efe87412a95b822b9fb299c97"
+  },
+  {
+    "name": "ORA",
+    "path": "logos/ora-logo.png",
+    "sha256": "03dddd1edce8c5dc1460e33bf89c1daa84ae159943d1409f9a8ac154f8634eef"
+  },
+  {
+    "name": "Oldsmobile",
+    "path": "logos/oldsmobile-logo.png",
+    "sha256": "43130afd5368d963f9ab4c5f21b12c42892bfaae483549ab6d3f400cbf7962ad"
+  },
+  {
+    "name": "Omoda",
+    "path": "logos/omoda-logo.png",
+    "sha256": "353bcec5853090e97cbdc201b6a46e4fe062f48e4c1b271b665a6c8e03143968"
+  },
+  {
+    "name": "Opel",
+    "path": "logos/opel-logo.svg",
+    "sha256": "294cdeba24877cf2de5174fa02f955413f56e175a8c2be0d61ddf87dc62bfef2"
+  },
+  {
+    "name": "PUCH",
+    "path": "logos/puch-logo.svg",
+    "sha256": "118f387126f1101b3f47e9d4e6e0df0f6d7a8e6047f1d284e5bf0342550ca0c1"
+  },
+  {
+    "name": "Pagani",
+    "path": "logos/pagani-logo.png",
+    "sha256": "6d8da0d2ec0ea79e5852c352a378ae82daec6d423ae5082a5f57a99da6ec05fc"
+  },
+  {
+    "name": "Perodua",
+    "path": "logos/perodua-logo.png",
+    "sha256": "3378d30f0c5ab4d16784cea228cb4ec5794a737d55487bc6df62cf543c1917bb"
+  },
+  {
+    "name": "Peugeot",
+    "path": "logos/peugeot-logo.svg",
+    "sha256": "6f321d0b0c167bb616342971e0db82fb50e33b2e99e9fd07f8700f2ccfa532dc"
+  },
+  {
+    "name": "Pininfarina",
+    "path": "logos/pininfarina-logo.png",
+    "sha256": "ff901d1888af388c2c18533dfd77e3cc21223b06e8b3618aa15bd7eb1fe1fd1a"
+  },
+  {
+    "name": "Plymouth",
+    "path": "logos/plymouth-logo.png",
+    "sha256": "2d3b685bc85f2b90e0fd136e11e6e34c2b3e2e49142a8c578453ce07fa289f5c"
+  },
+  {
+    "name": "Polaris",
+    "path": "logos/polaris-logo.png",
+    "sha256": "b42d7757d11f952173201689f8c9fd39acc76166598c9ec0437d5cdd96604da7"
+  },
+  {
+    "name": "Polestar",
+    "path": "logos/polestar-logo.png",
+    "sha256": "6c6de26a464483096d4214d96a5198eb94bf453118c085de987c66cfed406b69"
+  },
+  {
+    "name": "Pontiac",
+    "path": "logos/pontiac-logo.png",
+    "sha256": "918c4f7ebab849f3662481d120a63cfddcf91baba032c71c38a6f9439de30953"
+  },
+  {
+    "name": "Porsche",
+    "path": "logos/porsche-logo.svg",
+    "sha256": "33711d46f201668455814182f01f8961fd8f7c7ddd74a053c2ad1c22bae2e9b7"
+  },
+  {
+    "name": "Praga",
+    "path": "logos/praga-logo.png",
+    "sha256": "b9e2af122af23812481b0f99a92a19f47f551998d7380fea034a54259ae604d3"
+  },
+  {
+    "name": "Proton",
+    "path": "logos/proton-logo.png",
+    "sha256": "9193eaad4606cd22f73392771b0046ab759035c37a1f0ae3c471e8338c128e84"
+  },
+  {
+    "name": "Puma",
+    "path": "logos/puma-logo.png",
+    "sha256": "f7a50b0c0df23e19b3733dbc02dfae57e8f4acac9a6dd8a41d2199e91be02cda"
+  },
+  {
+    "name": "RAM",
+    "path": "logos/ram-logo.svg",
+    "sha256": "7907c5141fb133d3f34f15145f7b5cd523a3fa1c208d4405c7c58743129ed40b"
+  },
+  {
+    "name": "RUF",
+    "path": "logos/ruf-logo.png",
+    "sha256": "23de2c910d216f0110b5b851eb78c04f5763d6c08d6946c06fe98966f5cfa791"
+  },
+  {
+    "name": "Reliant",
+    "path": "logos/reliant-logo.png",
+    "sha256": "6c64b6b3fdafdf9cd7777d57f7800498d60314838d7642034d9add7204ca6f7c"
+  },
+  {
+    "name": "Renault",
+    "path": "logos/renault-logo.svg",
+    "sha256": "61ec247f977a5c1a6167dd6c794daae4804b73a1298b6bd5d797e099dc174207"
+  },
+  {
+    "name": "Rimac",
+    "path": "logos/rimac-logo.png",
+    "sha256": "f3b356abd4bbec727826b852a1fbe940fad5097e8e4c9c86db21aee4971c6e57"
+  },
+  {
+    "name": "Rivian",
+    "path": "logos/rivian-logo.svg",
+    "sha256": "f02d4d3bbcc0afef4b8ab1aa46237ba09c09a45db4f45fb25a8e451e276dacfa"
+  },
+  {
+    "name": "Rolls-Royce",
+    "path": "logos/rolls-royce-logo.svg",
+    "sha256": "c19991123ed39797f07845261c5e539d3ad9d8f388f5ffbd0d7d76bf0a488e78"
+  },
+  {
+    "name": "Rover",
+    "path": "logos/rover-logo.png",
+    "sha256": "5a7d522121715aadec4452658d88c84e14396f7443cda0ac2cfbbd6ecefa0d09"
+  },
+  {
+    "name": "SCG",
+    "path": "logos/scg-logo.png",
+    "sha256": "ecc02db6db34efbd352714722a2387481f02d3031508719771abcaf1a5d7fceb"
+  },
+  {
+    "name": "SWM",
+    "path": "logos/swm-logo.png",
+    "sha256": "d231b006b4d4a19ef842d5b9bfb741aa595eb3f9e0e4157e983c398ded6ab957"
+  },
+  {
+    "name": "Saab",
+    "path": "logos/saab-logo.png",
+    "sha256": "9186c4338c711c43bb50027f64726c52c5a593c4034cacd586bccec7996f1eb1"
+  },
+  {
+    "name": "Saleen",
+    "path": "logos/saleen-logo.png",
+    "sha256": "2b803a42cc8e0b46f5db1a80e48c0190ff39f5adcd389813bbe0ce6c69cc8e03"
+  },
+  {
+    "name": "Saturn",
+    "path": "logos/saturn-logo.png",
+    "sha256": "332996ad5fb3805e5ef69f9e9e5905019abf84f2f53173f33a7c57990c03d451"
+  },
+  {
+    "name": "Scion",
+    "path": "logos/scion-logo.png",
+    "sha256": "104f1b05f06f759eedd0907a0610096c4487bcee9583337e02ec04805cf12328"
+  },
+  {
+    "name": "Seat",
+    "path": "logos/seat-logo.svg",
+    "sha256": "1d148c244cb479c89a9a30f4480a6b2019f32a89327153fdc2076cf9b01c0bf2"
+  },
+  {
+    "name": "Seres",
+    "path": "logos/seres-logo.png",
+    "sha256": "4c5715c6b4a2b5d4b42a4b0f1e15c50682184a090ee1e115ad038b8006668edc"
+  },
+  {
+    "name": "Skoda",
+    "path": "logos/skoda-logo.svg",
+    "sha256": "ebb59b84fe4a5fd69c6672ecb281b5e0eeba918fdb21e446eec038322742fdc6"
+  },
+  {
+    "name": "Smart",
+    "path": "logos/smart-logo.png",
+    "sha256": "87fcdbf2825d7c31c9cbc2ebcf90b07a56f813832b42597569465d044cfcaf54"
+  },
+  {
+    "name": "SsangYong",
+    "path": "logos/ssangyong-logo.png",
+    "sha256": "a177de49afd0707ca1b0ccfddc69ab36272f5e6e777cf2f6664b9beb05dcf588"
+  },
+  {
+    "name": "Subaru",
+    "path": "logos/subaru-logo.png",
+    "sha256": "d226b78d88ec4ebdf4af0474ac6b22878d73b511d7249b565894bf4204aa2248"
+  },
+  {
+    "name": "Suzuki",
+    "path": "logos/suzuki-logo.svg",
+    "sha256": "4ef079e6f73300b7ff35d4b6e9a67d0cad46bb5fdc49cdf35889bb1472e9f5be"
+  },
+  {
+    "name": "TVR",
+    "path": "logos/tvr-logo.png",
+    "sha256": "80694f5a6807a8bb4aada824654f5f61dfa141db9674967234006d4392596a29"
+  },
+  {
+    "name": "Talbot",
+    "path": "logos/talbot-logo.png",
+    "sha256": "291485471a6914350edc952b2e631966dec39beb8a5fe0efe9bc0e8fc71012b6"
+  },
+  {
+    "name": "Tata",
+    "path": "logos/tata-logo.png",
+    "sha256": "5d9516de1c07ee4ba5be79dc1bfde351be7f03e51e97b2ec1a3f3d2596e2bcb0"
+  },
+  {
+    "name": "Tatra",
+    "path": "logos/tatra-logo.png",
+    "sha256": "986381757ca762c1400f5a3fa2cbd47bc5ea1c64cfbe9c16d864163cb8ad25be"
+  },
+  {
+    "name": "Tesla",
+    "path": "logos/tesla-logo.svg",
+    "sha256": "25f3965ffd5ee72ff2c9ddf95175711d469dfcdbff895fe20463e1c6a50aecca"
+  },
+  {
+    "name": "Togg",
+    "path": "logos/togg-logo.svg",
+    "sha256": "79804eb423f2c0f107306c01618058f40c1d227917a36dafb28c2625fbbb615b"
+  },
+  {
+    "name": "Toyota",
+    "path": "logos/toyota-logo.svg",
+    "sha256": "f2766a58ee9095a6a101797ccfc39333935463a1ba06f2eae1a15386b26808aa"
+  },
+  {
+    "name": "Trabant",
+    "path": "logos/trabant-logo.svg",
+    "sha256": "0cecf2919a7e346ac1bbf086c3334a7e60c86da1a14cb4e0d273cac5d6182291"
+  },
+  {
+    "name": "UAZ",
+    "path": "logos/uaz-logo.png",
+    "sha256": "dd58f6d9707c013b680c432b3c02c546202a950e6671f4d7fa931c5bcb466bc5"
+  },
+  {
+    "name": "Vauxhall",
+    "path": "logos/vauxhall-logo.png",
+    "sha256": "93f16e77f227ea17c45839d7a3418065c30cf86ffafb71b96a45fd043f3080f7"
+  },
+  {
+    "name": "Venturi",
+    "path": "logos/venturi-logo.png",
+    "sha256": "cd6e4f4f04a3f560af82b1880ee7b29894c067e3d50736bb3fb1830f138bb925"
+  },
+  {
+    "name": "VinFast",
+    "path": "logos/vinfast-logo.png",
+    "sha256": "62e653c158b6dd40ebbde5c800cca845262a07d75b0705cb691970e499aa8305"
+  },
+  {
+    "name": "Volkswagen",
+    "path": "logos/volkswagen-logo.svg",
+    "sha256": "870b1e89ead551c13bb6747602d0fb62ac4666f878e1eb037d5eb4b7871849f3"
+  },
+  {
+    "name": "Volvo",
+    "path": "logos/volvo-logo.svg",
+    "sha256": "c7f91fe2525d2e52aa56c3d7581f219e26bc215c972e07a036e85e18545066f2"
+  },
+  {
+    "name": "W Motors",
+    "path": "logos/w-motors-logo.png",
+    "sha256": "23da079ef15a7766be48840512f419a387ec7a5213955dbdee5e0cdcd979d326"
+  },
+  {
+    "name": "Wartburg",
+    "path": "logos/wartburg-logo.png",
+    "sha256": "10646c09a604dfdfee5091be533c105fafd7321e80d2104f0e52e4a1653611f7"
+  },
+  {
+    "name": "Westfield",
+    "path": "logos/westfield-logo.png",
+    "sha256": "ecd90c1f9fb11049bf4a3fe3d41b5be119c79529eaaf4fe625ad909b511f3527"
+  },
+  {
+    "name": "XPENG",
+    "path": "logos/xpeng-logo.png",
+    "sha256": "a2d6a20cdb08cf6cd1ce42dad7bf5119076832ce9b522ab28bc4dd9238804049"
+  },
+  {
+    "name": "Xiaomi",
+    "path": "logos/xiaomi-logo.svg",
+    "sha256": "35ed09461b4581515321fabcf17044c3e02ee22c9f3e0579dd706aacdbae487b"
+  },
+  {
+    "name": "Yangwang",
+    "path": "logos/yangwang-logo.svg",
+    "sha256": "38f28bea786bde23dcc63cf3f4569e3df5a68488f04514a9f4e7e75afea531e2"
+  },
+  {
+    "name": "ZAZ",
+    "path": "logos/zaz-logo.png",
+    "sha256": "fd2f1aea25594d708f553dfc44cfa6edd2221bb1b570d7369aaeb0234973fd43"
+  },
+  {
+    "name": "Zeekr",
+    "path": "logos/zeekr-logo.png",
+    "sha256": "a8bb59ce487dd30f6784f31dbbaf64b22974dbb3a2b071e6917ca00f0caf23cf"
+  },
+  {
+    "name": "Zenvo",
+    "path": "logos/zenvo-logo.png",
+    "sha256": "3380ea44ba6f3b9ab0e056f94a96d7d0cc42df4b318670550e53d04ba9960b0a"
+  },
+  {
+    "name": "Zotye",
+    "path": "logos/zotye-logo.png",
+    "sha256": "dc142ee16b8bf363975a2a0ef264920a072aea4ef028f17995fc3fabbee44f5a"
+  },
+  {
+    "name": "e.GO",
+    "path": "logos/ego-logo.svg",
+    "sha256": "5d439acb117d2684a836e797729de88829acdece52914ee1f698bfd842c8cba1"
+  },
+  {
+    "name": "iCAR",
+    "path": "logos/icar-logo.svg",
+    "sha256": "f530501ed1c0225abf3e09d2d5ba563693b9774d98a7c8c7404486a6c5356ee1"
+  }
+]

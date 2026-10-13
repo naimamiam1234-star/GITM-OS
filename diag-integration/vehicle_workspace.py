@@ -44,8 +44,11 @@ class Workspace(QWidget):
   if logos is None:
    try:logos=json.loads((base/'data/logos.json').read_text())
    except (OSError,ValueError):logos={}
+   import vehicle_resources
+   for name,asset in vehicle_resources.logos().items():
+    key=next((key for key in logos if key.casefold()==name.casefold()),name);logos[key]=asset
   for name,data in logos.items():
-   button=BrandTile(name);button.setObjectName('vehicleBrand');button.setIconSize(QSize(32,24));pix=QPixmap(str(base/str(data.get('path','')).lstrip('/')))
+   button=BrandTile(name);button.setObjectName('vehicleBrand');button.setIconSize(QSize(32,24));pix=QPixmap(data.get('resolved_path') or str(base/str(data.get('path','')).lstrip('/')))
    if not pix.isNull():
     # Source brand marks are often black; a neutral tile stays readable in both themes.
     logo=pix.scaled(28,20,Qt.KeepAspectRatio,Qt.SmoothTransformation);tile=QPixmap(32,24);tile.fill(Qt.transparent);painter=QPainter(tile);painter.setRenderHint(QPainter.Antialiasing);painter.setPen(Qt.NoPen);painter.setBrush(QColor('#f4f6f8'));painter.drawRoundedRect(0,0,32,24,3,3);painter.drawPixmap((32-logo.width())//2,(24-logo.height())//2,logo);painter.end();button.setIcon(QIcon(tile))
@@ -104,9 +107,13 @@ class Workspace(QWidget):
    for key in ('model','year','engine','fuel'):self.fields[key].setText('')
   self.fields['make'].setText(make);self.selected_definition=None
   rows=vehicle_definitions.models(self.catalog,make)
+  import vehicle_resources
+  known={row['model'].casefold() for row in rows}
+  for item in vehicle_resources.models(make):
+   if item['model'].casefold() not in known:rows.append({'make':make,'model':item['model'],'generation':'','market':'NHTSA vPIC · model name only','source':item['source'],'years':[],'engines':[]})
   self.stage('model',make+' · '+text('اختر الموديل والجيل والسوق','Modèle, génération et marché','Model, generation and market'),[(r['model']+' · '+r['generation']+' · '+r['market'],r) for r in rows],self.choose_model,lambda:self.manual_stage('model',self.manual_year))
  def choose_model(self,row):
-  self.selected_definition=row;self.fields['model'].setText(row['model']+' '+row['generation']);self.fields['year'].setText('');self.fields['engine'].setText('');self.fields['fuel'].setText('')
+  self.selected_definition=row;self.fields['model'].setText((row['model']+' '+row['generation']).strip());self.fields['year'].setText('');self.fields['engine'].setText('');self.fields['fuel'].setText('')
   self.stage('year',text('سنوات الموديل المسجلة في المصدر','Années documentées du modèle','Documented model years'),[(str(y),y) for y in sorted(set(row['years']),reverse=True)],self.choose_year,lambda:self.manual_stage('year',self.manual_engine))
  def choose_year(self,year):
   import vehicle_definitions
