@@ -1,0 +1,152 @@
+[
+  {
+    "source": "https://github.com/picotech/picosdk-python-wrappers",
+    "file": "picotech__picosdk-python-wrappers.zip",
+    "status": "downloaded",
+    "archive_root": "picotech-picosdk-python-wrappers-e7ba3e8",
+    "bytes": 313606,
+    "sha256": "caf8b5e107aad7ed8daa73d8168ce0accbafde7bcb49cdb6376a121376d2fdf2",
+    "license_files": [
+      "picotech-picosdk-python-wrappers-e7ba3e8/LICENSE.md"
+    ],
+    "archive_url": "https://codeload.github.com/picotech/picosdk-python-wrappers/legacy.zip/e7ba3e8"
+  },
+  {
+    "source": "https://github.com/picotech/picosdk-c-examples",
+    "file": "picotech__picosdk-c-examples.zip",
+    "status": "downloaded",
+    "archive_root": "picotech-picosdk-c-examples-195e814",
+    "bytes": 754904,
+    "sha256": "bdecebdaae64558a7571a5f86d19658c2edb6806ed57de64c8d42fc2b62cedc3",
+    "license_files": [
+      "picotech-picosdk-c-examples-195e814/LICENSE.md"
+    ],
+    "archive_url": "https://codeload.github.com/picotech/picosdk-c-examples/legacy.zip/195e814"
+  },
+  {
+    "source": "https://github.com/picotech/picosdk-c-sharp-examples",
+    "file": "picotech__picosdk-c-sharp-examples.zip",
+    "status": "downloaded",
+    "archive_root": "picotech-picosdk-c-sharp-examples-ae155e6",
+    "bytes": 606070,
+    "sha256": "cf42a8d7df85ad10a74dd64312144ade239739d46a6f816734bcefb69dd9cc06",
+    "license_files": [
+      "picotech-picosdk-c-sharp-examples-ae155e6/LICENSE.md"
+    ],
+    "archive_url": "https://codeload.github.com/picotech/picosdk-c-sharp-examples/legacy.zip/ae155e6"
+  },
+  {
+    "source": "https://github.com/sigrokproject/libsigrok",
+    "file": "sigrokproject__libsigrok.zip",
+    "status": "downloaded",
+    "archive_root": "sigrokproject-libsigrok-0bc2487",
+    "bytes": 1899295,
+    "sha256": "d9f69e8d6aa5eb558c366b8bd4a84457435d88a66c4d1372191468c5b9704db9",
+    "license_files": [
+      "sigrokproject-libsigrok-0bc2487/COPYING",
+      "sigrokproject-libsigrok-0bc2487/src/minilzo/COPYING"
+    ],
+    "archive_url": "https://codeload.github.com/sigrokproject/libsigrok/legacy.zip/0bc2487"
+  },
+  {
+    "source": "https://github.com/sigrokproject/libsigrokdecode",
+    "file": "sigrokproject__libsigrokdecode.zip",
+    "status": "downloaded",
+    "archive_root": "sigrokproject-libsigrokdecode-71f4514",
+    "bytes": 859826,
+    "sha256": "04b549bf395ca9738d35792f7fd5606f285ed44d05aef5c079a3c495f4cf1104",
+    "license_files": [
+      "sigrokproject-libsigrokdecode-71f4514/COPYING"
+    ],
+    "archive_url": "https://codeload.github.com/sigrokproject/libsigrokdecode/legacy.zip/71f4514"
+  },
+  {
+    "source": "https://github.com/sigrokproject/pulseview",
+    "file": "sigrokproject__pulseview.zip",
+    "status": "downloaded",
+    "archive_root": "sigrokproject-pulseview-af02198",
+    "bytes": 2215518,
+    "sha256": "f3fef32a4c2307c275d86ec7ee7df7377704ffb1b1e94278782b4a1dbaf5f14b",
+    "license_files": [
+      "sigrokproject-pulseview-af02198/COPYING",
+      "sigrokproject-pulseview-af02198/manual/asciidoctor-stylesheet-factory/LICENSE",
+      "sigrokproject-pulseview-af02198/manual/license.txt"
+    ],
+    "archive_url": "https://codeload.github.com/sigrokproject/pulseview/legacy.zip/af02198"
+  },
+  {
+    "source": "https://github.com/sigrokproject/sigrok-cli",
+    "file": "sigrokproject__sigrok-cli.zip",
+    "status": "downloaded",
+    "archive_root": "sigrokproject-sigrok-cli-f44dd91",
+    "bytes": 94173,
+    "sha256": "2ef2f16a46a11db3fc0e258c23b2d8d666f1800603c772b45eb456023cd3a527",
+    "license_files": [
+      "sigrokproject-sigrok-cli-f44dd91/COPYING"
+    ],
+    "archive_url": "https://codeload.github.com/sigrokproject/sigrok-cli/legacy.zip/f44dd91"
+  },
+  {
+    "source": "https://github.com/pyvisa/pyvisa",
+    "file": "pyvisa__pyvisa.zip",
+    "status": "downloaded",
+    "archive_root": "pyvisa-pyvisa-f2834a2",
+    "bytes": 284662,
+    "sha256": "53bc95ddfaf60080a52db4110b8afeb87badfe62631ace4349b6395d8557ed67",
+    "license_files": [
+      "pyvisa-pyvisa-f2834a2/LICENSE"
+    ],
+    "archive_url": "https://codeload.github.com/pyvisa/pyvisa/legacy.zip/f2834a2"
+  },
+  {
+    "source": "https://github.com/pyvisa/pyvisa-py",
+    "file": "pyvisa__pyvisa-py.zip",
+    "status": "downloaded",
+    "archive_root": "pyvisa-pyvisa-py-cf9ca4c",
+    "bytes": 179852,
+    "sha256": "9d70f446aaca836725cf387516da6930ba5a2f15b0884964599afe36cb32721d",
+    "license_files": [
+      "pyvisa-pyvisa-py-cf9ca4c/LICENSE"
+    ],
+    "archive_url": "https://codeload.github.com/pyvisa/pyvisa-py/legacy.zip/cf9ca4c"
+  },
+  {
+    "source": "https://github.com/sgoadhouse/oscope-scpi",
+    "file": "sgoadhouse__oscope-scpi.zip",
+    "status": "downloaded",
+    "archive_root": "sgoadhouse-oscope-scpi-8fab150",
+    "bytes": 72058,
+    "sha256": "ba4dbd46acdb1a47ba60f36721bd6e39cb9d0a21ad3b6e5ef2a2fb5c6feacabe",
+    "license_files": [
+      "sgoadhouse-oscope-scpi-8fab150/LICENSE"
+    ],
+    "archive_url": "https://codeload.github.com/sgoadhouse/oscope-scpi/legacy.zip/8fab150"
+  },
+  {
+    "source": "https://github.com/OpenHantek/OpenHantek6022",
+    "file": "OpenHantek__OpenHantek6022.zip",
+    "status": "downloaded",
+    "archive_root": "OpenHantek-OpenHantek6022-00a622a",
+    "bytes": 21472073,
+    "sha256": "8881c077a4319f16567ba48184d5959c1407353707b47a5694a755f27dbfc178",
+    "license_files": [
+      "OpenHantek-OpenHantek6022-00a622a/LICENSE"
+    ],
+    "archive_url": "https://codeload.github.com/OpenHantek/OpenHantek6022/legacy.zip/00a622a"
+  },
+  {
+    "source": "https://github.com/arduino/ArduinoCore-avr",
+    "file": "arduino__ArduinoCore-avr.zip",
+    "status": "downloaded",
+    "bytes": 8483925,
+    "sha256": "d72806bc77ff056b43e402a449a55efc49746e56a497015f655accf4d3d289be",
+    "archive_root": "arduino-ArduinoCore-avr-11b9130",
+    "license_files": [
+      "arduino-ArduinoCore-avr-11b9130/bootloaders/stk500v2/License.txt",
+      "arduino-ArduinoCore-avr-11b9130/drivers/gemma/license/",
+      "arduino-ArduinoCore-avr-11b9130/firmwares/wifishield/wifiHD/src/license.txt",
+      "arduino-ArduinoCore-avr-11b9130/firmwares/wifishield/wifi_dnld/src/license.txt"
+    ],
+    "archive_url": "https://codeload.github.com/arduino/ArduinoCore-avr/legacy.zip/11b9130"
+  }
+]

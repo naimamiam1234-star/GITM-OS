@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=GITM AutoDiag
+Name[ar]=GITM AutoDiag
+Exec=/opt/gitm-venv/bin/python /opt/gitm/start_release.py --windowed --skip-intro
+Icon=/opt/gitm/assets/branding/symbol.svg
+Terminal=false
+Categories=Utility;
+StartupNotify=true

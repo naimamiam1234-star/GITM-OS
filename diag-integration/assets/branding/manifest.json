@@ -1,0 +1,123 @@
+{
+  "version": "3.4.0",
+  "symbol": "symbol.png",
+  "wordmark": "wordmark.png",
+  "defaults": {
+    "light": "wallpapers/light-02.jpg",
+    "dark": "wallpapers/dark-09.jpg"
+  },
+  "clips": {
+    "light": "media/light.mp4",
+    "dark": "media/dark.mp4"
+  },
+  "wallpapers": [
+    {
+      "path": "wallpapers/light-01.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/1YrpLUQV4TmzNQy4qxjSELfscfK1mxB74/view",
+      "label": "light-01.jpg"
+    },
+    {
+      "path": "wallpapers/light-02.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/1jXVu4mUGc3vgijYsBYpX9KxE4lIEw-he/view",
+      "label": "light-02.jpg"
+    },
+    {
+      "path": "wallpapers/light-03.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/1rqJzywu8YxVy0ZCsKy1zUP8sNv2N0Z60/view",
+      "label": "light-03.jpg"
+    },
+    {
+      "path": "wallpapers/light-04.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/1HLglZjcmgH2dq2r9xU2OBj1Ncicy1Fre/view",
+      "label": "light-04.jpg"
+    },
+    {
+      "path": "wallpapers/light-05.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/1kOMoB_ItPa6CIkksAgAMKotdqO7hRxWa/view",
+      "label": "light-05.jpg"
+    },
+    {
+      "path": "wallpapers/light-06.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/13NioWgdHk_zGLy1yRx9nL4lZZ1iEvWfe/view",
+      "label": "light-06.jpg"
+    },
+    {
+      "path": "wallpapers/light-07.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/15TgbJAu-hyIdBThxw4y56VizJZKU3SxX/view",
+      "label": "light-07.jpg"
+    },
+    {
+      "path": "wallpapers/light-08.jpg",
+      "mode": "light",
+      "source_url": "https://drive.google.com/file/d/1rX8YhuA6zwMK7txUWEjHXf-GhFKrrckK/view",
+      "label": "light-08.jpg"
+    },
+    {
+      "path": "wallpapers/dark-01.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1qsWChK0swm9UPNjhXw6zZ_VLuYFjjRJx/view",
+      "label": "dark-01.jpg"
+    },
+    {
+      "path": "wallpapers/dark-02.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1sR-IapZiA-JBq7e1zeJJFbjIFn1XlZSC/view",
+      "label": "dark-02.jpg"
+    },
+    {
+      "path": "wallpapers/dark-03.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1OzDZp-OxWi1HAT51TVsFslbiAfILOjvk/view",
+      "label": "dark-03.jpg"
+    },
+    {
+      "path": "wallpapers/dark-04.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1jVuQQlkL5-IEr1nJOrFgSRKtdAAywLkj/view",
+      "label": "dark-04.jpg"
+    },
+    {
+      "path": "wallpapers/dark-05.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1hnlcCs5vDXhdqsdG-vdaSCYCp0YipDge/view",
+      "label": "dark-05.jpg"
+    },
+    {
+      "path": "wallpapers/dark-06.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1P2pZ0DzOUH3Mf8NRV-g6sAFkVTplFA1i/view",
+      "label": "dark-06.jpg"
+    },
+    {
+      "path": "wallpapers/dark-07.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/14Fi_pGuYyTKMLK9D-5hGHNIJLbJH5qjZ/view",
+      "label": "dark-07.jpg"
+    },
+    {
+      "path": "wallpapers/dark-08.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1NaH7ZsD9yfs8rD_9YPsMA-uSFFlNHWef/view",
+      "label": "dark-08.jpg"
+    },
+    {
+      "path": "wallpapers/dark-09.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1i9RanPfAUbw50VfQJGczaQ-y7kmA6gq0/view",
+      "label": "dark-09.jpg"
+    },
+    {
+      "path": "wallpapers/dark-10.jpg",
+      "mode": "dark",
+      "source_url": "https://drive.google.com/file/d/1tfp_vaaRRLCJ4pKFnxaUA99Ur90Slgon/view",
+      "label": "dark-10.jpg"
+    }
+  ]
+}

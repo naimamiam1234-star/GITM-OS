@@ -1,7 +1,7 @@
 """Overlay tested engines and wire native AutoDiag pages; fail on source drift."""
 import pathlib, shutil, sys, py_compile
 
-MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','adapter_registry','vehicle_workspace','vehicle_definitions','vehicle_resources','workshop_workspace','ai_workspace','assistant_core','session_assistant','instance_gate','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace')
+MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','adapter_registry','vehicle_workspace','vehicle_definitions','vehicle_resources','workshop_workspace','ai_workspace','assistant_core','session_assistant','instance_gate','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace','resource_library','branding','branding_controls','boot_media')
 def patch_assistant_launch(code):
     helper="def apply_launch_intent(window,argv):\n    if '--assistant' in argv:\n        window.professional_shell.show_assistant()\n\n"
     if 'def apply_launch_intent(' not in code:
@@ -80,9 +80,13 @@ def install(target):
     for name in (*MODULES,'native'):py_compile.compile(str(target/(name+'.py')),doraise=True)
     shutil.copytree(source/'vehicle-data',target/'vehicle-data',dirs_exist_ok=True)
     shutil.copy2(source/'gitm_desktop.py',target/'gitm_desktop.py')
+    shutil.copy2(source/'desktop_popups.py',target/'desktop_popups.py')
+    shutil.copytree(source/'assets/branding',target/'assets/branding',dirs_exist_ok=True)
+    shutil.copytree(source/'resources',target/'resources',dirs_exist_ok=True)
     (target/'assets/tools').mkdir(parents=True,exist_ok=True)
     shutil.copy2(source/'assets/tools/ai.svg',target/'assets/tools/ai.svg')
     shutil.copy2(source/'assistant-bench.py',target/'assistant-bench.py')
+    shutil.copy2(source/'branding-bench.py',target/'branding-bench.py')
     docs=target/'diagnostic-docs';docs.mkdir(exist_ok=True)
     for name in ('SOURCES.md','SOURCES_AUDIT.md','COVERAGE.md','QUICKSTART_AR.md','ASSISTANT_AR.md','DESIGN_UPDATE_AR.md'):shutil.copy2(source/name,docs/name)
     print('GITM_DIAGNOSTIC_OVERLAY_INSTALLED',flush=True)

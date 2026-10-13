@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+case "$1" in configure) ;; *) exit 0;; esac
+base=/usr/share/plymouth/themes/spinner
+theme=/usr/share/plymouth/themes/gitm
+state=/var/lib/gitm/branding
+mkdir -p "$theme" "$state"
+if [ -f "$base/spinner.plymouth" ]; then
+ if [ ! -f "$state/previous-plymouth" ]; then readlink -f /usr/share/plymouth/themes/default.plymouth > "$state/previous-plymouth" || true; fi
+ for file in "$base"/*; do
+  name=${file##*/}
+  case "$name" in watermark.png|spinner.plymouth) continue;; esac
+  [ ! -f "$file" ] || cp -a "$file" "$theme/$name"
+ done
+ sed -e "s|$base|$theme|g" -e 's/^Name=.*/Name=GITM OS/' -e 's/^UseFirmwareBackground=.*/UseFirmwareBackground=false/' -e 's/^BackgroundStartColor=.*/BackgroundStartColor=0x071829/' -e 's/^BackgroundEndColor=.*/BackgroundEndColor=0x102c40/' "$base/spinner.plymouth" > "$theme/gitm.plymouth"
+ update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth "$theme/gitm.plymouth" 200
+ update-alternatives --set default.plymouth "$theme/gitm.plymouth"
+ update-initramfs -u -k all
+fi
+if command -v update-grub >/dev/null 2>&1; then update-grub; fi

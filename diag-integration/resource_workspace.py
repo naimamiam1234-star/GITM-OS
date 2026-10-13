@@ -68,6 +68,7 @@ class SourcesWorkspace(QWidget):
   for label,callback in [(t('استيراد مرجع تقني JSON','Importer une référence JSON','Import technical evidence JSON'),self.import_evidence),(t('بحث استدعاءات السيارة','Rechercher les rappels','Look up vehicle recalls'),self.recalls)]:
    button=action_button(label);button.clicked.connect(callback);bar.addWidget(button);self.actions.append(button)
   transfer=QLabel(t('بحث الاستدعاءات يرسل الماركة والموديل والسنة إلى NHTSA عند الضغط فقط.','La recherche de rappels envoie marque, modèle et année à NHTSA uniquement au clic.','Recall lookup sends make, model and year to NHTSA only when clicked.'));transfer.setWordWrap(True);root.addWidget(transfer)
+  files=action_button(t('مكتبة الملفات والمصادر المدمجة','Bibliothèque locale intégrée','Bundled files and source library'));files.clicked.connect(lambda:__import__('resource_library').show(window));bar.addWidget(files)
   self.status=QLabel();root.addWidget(self.status);self.log=QTextEdit();self.log.setReadOnly(True);self.log.setMaximumHeight(90);root.addWidget(self.log);self.table.itemSelectionChanged.connect(self.show_selected);self.refresh()
  def selected(self):
   row=self.table.currentRow();return self.filtered[row] if 0<=row<len(self.filtered) and self.table.selectedItems() else None

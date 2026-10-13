@@ -40,16 +40,18 @@ def current_scan(window):
 
 class Assistant(QWidget):
  def __init__(self,window):
-  super().__init__();self.window=window;self.attachment=None;self.cancel_event=None;layout=QVBoxLayout(self)
+  super().__init__();self.window=window;self.attachment=None;self.cancel_event=None;layout=QVBoxLayout(self);layout.setSpacing(10)
   info=QLabel(triple('مساعد سحابي يشرح ولا ينفذ أوامر السيارة. المفتاح في ذاكرة الجلسة فقط.','Assistant cloud explicatif, sans commande véhicule. Clé en mémoire de session.','Cloud assistant explains and cannot execute vehicle commands. Key stays in session memory.'));info.setWordWrap(True);layout.addWidget(info)
+  self.connection_settings=QWidget();connection_layout=QVBoxLayout(self.connection_settings);connection_layout.setContentsMargins(0,0,0,0)
+  toggle=action_button(triple('إعداد اتصال الذكاء الاصطناعي','Connexion IA','AI connection settings'));toggle.setCheckable(True);toggle.setChecked(not bool(getattr(window,'openrouter_key','')));toggle.toggled.connect(self.connection_settings.setVisible);layout.addWidget(toggle)
   row=QHBoxLayout();self.key=QLineEdit(getattr(window,'openrouter_key',''));self.key.setObjectName('openrouterKey');self.key.setEchoMode(QLineEdit.Password);self.key.setPlaceholderText('OpenRouter API key');self.key.setLayoutDirection(Qt.LeftToRight);self.key.textChanged.connect(lambda v:setattr(window,'openrouter_key',v));row.addWidget(self.key,1);self.model=QComboBox();self.model.addItem('openrouter/free')
   try:
    import native
    snapshot=json.loads((Path(native.__file__).parent/'free-models-snapshot.json').read_text());self.model.addItems([m['id'] for m in snapshot['models'] if m['id']!='openrouter/free'])
   except (OSError,ValueError,KeyError):pass
   self.model.setMinimumContentsLength(12);self.model.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon);self.model.setMaximumWidth(230);self.key.setMinimumWidth(120)
-  row.addWidget(self.model,1);layout.addLayout(row)
-  self.conversation=QTextBrowser();layout.addWidget(self.conversation,1);self.prompt=QTextEdit();self.prompt.setMaximumHeight(115);self.prompt.setPlaceholderText(triple('اكتب سؤالك دون بيانات شخصية','Question sans données personnelles','Ask without personal information'));layout.addWidget(self.prompt)
+  row.addWidget(self.model,1);connection_layout.addLayout(row);layout.addWidget(self.connection_settings);self.connection_settings.setVisible(toggle.isChecked())
+  self.conversation=QTextBrowser();self.conversation.setObjectName('assistantConversation');self.conversation.setOpenExternalLinks(False);self.conversation.setOpenLinks(False);self.conversation.setPlaceholderText(triple('محادثتك مرتبطة بجلسة التشخيص الحالية','Conversation liée à la session','Conversation linked to this diagnostic session'));layout.addWidget(self.conversation,1);self.prompt=QTextEdit();self.prompt.setObjectName('assistantComposer');self.prompt.setMinimumHeight(72);self.prompt.setMaximumHeight(115);self.prompt.setPlaceholderText(triple('اكتب سؤالك دون بيانات شخصية','Question sans données personnelles','Ask without personal information'));layout.addWidget(self.prompt)
   self.consent=self.wrapped_consent(triple('أوافق على إرسال السؤال والمعاينة المعتمدة إلى OpenRouter','J’autorise l’envoi de la question et de l’aperçu approuvé à OpenRouter','I approve sending the question and approved preview to OpenRouter'),layout)
   self.preview=QTextBrowser();self.preview.setMaximumHeight(110);self.preview.hide();layout.addWidget(self.preview)
   self.approve=QCheckBox(triple('أوافق على إرفاق هذه المعاينة','J’approuve cet aperçu joint','Approve this attachment preview'));self.approve.hide();layout.addWidget(self.approve)

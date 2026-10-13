@@ -1,20 +1,13 @@
-name: GITM AutoDiag application package and installed update
-# Side assistant geometry and context isolation verified before packaging.
+name: GITM 3.4.0 brand and resources installed update
 on:
   push:
     branches: [autodiag-expansion-20261012]
-    paths: ['application-update/**', '.github/workflows/application-update.yml']
+    paths: ['diag-integration/**', 'application-update/**', 'branding-update/**', '.github/workflows/application-update.yml']
   workflow_dispatch:
     inputs:
       source_run:
-        description: Source ISO artifact run (source13)
+        description: Verified base ISO artifact run
         default: '38286238342'
-        required: true
-      boot_mode:
-        description: Firmware mode for fresh disk installation
-        type: choice
-        options: [UEFI, BIOS]
-        default: UEFI
         required: true
 permissions:
   contents: read
@@ -23,9 +16,9 @@ concurrency:
   group: gitm-autodiag-application-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  disk-install:
+  build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 150
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -36,23 +29,53 @@ jobs:
           path: input
       - name: Install VM tools
         run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 qemu-utils xorriso squashfs-tools python3-pil python3-zstandard ovmf
+      - name: Verify public resource service
+        run: |
+          curl --fail --retry 6 --retry-delay 10 https://gitm-branding-preview.naimamiam1234.workers.dev/manifest.json -o /tmp/portal.json
+          python3 -c "import json; j=json.load(open('/tmp/portal.json')); assert j['version']=='3.4.0' and len(j['assets'])==22"
+      - name: Fetch pinned identity and resource archives
+        run: python3 branding-update/fetch-assets.py
       - name: Build application-only candidate from exact existing ISO
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           python3 application-update/build.py "$source"
+          python3 branding-update/build-resources.py dist/app-update
       - uses: actions/upload-artifact@v4
         with:
-          name: GITM-AutoDiag-3.3.3-debian-candidate
+          name: GITM-AutoDiag-3.4.0-debian-candidate
           path: dist/app-update/*
           retention-days: 30
+
+  disk-install:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        boot_mode: [UEFI, BIOS]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-Plasma6-preview-amd64
+          run-id: ${{ inputs.source_run || '38286238342' }}
+          github-token: ${{ github.token }}
+          path: input
+      - uses: actions/download-artifact@v4
+        with:
+          name: GITM-AutoDiag-3.4.0-debian-candidate
+          path: dist/app-update
+      - name: Install VM tools
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 qemu-utils xorriso squashfs-tools python3-pil python3-zstandard ovmf
       - name: Prepare actual candidate installation test
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           test -n "$source"
-          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.3.3-1_all.deb
+          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.4.0-1_all.deb dist/app-update/gitm-sdk-sources_2026.10.13-1_all.deb dist/app-update/gitm-obdb-data_2026.10.13-1_all.deb
       - name: Install to fresh 40GiB disk and boot without ISO
         env:
-          BOOT_MODE: ${{ inputs.boot_mode || 'UEFI' }}
+          BOOT_MODE: ${{ matrix.boot_mode }}
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           firmware=()
@@ -65,7 +88,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: GITM-AutoDiag-3.3.3-installed-evidence
+          name: GITM-AutoDiag-3.4.0-${{ matrix.boot_mode }}-installed-evidence
           path: |
             dist/disk-install/*.log
             dist/disk-install/*.txt
@@ -74,4 +97,5 @@ jobs:
             dist/disk-install/*.sha256
             dist/disk-install/*-guest-evidence.tar.gz
           retention-days: 14
+
 

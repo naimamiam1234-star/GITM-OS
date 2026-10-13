@@ -55,7 +55,13 @@ def boot(stage,live):
                 r=json.loads(f.readline())
                 if 'return' in r or 'error' in r: return r
         command({'execute':'qmp_capabilities'})
+        boot_start=time.monotonic();next_frame=0;frame_times=(3,5,8,12,16,20,25,30,35,40,50,60)
         while time.monotonic()<deadline:
+            if stage=='updated-reboot' and next_frame<len(frame_times) and time.monotonic()-boot_start>=frame_times[next_frame]:
+                ppm=root/(stage+'-boot-'+str(frame_times[next_frame])+'.ppm')
+                response=command({'execute':'screendump','arguments':{'filename':str(ppm)}})
+                if 'error' not in response:Image.open(ppm).save(ppm.with_suffix('.png'));ppm.unlink()
+                next_frame+=1
             console=serial.read_text(errors='replace') if serial.exists() else ''
             text=evidence.read_text(errors='replace') if evidence.exists() else ''
             if 'gitm-installer-probe.service: Failed with result' in console:
@@ -87,3 +93,4 @@ boot('disk-boot',False)
 boot('updated-reboot',False)
 (root/'result.json').write_text(json.dumps({'install':'pass','disk_boot':'pass','boot_mode':'UEFI' if options.uefi else 'BIOS','disk_bytes':40*1024**3,'live_media_removed':True},indent=2))
 print('PASS: installation completed and native Plasma booted with / on the installed vda partition')
+

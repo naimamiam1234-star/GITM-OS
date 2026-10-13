@@ -45,6 +45,8 @@ class Shell:
   header=QWidget();header.setObjectName('header');hl=QHBoxLayout(header);hl.setContentsMargins(12,8,12,8)
   toggle=action_button('☰');toggle.setAccessibleName(t('القائمة الجانبية','Navigation','Navigation'));toggle.setMaximumWidth(44);toggle.clicked.connect(lambda:self.sidebar.setVisible(not self.sidebar.isVisible()));hl.addWidget(toggle)
   brand=QLabel('GITM AutoDiag');brand.setObjectName('brand');hl.addWidget(brand);self.title=QLabel(t('الرئيسية','Accueil','Home'));self.title.setObjectName('pageTitle');self.title.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Preferred);hl.addWidget(self.title,1)
+  import branding
+  brand_image=QLabel();brand_image.setPixmap(branding.symbol_pixmap(32));brand_image.setFixedSize(36,36);hl.insertWidget(1,brand_image);w.setWindowIcon(branding.brand_icon())
   self.search=QLineEdit();self.search.setPlaceholderText(t('بحث أو P0401','Recherche ou P0401','Search or P0401'));self.search.setMaximumWidth(230);self.search.textChanged.connect(self.filter);self.search.returnPressed.connect(self.search_action);hl.addWidget(self.search)
   self.lang=QComboBox();self.lang.addItems(['العربية','Français','English']);self.lang.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);self.lang.currentIndexChanged.connect(self.set_language);hl.addWidget(self.lang)
   self.assistant_button=action_button(t('المساعد','Assistant','Assistant'),role='primary',icon='ai');self.assistant_button.setToolTip(t('المساعد التشخيصي · Ctrl+J','Assistant de session · Ctrl+J','Session assistant · Ctrl+J'));self.assistant_button.setObjectName('sessionAssistantButton');self.assistant_button.clicked.connect(self.toggle_assistant);hl.addWidget(self.assistant_button)
@@ -106,6 +108,7 @@ class Shell:
   for key,labels,ico in [('vehicle',('اختيار سيارة','Choisir un véhicule','Choose vehicle'),'car'),('adapter',('ربط المحول','Connecter VCI','Connect adapter'),'engine'),('diagnosis',('بدء التشخيص','Diagnostic','Start diagnosis'),'smart'),('ai',('المساعد التشخيصي','Assistant de session','Session assistant'),'ai')]:
    button=action_button(t(*labels),role='primary' if key=='diagnosis' else 'secondary',icon=ico);button.clicked.connect(lambda checked=False,key=key:self.navigate(key));actions.addWidget(button);self.home_actions[key]=button
   self.vehicle_card.body.addLayout(actions)
+  portal=action_button(t('مكتبة الملفات والمصادر','Bibliothèque de ressources','Resource library'));portal.clicked.connect(lambda:__import__('resource_library').show(w));self.vehicle_card.body.addWidget(portal)
   row=QHBoxLayout();allb=action_button(t('الكل','Tout','All'));allb.clicked.connect(lambda:self.select_group(None));row.addWidget(allb)
   for i,group in enumerate(GROUPS[:5]):
    b=action_button(t(*group));b.clicked.connect(lambda checked=False,i=i:self.select_group(i));row.addWidget(b)

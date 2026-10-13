@@ -26,9 +26,9 @@ class SessionAssistant(QWidget):
   self.identity=QLabel();self.identity.setObjectName('sessionIdentity');self.identity.setWordWrap(True);layout.addWidget(self.identity)
   self.symptoms=QTextEdit();self.symptoms.setMaximumHeight(68);self.symptoms.setPlaceholderText(t('الأعراض وملاحظات الفني؛ دون بيانات شخصية','Symptômes sans données personnelles','Symptoms and technician notes; no personal details'));layout.addWidget(self.symptoms)
   self.refresh_button=action_button(t('اعتماد السياق الحالي','Actualiser le contexte','Use current context'));self.refresh_button.clicked.connect(self.capture);layout.addWidget(self.refresh_button)
-  actions=QGridLayout();actions.setSpacing(8)
+  self.action_buttons=[];actions=QGridLayout();actions.setSpacing(8)
   for i,(label,callback) in enumerate([(t('حلّل بيانات الجلسة','Analyser la session','Analyze session data'),self.analyze),(t('مراجع','Références','References'),lambda:self.search('brave')),(t('فيديو شرح','Vidéo','Video guide'),lambda:self.search('youtube'))]):
-   button=action_button(label,role='primary' if i==0 else 'secondary');button.clicked.connect(callback);actions.addWidget(button,0 if i==0 else 1,0 if i<2 else 1,1,2 if i==0 else 1)
+   button=action_button(label,role='primary' if i==0 else 'secondary');self.action_buttons.append(button);button.clicked.connect(callback);actions.addWidget(button,0 if i==0 else 1,0 if i<2 else 1,1,2 if i==0 else 1)
   layout.addLayout(actions)
   self.tabs=QTabWidget();layout.addWidget(self.tabs,1)
   self.results=QTextBrowser();self.results.setOpenLinks(False);self.results.setOpenExternalLinks(False);self.results.anchorClicked.connect(self.open_source);self.tabs.addTab(self.results,t('النتائج','Résultats','Results'))
@@ -42,7 +42,10 @@ class SessionAssistant(QWidget):
   self.query=QTextEdit();self.query.setMaximumHeight(110);self.query.textChanged.connect(lambda:self.external_consent.setChecked(False));sl.addWidget(self.query)
   self.cancel_button=action_button(t('إلغاء البحث','Annuler','Cancel search'));self.cancel_button.clicked.connect(self.cancel_search);sl.addWidget(self.cancel_button)
   browser=action_button(t('فتح البحث في المتصفح فقط','Recherche navigateur uniquement','Open browser search only'));browser.clicked.connect(self.browser_search);sl.addWidget(browser);sl.addStretch();self.tabs.addTab(settings,t('البحث','Recherche','Search'));self.tabs.setTabToolTip(3,t('البحث والخصوصية','Recherche et confidentialité','Search and privacy'))
-  self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback);self.tabs.currentChanged.connect(lambda index:self.refresh_history() if index==2 else None);self.capture()
+  self.feedback=QLabel();self.feedback.setWordWrap(True);layout.addWidget(self.feedback);self.tabs.currentChanged.connect(lambda index:self.refresh_history() if index==2 else None);self.capture();self.tabs.currentChanged.connect(self.chat_layout)
+
+ def chat_layout(self,index):
+  for widget in [self.symptoms,self.refresh_button]+self.action_buttons:widget.setVisible(index!=1)
 
  def capture(self):
   if self.search_task is not None or (getattr(self.window,'cloud_task',None) is not None and self.window.cloud_task.isRunning()):

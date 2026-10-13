@@ -1,0 +1,726 @@
+[
+  {
+    "name": "vehicle-model-results.json",
+    "category": "collection provenance",
+    "path": "guides/vehicle-model-results.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "README-AR.md",
+    "category": "collection provenance",
+    "path": "guides/README-AR.md",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "driver-results.json",
+    "category": "collection provenance",
+    "path": "guides/driver-results.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "additional-checksums.json",
+    "category": "collection provenance",
+    "path": "guides/additional-checksums.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "vehicle-type-results.json",
+    "category": "collection provenance",
+    "path": "guides/vehicle-type-results.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "obdb-nested-validation.json",
+    "category": "collection provenance",
+    "path": "guides/obdb-nested-validation.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "obdb-completion-results.json",
+    "category": "collection provenance",
+    "path": "guides/obdb-completion-results.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "collection-status.json",
+    "category": "collection provenance",
+    "path": "guides/collection-status.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "download-results.json",
+    "category": "collection provenance",
+    "path": "guides/download-results.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "delphi-additional-results.json",
+    "category": "collection provenance",
+    "path": "guides/delphi-additional-results.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "file-checksums.json",
+    "category": "collection provenance",
+    "path": "guides/file-checksums.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "vehicle-image-catalog.json",
+    "category": "collection provenance",
+    "path": "guides/vehicle-image-catalog.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "additional-driver-results.json",
+    "category": "collection provenance",
+    "path": "guides/additional-driver-results.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "driver-pages.json",
+    "category": "collection provenance",
+    "path": "guides/driver-pages.json",
+    "source_url": "https://drive.google.com/drive/folders/1vDSTvYlTqI_3vScLA5kAi4TXq23SatIh",
+    "integration_verified": false,
+    "status": "local provenance and source metadata; no device validation"
+  },
+  {
+    "name": "manifests-and-checksums.json",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1knQBKciSd5A3OqIC0UGQdCzVCOvUZs4d/view?usp=drivesdk",
+    "path": null,
+    "bytes": "5535",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "README-AR.md",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/17-BvxA1LVfojcHMJeR6uV80KFxcjJrhj/view?usp=drivesdk",
+    "path": null,
+    "bytes": "3717",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "PicoSDK_x64_11.1.0.481.exe.part002",
+    "category": "Windows download reference",
+    "source_url": "https://drive.google.com/file/d/1A-8diFPt_GY8YFlD4ahUKQc3kTL8h9tj/view?usp=drivesdk",
+    "path": null,
+    "bytes": "61988512",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "PicoSDK_x64_11.1.0.481.exe.part001",
+    "category": "Windows download reference",
+    "source_url": "https://drive.google.com/file/d/1P_BdY75K1B1kdzSnwXqqt2NDIQzZxtsK/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Pico-Automotive-Oscilloscope-Diagnostics-Guide.pdf",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1DCntV0asistbvb_3eDD3tha5nRt__nD6/view?usp=drivesdk",
+    "path": null,
+    "bytes": "12268792",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Oscilloscope-Source-Libraries.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1z-4_4wuvD1vBBlJnBhbWgDh68zfpqFnh/view?usp=drivesdk",
+    "path": null,
+    "bytes": "37241666",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Resource-Guide-and-Manifests.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1MfsVP5jWNWqvwxlufRd-eCZcJhqWcCo8/view?usp=drivesdk",
+    "path": null,
+    "bytes": "393249",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "README-AR.md",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1GsgV0CkEfct8LZgGej_8kC5NYCr1XAmm/view?usp=drivesdk",
+    "path": null,
+    "bytes": "7000",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "OBDb-Vehicle-Definitions.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1qoVjfxImhKxge96GeSFaECm7aktHhesT/view?usp=drivesdk",
+    "path": null,
+    "bytes": "85984628",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "NHTSA-Vehicle-Types.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1odKeEdC15Kce1eiKb85owxNtaYrCbHB0/view?usp=drivesdk",
+    "path": null,
+    "bytes": "22350",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "NHTSA-Vehicle-Models-69-Makes.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1dTwqRp9PEXPogQZavL54GajLF-3ZWcMQ/view?usp=drivesdk",
+    "path": null,
+    "bytes": "62910",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-14.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1nKDyF9oMZXSxpKz9vY6B6csRFbf09XOW/view?usp=drivesdk",
+    "path": null,
+    "bytes": "4230807",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-14.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/12w3VI8qJAOf2YCXjNYFykkYVhGZoDLOV/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-14.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/14wugH8lskSY1O9LdVOGfepjG8E5TWypB/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "delphi__PicoScope6Delphi.exe",
+    "category": "Windows download reference",
+    "source_url": "https://drive.google.com/file/d/1vMqDtMTAmSQpBDFqGwgilxFopIEKRcuq/view?usp=drivesdk",
+    "path": null,
+    "bytes": "80265904",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "delphi__Fuel_Analyser_Update.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1KEjdZ1ZGG0h5LMmdHSTlYjcJ9hSiSWNx/view?usp=drivesdk",
+    "path": null,
+    "bytes": "26725402",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Additional-Drivers-Kvaser-CP210x.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/15hIsk2YYdjTuBfqg-0wHRDyZJN5NEoRJ/view?usp=drivesdk",
+    "path": null,
+    "bytes": "69341635",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-13.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1YkvawHLNO_iED4rUofPE4Ero8AQA0O9O/view?usp=drivesdk",
+    "path": null,
+    "bytes": "53647512",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-12.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1eTJLAeISmwkASGBhYA58EM12KRN6Ddy2/view?usp=drivesdk",
+    "path": null,
+    "bytes": "20044538",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-12.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1JuDIM5JtIqcLES8B5oOmwoPWCslGAGCG/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-12.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1KvZ5QNktH5aMjQ6LT0BSmZp48T2upmKn/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "restore-driver-archives.py",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1IM0Mk4N6WzBwmwJwpdDL-vCGBeUwXJ8N/view?usp=drivesdk",
+    "path": null,
+    "bytes": "675",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-11.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/15Ccg1HsvFO9gVNxO2EIC-xMhTRgcf2-T/view?usp=drivesdk",
+    "path": null,
+    "bytes": "39300877",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-11.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1SYU6YN7W0JQ9ZV2XA-7RIbfKjTgHfh0D/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Car-Images-Index-and-Samples.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1lT7ZbKFDtMmYTXQwivjolnTtfo94UV4b/view?usp=drivesdk",
+    "path": null,
+    "bytes": "22732051",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Delphi-DS-FLASH-driver-4134-1-3-30.exe",
+    "category": "Windows download reference",
+    "source_url": "https://drive.google.com/file/d/1_7E2KJt08QlNl-_QN_vMhKDcw8Ve0BOU/view?usp=drivesdk",
+    "path": null,
+    "bytes": "53611016",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-10.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1lUkKmaJXUDoOiJKvNZw46WzPDJDv5uVv/view?usp=drivesdk",
+    "path": null,
+    "bytes": "1372281",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-10.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1Km6mPwygbI0twRNQddFoQXHSPk8qB6Qk/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-10.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1EciO7HshDG7WVeQ3pHJeSseqdDWJx0Bi/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-09.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1dHos5hvqc2U_cll4L4mxG1ffspOtcIJw/view?usp=drivesdk",
+    "path": null,
+    "bytes": "19856258",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-09.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1LHiJlE_iWKAk0_0hVe-x-mZgSF4eaIDC/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-09.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/15ZgF8uXCKHsmnTT9jwEjtNMbdH5KkQHA/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-08.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1-o4TQ42xjVKRg4gLdNn-vgJex92Zizuq/view?usp=drivesdk",
+    "path": null,
+    "bytes": "65945405",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-08.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1_r53iv3snqQ_VAesC_wW0Tmp4m1kZYa4/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-07.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1rGed9n9h6cqXN8b2ZWneQO09_xwaf-Tr/view?usp=drivesdk",
+    "path": null,
+    "bytes": "2305195",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-07.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1JeA1B3SLrs1_Ot9GrRZzxgbesUAwLA8A/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-07.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/110tMuUOC4Efk2V69VYG1XJ49J7lch3sQ/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-06.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/19YwWSpSbquSRFgNzvOpWA-w8XSlY9hni/view?usp=drivesdk",
+    "path": null,
+    "bytes": "60403301",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-06.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1xgcLjDyTy7LUQRMn0Glr4YmSZljTGRCf/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-05.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/15vdEaEMvB0gdHW61peeEZiYNpwcgsGBP/view?usp=drivesdk",
+    "path": null,
+    "bytes": "15178112",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-05.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/13EzJiq3SIsdtaGIVhL7oiojIDGa27CjA/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-05.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1AuclPG1bN9s7lWDBc9S8ULl5YwqmsQvU/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-04.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1QPRy4kK3oUKmlVC7ODZtxQEb7S9LmlCp/view?usp=drivesdk",
+    "path": null,
+    "bytes": "20714478",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-04.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1RPR4Mz3ukOSLS2JGqXJ2nHGpHXafRNrb/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-04.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/12cJu3cIqFKtK3gWsp_s1sP9DGl2WJC1T/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-03.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/15Doou1L_bQrdQkhqYI61c9t9P4vR3MI7/view?usp=drivesdk",
+    "path": null,
+    "bytes": "16096797",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-03.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1RAOg-WxP7y9mwMSbDJBgcVoyh7vSdjQB/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-03.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/10LWyJc97qwYX3d8NyRe75V_ZP89yo7mI/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-01.zip.part003",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/10_6dqNAhWmvZFjAUVgfI7Zhbk9CFQl51/view?usp=drivesdk",
+    "path": null,
+    "bytes": "20310069",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-01.zip.part002",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1k6U3Ex5dfARRSyxpGTzwU0NhvNYwXxea/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-01.zip.part001",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1b4BLMI1N8W4ZDqjgbKr6KpKhL24TPaSU/view?usp=drivesdk",
+    "path": null,
+    "bytes": "67108864",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Drivers-and-Manuals-02.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1RY8JH9fFJfUHvkiH1DRMdreoWhRTzSSf/view?usp=drivesdk",
+    "path": null,
+    "bytes": "74203514",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "vpic.json",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1NqnqQXcohJmTearCLMKEtz-rDulD2jDi/view?usp=drivesdk",
+    "path": null,
+    "bytes": "613198",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "OBDb__SAEJ1979.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1Yl-9Y--tXa3UIDp4QdVIHihFJu4vFn3a/view?usp=drivesdk",
+    "path": null,
+    "bytes": "38984",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "Ircama__ELM327-emulator.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1nqkZO93929S1V3_Sa_H6Boc-LPt9yq4o/view?usp=drivesdk",
+    "path": null,
+    "bytes": "164835",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "uholeschak__ediabaslib.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1r1DitHkpdmoL0F-ir64RGwtZlYSTsrJ5/view?usp=drivesdk",
+    "path": null,
+    "bytes": "36607249",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "cedricp__ddt4all.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1yznkqGxJTEkVG65hqaWrKq59vYC29QAP/view?usp=drivesdk",
+    "path": null,
+    "bytes": "35727664",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "commaai__opendbc.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1OGs_WwHMxYnddbZpa73P71QBilFZ8EVG/view?usp=drivesdk",
+    "path": null,
+    "bytes": "1441463",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "mercedes-benz__odxtools.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1BJJcWXXCMksXkAepLiaTVNy8MyQji6Uu/view?usp=drivesdk",
+    "path": null,
+    "bytes": "638487",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "cantools__cantools.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1rstzxexpOcPlVc7cmM6MJjKWn37UihTu/view?usp=drivesdk",
+    "path": null,
+    "bytes": "1236582",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "juergenH87__python-can-j1939.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1JKSIfUt72EyeVCLjSLvPt23XQFnMUpdB/view?usp=drivesdk",
+    "path": null,
+    "bytes": "74572",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "jacobschaer__python-doipclient.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1fKuywJyhqS7LMSk7mUs7Q7JG-T1eREit/view?usp=drivesdk",
+    "path": null,
+    "bytes": "35970",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "pylessard__python-udsoncan.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1f-Mn9Nf9c3lW3nhuJbwUXavPf0lK_k_l/view?usp=drivesdk",
+    "path": null,
+    "bytes": "224420",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "pylessard__python-can-isotp.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1k5NdVyI-miWKDvK76utWFaRXbQ_Kiyf7/view?usp=drivesdk",
+    "path": null,
+    "bytes": "170288",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "linux-can__can-utils.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1L2zX-VgqFJhzbAoxBe5q7PyrPFy3I9lz/view?usp=drivesdk",
+    "path": null,
+    "bytes": "379307",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "brendan-w__python-OBD.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1k4XI1JxkmucWRPnrSerqXlDa_4gNPV2L/view?usp=drivesdk",
+    "path": null,
+    "bytes": "116011",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "hardbyte__python-can.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/14RNrob5BDGYCSG2tgoXk5nAwp1hiT5wY/view?usp=drivesdk",
+    "path": null,
+    "bytes": "1311744",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  },
+  {
+    "name": "VehicleSpecs-Brand-Logos.zip",
+    "category": "download reference",
+    "source_url": "https://drive.google.com/file/d/1heOVVJskI-SEaLV6IlNIgmk1NnGA07LB/view?usp=drivesdk",
+    "path": null,
+    "bytes": "1571329",
+    "integration_verified": false,
+    "status": "source download link; not installed or executed"
+  }
+]

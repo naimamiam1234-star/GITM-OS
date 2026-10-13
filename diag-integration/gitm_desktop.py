@@ -5,6 +5,7 @@ import shutil
 import datetime
 import json
 import re
+import branding
 from pathlib import Path
 from PySide6.QtCore import Qt, QSize, QTimer, QProcess, QIODevice, QRectF, QRect, QPoint, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
 from PySide6.QtGui import QIcon, QFontDatabase, QPainter, QColor, QLinearGradient, QPainterPath, QPixmap, QPen
@@ -15,7 +16,7 @@ ROOT = Path(__file__).resolve().parent
 STATE = Path(os.environ.get('GITM_STATE', str(Path.home()/'.local/share/gitm')))
 APPS = [
  ('assistant','المساعد التشخيصي','تحليل جلسة AutoDiag','ai',None),
- ('autodiag','GITM AutoDiag','تشخيص السيارات','engine',None),
+ ('autodiag','GITM AutoDiag','تشخيص السيارات','brand',None),
  ('files','الملفات','المجلدات والمستندات','files',['dolphin']),
  ('browser','المتصفح','الإنترنت والمراجع','browser',['firefox']),
  ('settings','الإعدادات','الشبكة والشاشة والصوت','settings',None),
@@ -85,30 +86,31 @@ class UsageRing(QWidget):
 class Desktop(QWidget):
  def __init__(self):
   super().__init__()
-  self.setWindowTitle('GITM OS 3.3 · Desktop')
+  self.setWindowTitle('GITM OS 3.4.0 · Desktop')
   self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|Qt.WindowStaysOnBottomHint)
   self.resize(1440,900);self.processes={};self.dialogs=[];self.tiles=[];self.app_buttons={};self.control_radios={};self.sync_phase=0
-  self.appearance={'mode':'dark','performance':False,'reduce_motion':False,'icon_size':64}
+  self.appearance={'mode':'dark','performance':False,'reduce_motion':False,'icon_size':64,'boot_video':True}
   try:
    saved=json.loads((STATE/'appearance.json').read_text())
    if saved.get('mode') in ('dark','light'):self.appearance['mode']=saved['mode']
    for key in ('performance','reduce_motion'):self.appearance[key]=saved.get(key) is True
+   self.appearance['boot_video']=saved.get('boot_video',True) is not False
    size=saved.get('icon_size',64)
    if type(size) is int and 48<=size<=68:self.appearance['icon_size']=size
   except (OSError,ValueError,AttributeError):pass
   QIcon.setThemeSearchPaths(QIcon.themeSearchPaths()+['/usr/share/icons'])
   QIcon.setThemeName('Papirus' if self.appearance['mode']=='light' else 'Papirus-Dark')
-  self.wallpaper=QPixmap(str(ROOT/'assets/desktop/wallpaper.png'));self.background=QPixmap();self.blurred=QPixmap()
+  self.personal_wallpaper=None;self.wallpaper=QPixmap(str(branding.default_wallpaper(self.appearance['mode']) or ROOT/'assets/desktop/wallpaper.png'));self.background=QPixmap();self.blurred=QPixmap()
   try:
-   personal=QPixmap((STATE/'wallpaper-path.txt').read_text().strip())
-   if not personal.isNull():self.wallpaper=personal
+   personal_path=(STATE/'wallpaper-path.txt').read_text().strip();personal=QPixmap(personal_path)
+   if not personal.isNull():self.wallpaper=personal;self.personal_wallpaper=personal_path
   except OSError:pass
   for f in (ROOT/'assets').glob('Tajawal-*.ttf'):QFontDatabase.addApplicationFont(str(f))
   self.setWindowIcon(self.icon('settings'))
   QApplication.setDesktopFileName('gitm-desktop')
   self.setLayoutDirection(Qt.LeftToRight);self.setStyleSheet(STYLE)
   outer=QVBoxLayout(self);outer.setSizeConstraint(QLayout.SetNoConstraint);outer.setContentsMargins(28,18,28,16);outer.setSpacing(14)
-  top=QHBoxLayout();logo=QLabel('G');logo.setStyleSheet('color:#159bff;font-size:33px;font-family:DejaVu Sans;font-weight:900');top.addWidget(logo)
+  top=QHBoxLayout();logo=QLabel();logo.setPixmap(branding.symbol_pixmap(40));logo.setFixedSize(44,44);top.addWidget(logo)
   brand=QLabel('GITM OS');brand.setStyleSheet('font-size:21px;font-family:DejaVu Sans');top.addWidget(brand);top.addSpacing(18)
   for title,fn in [('الرئيسية',lambda:self.search.clear()),('التطبيقات',lambda:self.search.setFocus()),('النظام',self.settings)]:
    b=QPushButton(title);b.setObjectName('nav');b.clicked.connect(fn);top.addWidget(b)
@@ -124,7 +126,7 @@ class Desktop(QWidget):
   left=QVBoxLayout();left.setSpacing(12);content.addLayout(left,1)
   welcome=QHBoxLayout();words=QVBoxLayout();heading=QLabel('مرحبًا بك.');heading.setObjectName('title');words.addWidget(heading)
   subtitle=QLabel('كل أدواتك، في مساحة عمل واحدة.');subtitle.setObjectName('muted');words.addWidget(subtitle);welcome.addLayout(words,1)
-  title=QLabel('GITM <span style="color:#248dff">OS</span><br><span style="font-size:12px;letter-spacing:3px;color:#becce1">YOUR WORKSPACE. YOUR WAY.</span>');title.setStyleSheet('font-size:32px;font-family:DejaVu Sans;font-weight:bold');title.setAlignment(Qt.AlignRight|Qt.AlignVCenter);welcome.addWidget(title);left.addLayout(welcome)
+  title=QLabel('GITM <span style="color:#ed872c">OS</span><br><span style="font-size:12px;letter-spacing:3px;color:#becce1">YOUR WORKSPACE. YOUR WAY.</span>');title.setStyleSheet('font-size:32px;font-family:DejaVu Sans;font-weight:bold');title.setAlignment(Qt.AlignRight|Qt.AlignVCenter);welcome.addWidget(title);left.addLayout(welcome)
   self.search=QLineEdit();self.search.setPlaceholderText('ابحث عن تطبيق، إعدادات أو أدوات…');self.search.textChanged.connect(self.filter_apps);self.search.setLayoutDirection(Qt.RightToLeft);left.addWidget(self.search)
   container=QWidget();grid=QGridLayout(container);grid.setContentsMargins(0,0,0,0);grid.setSpacing(10);self.app_grid=grid;self.app_container=container
   order=['autodiag','assistant','documents','photos','media','settings','files','browser','updates','calculator','install']
@@ -132,7 +134,7 @@ class Desktop(QWidget):
    _,name,desc,icon,command=next(a for a in APPS if a[0]==key)
    card=QWidget();v=QVBoxLayout(card);v.setContentsMargins(2,8,2,8);v.setSpacing(7);v.setAlignment(Qt.AlignCenter)
    b=QPushButton();b.setObjectName('appIcon');b.setIcon(self.icon(icon));b.setIconSize(QSize(64,64));b.setFixedSize(72,72);b.setToolTip(name);b.setAccessibleName(name);self.app_buttons[key]=b;b.clicked.connect(lambda checked=False,k=key:self.activate(k));v.addWidget(b,0,Qt.AlignHCenter)
-   label=QLabel(name);label.setAlignment(Qt.AlignCenter);label.setWordWrap(True);label.setStyleSheet('font-weight:bold;font-size:16px');v.addWidget(label)
+   label=QLabel(name);label.setObjectName('appLabel');label.setAlignment(Qt.AlignCenter);label.setWordWrap(True);label.setStyleSheet('font-weight:bold;font-size:16px');v.addWidget(label)
    grid.addWidget(card,i//5,i%5);self.tiles.append((name+' '+desc+' '+key,card))
   left.addWidget(container,1)
   from desktop_popups import Popups
@@ -178,6 +180,12 @@ class Desktop(QWidget):
   css=css.replace('rgba(42,74,110,225)','rgba(211,227,248,245)')
   return css
  def apply_appearance(self):
+  if not self.personal_wallpaper:
+   default=branding.default_wallpaper(self.appearance['mode'])
+   if default:
+    self.wallpaper=QPixmap(str(default))
+    if os.environ.get('GITM_NATIVE_PLASMA')=='1' and getattr(self,'_applied_default',None)!=str(default):
+     self._applied_default=str(default);__import__('branding_controls').sync_native(self,default)
   mode=self.appearance['mode']
   QIcon.setThemeName('Papirus' if mode=='light' else 'Papirus-Dark')
   if getattr(self,'_native_mode',None)!=mode and shutil.which('plasma-apply-colorscheme'):
@@ -195,6 +203,7 @@ class Desktop(QWidget):
   self.update_background();self.update()
   for panel in self.findChildren(GlassPanel):panel.update()
   for ring in self.stat_rows.values():ring.update()
+  for label in self.findChildren(QLabel,'appLabel'):label.setStyleSheet('font-weight:bold;font-size:16px;padding:5px 8px;border-radius:8px;background:'+('rgba(248,250,253,225)' if mode=='light' else 'rgba(4,15,27,200)')+';color:'+('#163249' if mode=='light' else '#f0f5ff'))
   self.refresh_radios()
   for key in ('search','chevron'):self.status_buttons[key].setIcon(self.icon(key))
   self.power_button.setIcon(self.icon('power'))
@@ -233,6 +242,7 @@ class Desktop(QWidget):
   line=QFrame();line.setFixedHeight(1);line.setStyleSheet('background:rgba(162,184,211,55)');return line
  def choose_appearance(self):
   self.launch('settings',['systemsettings','kcm_colors'])
+ def choose_wallpapers(self):return __import__('branding_controls').show(self)
  def toggle_airplane(self):
   box=QMessageBox(self);box.setWindowTitle('وضع الطيران');box.setText('اختر حالة الاتصالات اللاسلكية.');box.setStandardButtons(QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
   for role,label in [(QMessageBox.Yes,'تعطيل الاتصالات'),(QMessageBox.No,'تفعيل الاتصالات'),(QMessageBox.Cancel,'إلغاء')]:box.button(role).setText(label);box.button(role).setIcon(QIcon())
@@ -244,6 +254,7 @@ class Desktop(QWidget):
   try:__import__('system_settings').set_brightness(self.brightness.value())
   except Exception as e:QMessageBox.warning(self,'GITM',str(e))
  def icon(self,name):
+  if name=='brand':return branding.brand_icon()
   if name=='browser' and QIcon.hasThemeIcon('firefox'):return QIcon.fromTheme('firefox')
   p=ROOT/'assets/desktop'/f'{name}.svg'
   if not p.exists():p=ROOT/'assets/tools'/f'{name}.svg'
@@ -280,40 +291,40 @@ class Desktop(QWidget):
   else:p.fillRect(self.rect(),QColor('#081a30'))
   if self.appearance['mode']=='light':
    surface=QLinearGradient(0,max(0,self.height()-72),0,self.height());surface.setColorAt(0,QColor(245,248,253,190));surface.setColorAt(1,QColor(245,248,253,0));p.fillRect(self.rect(),surface)
-  else:p.fillRect(self.rect(),QColor(3,10,22,65))
+  else:p.fillRect(self.rect(),QColor(3,10,22,110))
  def filter_apps(self,text):
   for label,button in self.tiles: button.setVisible(text.casefold() in label.casefold())
  def refresh(self):
   try:
    import configparser
    from urllib.parse import urlparse,unquote
-   wallpaper_config=configparser.ConfigParser(strict=False);wallpaper_config.read(Path.home()/'.config/plasma-org.kde.plasma.desktop-appletsrc')
+   wallpaper_config=configparser.ConfigParser(strict=False,interpolation=None);wallpaper_config.read(Path.home()/'.config/plasma-org.kde.plasma.desktop-appletsrc')
    for section in wallpaper_config.sections():
     if 'Wallpaper][org.kde.image][General' not in section:continue
     image=wallpaper_config.get(section,'Image',fallback='')
     parsed=urlparse(image)
     if parsed.scheme not in ('','file'):continue
     path=Path(unquote(parsed.path))
-    if str(path).startswith('/usr/share/wallpapers/GITM/'):continue
+    if str(path).startswith('/usr/share/wallpapers/GITM/') or path.is_relative_to(branding.ROOT):continue
     if path.is_dir():
      candidates=list((path/'contents/images').glob('*'))
      path=next((x for x in candidates if x.is_file()),path)
     if not path.is_file() or getattr(self,'_native_wallpaper_path',None)==str(path):continue
     pixmap=QPixmap(str(path))
     if pixmap.isNull():continue
-    self._native_wallpaper_path=str(path);self.wallpaper=pixmap
+    self._native_wallpaper_path=str(path);self.wallpaper=pixmap;self.personal_wallpaper=str(path)
     STATE.mkdir(parents=True,exist_ok=True);(STATE/'wallpaper-path.txt').write_text(str(path))
     self.update_background();self.update();break
-  except (OSError,ValueError):pass
+  except (OSError,ValueError,configparser.Error):pass
   try:
    import configparser
-   config=configparser.ConfigParser(strict=False);config.read(Path.home()/'.config/kdeglobals')
+   config=configparser.ConfigParser(strict=False,interpolation=None);config.read(Path.home()/'.config/kdeglobals')
    background=config.get('Colors:Window','BackgroundNormal',fallback='').split(',')
    if len(background)==3:
     mode='dark' if sum(int(x) for x in background)/3<128 else 'light'
     if mode!=self.appearance['mode']:
      self.appearance['mode']=mode;self._native_mode=mode;self.apply_appearance()
-  except (ValueError,OSError):pass
+  except (ValueError,OSError,configparser.Error):pass
   self.clock.setText(datetime.datetime.now().strftime('%a %d %b  %H:%M'))
   if hasattr(self,'radios'):self.refresh_radios()
   try:
@@ -418,32 +429,31 @@ class Desktop(QWidget):
 
 def main():
  app=QApplication(sys.argv);app.setApplicationName('GITM OS');app.setLayoutDirection(Qt.RightToLeft)
- w=Desktop()
- if '--smoke' in sys.argv:
-  w.show()
-  def capture():
-   dest=os.environ.get('GITM_SCREENSHOT','gitm-desktop.png')
-   app.exit(0 if w.grab().save(dest) else 2)
-  QTimer.singleShot(500,capture)
- else:
+ w=Desktop();app.setWindowIcon(branding.brand_icon())
+ def visible_marker():
+  if w.isVisible():
+   sp=__import__('subprocess');sp.run(['logger','-t','gitm','GITM_DESKTOP_VISIBLE'],check=False)
+   if os.environ.get('GITM_NATIVE_PLASMA')=='1':
+    version=sp.run(['plasmashell','--version'],capture_output=True,text=True).stdout.strip()
+    if version.startswith('plasmashell 6.') and sp.run(['pgrep','-x','kwin_x11'],capture_output=True).returncode==0:sp.run(['logger','-t','gitm','GITM_PLASMA_SESSION|'+version],check=False)
+ def reveal():
   if os.environ.get('GITM_NATIVE_PLASMA')=='1':
-   screen=app.primaryScreen();w.setGeometry(screen.availableGeometry());w.show()
-   screen.availableGeometryChanged.connect(w.setGeometry)
-   # Keep the workspace above Plasma's wallpaper while omitting it from the dock.
-   def hide_workspace_task():
-    QProcess.startDetached('wmctrl',['-ir',hex(int(w.winId())),'-b','add,skip_taskbar,skip_pager'])
-   QTimer.singleShot(1000,hide_workspace_task)
+   screen=app.primaryScreen();w.setGeometry(screen.availableGeometry());w.show();screen.availableGeometryChanged.connect(w.setGeometry)
+   QTimer.singleShot(1000,lambda:QProcess.startDetached('wmctrl',['-ir',hex(int(w.winId())),'-b','add,skip_taskbar,skip_pager']))
+   __import__('branding_controls').sync_native(w,w.personal_wallpaper or branding.default_wallpaper(w.appearance['mode']))
   else:w.showFullScreen()
   if 'gitm.gallery=1' in Path('/proc/cmdline').read_text():
    import gallery_runner
    QTimer.singleShot(6000,lambda:gallery_runner.start(w))
-  def visible_marker():
-   if w.isVisible():
-    __import__('subprocess').run(['logger','-t','gitm','GITM_DESKTOP_VISIBLE'],check=False)
-    if os.environ.get('GITM_NATIVE_PLASMA')=='1':
-     sp=__import__('subprocess');version=sp.run(['plasmashell','--version'],capture_output=True,text=True).stdout.strip()
-     if version.startswith('plasmashell 6.') and sp.run(['pgrep','-x','kwin_x11'],capture_output=True).returncode==0:
-      sp.run(['logger','-t','gitm','GITM_PLASMA_SESSION|'+version],check=False)
   QTimer.singleShot(4000,visible_marker)
+ if '--smoke' in sys.argv:
+  w.show()
+  QTimer.singleShot(500,lambda:app.exit(0 if w.grab().save(os.environ.get('GITM_SCREENSHOT','gitm-desktop.png')) else 2))
+ elif branding.should_play_intro(sys.argv,w.appearance):
+  try:
+   from boot_media import Intro
+   w.intro=Intro(reveal,w.appearance['mode']);w.intro.start()
+  except ImportError:reveal()
+ else:reveal()
  return app.exec()
 if __name__=='__main__':sys.exit(main())

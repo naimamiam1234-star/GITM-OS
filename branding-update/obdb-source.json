@@ -1,0 +1,72 @@
+{
+  "sha256": "947ac13d1738b1acf122c25b295728664263781d668e442a0ca642b8893847b4",
+  "bytes": 85984628,
+  "parts": [
+    {
+      "file": "obdb.part001",
+      "sha256": "ccea25a7bd595579bcbcb7386e2437f9b788a7eb6204e49d1cd20af3b8eddc7d",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791905349/gitm/resources-340/obdb.part001"
+    },
+    {
+      "file": "obdb.part002",
+      "sha256": "c2174abdacc7b0ccf7fef6817a51430a2ab2efca6c0049ca282fc64babe322fb",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791905642/gitm/resources-340/obdb.part002"
+    },
+    {
+      "file": "obdb.part003",
+      "sha256": "a70e51707849f87f0034704cdf9162d6ffb957f5b1419561f2ea6d3a10a1aec8",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791905659/gitm/resources-340/obdb.part003"
+    },
+    {
+      "file": "obdb.part004",
+      "sha256": "f1c0b8480f8f1782893d9e5566bb76a76c27a41010d3fe48d2350d2db5d2a54a",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791905684/gitm/resources-340/obdb.part004"
+    },
+    {
+      "file": "obdb.part005",
+      "sha256": "bb086f411c7b5df6e65336204ddb80b367e0ede56283ba10f089ff1fad57dca3",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791905900/gitm/resources-340/obdb.part005"
+    },
+    {
+      "file": "obdb.part006",
+      "sha256": "03c52350417cc8ac76ef244e4074cafddde96bb9f1ad6dc56f6abebe106e2c29",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791905920/gitm/resources-340/obdb.part006"
+    },
+    {
+      "file": "obdb.part007",
+      "sha256": "5fb6e0e0cdb61dc1f1499c62d48c15e312b4784369c69183ea6ace8034a70510",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791905963/gitm/resources-340/obdb.part007"
+    },
+    {
+      "file": "obdb.part008",
+      "sha256": "fe7ee5c3976a4eec1ca304723f3c3a5057b892d8a0f31ef56c35a1e8d3b3ee9f",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791906251/gitm/resources-340/obdb.part008"
+    },
+    {
+      "file": "obdb.part009",
+      "sha256": "af8a6c6e76ae1b9ce7674cb6c0c9a08fc121537ae2620b1b603292e74ffafc34",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791906271/gitm/resources-340/obdb.part009"
+    },
+    {
+      "file": "obdb.part010",
+      "sha256": "da9470e65e025c16e609de57fdb992497421e6fd491bc653ecd2515fa550771c",
+      "bytes": 8388608,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791906292/gitm/resources-340/obdb.part010"
+    },
+    {
+      "file": "obdb.part011",
+      "sha256": "b6b05f4a07f2d3c42d979c7bb50b7b8fa03111cba8be149f856cc60f4db61736",
+      "bytes": 2098548,
+      "url": "https://res.cloudinary.com/b9fcbcfz/raw/upload/v1791906484/gitm/resources-340/obdb.part011"
+    }
+  ]
+}

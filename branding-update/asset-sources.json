@@ -1,0 +1,156 @@
+[
+  {
+    "id": "1J9-HiOB2-veINHweW5y1z484I8fx3FVW",
+    "path": "symbol.png",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904295/gitm/branding-340/asset-1J9-HiOB2-veINHweW5y1z484I8fx3FVW.png",
+    "bytes": 16104,
+    "sha256": "119aa13652e2e647f3e5e3e181e60d85245a211d0995744de3db4f29cac261b4"
+  },
+  {
+    "id": "1CQCaeVpmSxlVIg4vMSPN-9osKTXvMarw",
+    "path": "wordmark.png",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904300/gitm/branding-340/asset-1CQCaeVpmSxlVIg4vMSPN-9osKTXvMarw.png",
+    "bytes": 18803,
+    "sha256": "f1f0d9d50000ecee4e5c7ed0c65fa935e7cc102eda5e0b6f9591219402dc09fd"
+  },
+  {
+    "id": "1WKi6nYPO-UGhoO0RFoxm7R9k_rB3Ya1q",
+    "path": "media/dark.mp4",
+    "url": "https://res.cloudinary.com/b9fcbcfz/video/upload/v1791904311/gitm/branding-340/asset-1WKi6nYPO-UGhoO0RFoxm7R9k_rB3Ya1q.mp4",
+    "bytes": 3793085,
+    "sha256": "dd5bc4e2c657aeff832f3bcc673e02e5a02476574931b1e2d891051c06169451"
+  },
+  {
+    "id": "1gV6iRngu6go9SogYN3j55mFROj6t4aoH",
+    "path": "media/light.mp4",
+    "url": "https://res.cloudinary.com/b9fcbcfz/video/upload/v1791904317/gitm/branding-340/asset-1gV6iRngu6go9SogYN3j55mFROj6t4aoH.mp4",
+    "bytes": 2050893,
+    "sha256": "9d76131d371a2e503e6d53fa17d30a959fbe579e554f8927f17e08753a07d519"
+  },
+  {
+    "id": "1YrpLUQV4TmzNQy4qxjSELfscfK1mxB74",
+    "path": "wallpapers/light-01.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904325/gitm/branding-340/asset-1YrpLUQV4TmzNQy4qxjSELfscfK1mxB74.jpg",
+    "bytes": 112480,
+    "sha256": "c2d9386590bf2998e9c80f9d1f6f757c387df46e0a9ef2e5079f4e8467c02178"
+  },
+  {
+    "id": "1jXVu4mUGc3vgijYsBYpX9KxE4lIEw-he",
+    "path": "wallpapers/light-02.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904332/gitm/branding-340/asset-1jXVu4mUGc3vgijYsBYpX9KxE4lIEw-he.jpg",
+    "bytes": 151377,
+    "sha256": "2c02d307e4f703304785258f90f8661e494727b7686bd034df438507c587ff97"
+  },
+  {
+    "id": "1rqJzywu8YxVy0ZCsKy1zUP8sNv2N0Z60",
+    "path": "wallpapers/light-03.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904514/gitm/branding-340/asset-1rqJzywu8YxVy0ZCsKy1zUP8sNv2N0Z60.jpg",
+    "bytes": 169974,
+    "sha256": "6f1f8cd2a67b5a7cfd526e824ab9807d8d7266bd8a7d73ef9111dcb977fe712c"
+  },
+  {
+    "id": "1HLglZjcmgH2dq2r9xU2OBj1Ncicy1Fre",
+    "path": "wallpapers/light-04.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904522/gitm/branding-340/asset-1HLglZjcmgH2dq2r9xU2OBj1Ncicy1Fre.jpg",
+    "bytes": 179572,
+    "sha256": "35e8884b9c074d3cd46bc74f3ce5d8ec6b15fe1c999dd7745eb41837bc8a6ed5"
+  },
+  {
+    "id": "1kOMoB_ItPa6CIkksAgAMKotdqO7hRxWa",
+    "path": "wallpapers/light-05.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904528/gitm/branding-340/asset-1kOMoB_ItPa6CIkksAgAMKotdqO7hRxWa.jpg",
+    "bytes": 124521,
+    "sha256": "82457eabc667d281de681aec35c31fe2476c5f2cf31b36a0b5cd2059f143765f"
+  },
+  {
+    "id": "13NioWgdHk_zGLy1yRx9nL4lZZ1iEvWfe",
+    "path": "wallpapers/light-06.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904533/gitm/branding-340/asset-13NioWgdHk_zGLy1yRx9nL4lZZ1iEvWfe.jpg",
+    "bytes": 161382,
+    "sha256": "f1ab85632b74f03bd4c679a261e946cac81a8e37c920726c09f879a7c6b30d23"
+  },
+  {
+    "id": "15TgbJAu-hyIdBThxw4y56VizJZKU3SxX",
+    "path": "wallpapers/light-07.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904540/gitm/branding-340/asset-15TgbJAu-hyIdBThxw4y56VizJZKU3SxX.jpg",
+    "bytes": 112198,
+    "sha256": "e974fa7a0ef0633f128f34ebfa050bd553e159a705a13e77e4ad8e1a5613d41b"
+  },
+  {
+    "id": "1rX8YhuA6zwMK7txUWEjHXf-GhFKrrckK",
+    "path": "wallpapers/light-08.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904547/gitm/branding-340/asset-1rX8YhuA6zwMK7txUWEjHXf-GhFKrrckK.jpg",
+    "bytes": 165336,
+    "sha256": "fa988e07ecb12c2c33d4efc3d1508474f984305b2c60ab203eb1da7fa4b3f202"
+  },
+  {
+    "id": "1qsWChK0swm9UPNjhXw6zZ_VLuYFjjRJx",
+    "path": "wallpapers/dark-01.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904692/gitm/branding-340/asset-1qsWChK0swm9UPNjhXw6zZ_VLuYFjjRJx.jpg",
+    "bytes": 136874,
+    "sha256": "8f0d761c32e1008eebb114809980f8790712aa5a1252c1d88392178bdc38eab5"
+  },
+  {
+    "id": "1sR-IapZiA-JBq7e1zeJJFbjIFn1XlZSC",
+    "path": "wallpapers/dark-02.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904698/gitm/branding-340/asset-1sR-IapZiA-JBq7e1zeJJFbjIFn1XlZSC.jpg",
+    "bytes": 163660,
+    "sha256": "efc9774f7dc673269b43f09555ef29b976a3d0904a79a8856cc27680d752aae2"
+  },
+  {
+    "id": "1OzDZp-OxWi1HAT51TVsFslbiAfILOjvk",
+    "path": "wallpapers/dark-03.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904703/gitm/branding-340/asset-1OzDZp-OxWi1HAT51TVsFslbiAfILOjvk.jpg",
+    "bytes": 190732,
+    "sha256": "6bc9ad3883740d18985e6642023934bae04e332dd4825559b1207da1e078db06"
+  },
+  {
+    "id": "1jVuQQlkL5-IEr1nJOrFgSRKtdAAywLkj",
+    "path": "wallpapers/dark-04.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904708/gitm/branding-340/asset-1jVuQQlkL5-IEr1nJOrFgSRKtdAAywLkj.jpg",
+    "bytes": 174992,
+    "sha256": "796e4595ea21e5510c772d962810954fa6d913fe044ff2922bb58c1a04d97c5f"
+  },
+  {
+    "id": "1hnlcCs5vDXhdqsdG-vdaSCYCp0YipDge",
+    "path": "wallpapers/dark-05.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904715/gitm/branding-340/asset-1hnlcCs5vDXhdqsdG-vdaSCYCp0YipDge.jpg",
+    "bytes": 135671,
+    "sha256": "d89810fd23150ed978fe441648535ea282bdc7ad0e7444e80258d084db46b4c4"
+  },
+  {
+    "id": "1P2pZ0DzOUH3Mf8NRV-g6sAFkVTplFA1i",
+    "path": "wallpapers/dark-06.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904723/gitm/branding-340/asset-1P2pZ0DzOUH3Mf8NRV-g6sAFkVTplFA1i.jpg",
+    "bytes": 192036,
+    "sha256": "0bf9f61e977e26e9f7a537f0d75d064d30ed2db756a0e293ceec1895b1882ef0"
+  },
+  {
+    "id": "14Fi_pGuYyTKMLK9D-5hGHNIJLbJH5qjZ",
+    "path": "wallpapers/dark-07.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904816/gitm/branding-340/asset-14Fi_pGuYyTKMLK9D-5hGHNIJLbJH5qjZ.jpg",
+    "bytes": 141000,
+    "sha256": "b63fbf213ff8e1f7ebb9815702114ab91fdd191ab9c2da598dc78bddbffdf125"
+  },
+  {
+    "id": "1NaH7ZsD9yfs8rD_9YPsMA-uSFFlNHWef",
+    "path": "wallpapers/dark-08.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904822/gitm/branding-340/asset-1NaH7ZsD9yfs8rD_9YPsMA-uSFFlNHWef.jpg",
+    "bytes": 180523,
+    "sha256": "da26411a4bb826f05c3b6880d37561a5a41bd13cebefa09d1c202cd331a3835a"
+  },
+  {
+    "id": "1i9RanPfAUbw50VfQJGczaQ-y7kmA6gq0",
+    "path": "wallpapers/dark-09.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791904828/gitm/branding-340/asset-1i9RanPfAUbw50VfQJGczaQ-y7kmA6gq0.jpg",
+    "bytes": 168267,
+    "sha256": "a5a86580135f3df0e9e3586d548882d023e74bce8c7eb7973f8d35efb6609ed2"
+  },
+  {
+    "id": "1tfp_vaaRRLCJ4pKFnxaUA99Ur90Slgon",
+    "path": "wallpapers/dark-10.jpg",
+    "url": "https://res.cloudinary.com/b9fcbcfz/image/upload/v1791905072/gitm/branding-340/asset-1tfp_vaaRRLCJ4pKFnxaUA99Ur90Slgon.jpg",
+    "bytes": 3620082,
+    "sha256": "66b416e5a74fbef156a411e8cfafdb1f4cd923078013461e4155a093c772d34b"
+  }
+]
