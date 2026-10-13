@@ -82,6 +82,8 @@ def install(target):
     shutil.copy2(source/'gitm_desktop.py',target/'gitm_desktop.py')
     shutil.copy2(source/'desktop_popups.py',target/'desktop_popups.py')
     shutil.copytree(source/'assets/branding',target/'assets/branding',dirs_exist_ok=True)
+    legacy=target/'assets/desktop/wallpaper.png'
+    legacy.unlink(missing_ok=True);legacy.symlink_to('../branding/wallpapers/dark-09.jpg')
     shutil.copytree(source/'resources',target/'resources',dirs_exist_ok=True)
     (target/'assets/tools').mkdir(parents=True,exist_ok=True)
     shutil.copy2(source/'assets/tools/ai.svg',target/'assets/tools/ai.svg')

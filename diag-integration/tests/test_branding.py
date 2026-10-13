@@ -22,3 +22,9 @@ class BrandingTests(unittest.TestCase):
    root=Path(d)/'assets/branding'
    self.assertTrue(branding.is_legacy_wallpaper(Path(d)/'assets/desktop/wallpaper.png',root))
    self.assertFalse(branding.is_legacy_wallpaper(Path(d)/'my-wallpaper.png',root))
+
+ def test_current_wallpaper_choice_is_not_legacy_when_linked(self):
+  import branding
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d)/'assets/branding';root.mkdir(parents=True);current=root/'dark.jpg';current.write_bytes(b'photo');old=root.parent/'desktop/wallpaper.png';old.parent.mkdir();old.symlink_to(current)
+   self.assertTrue(branding.is_legacy_wallpaper(old,root));self.assertFalse(branding.is_legacy_wallpaper(current,root))

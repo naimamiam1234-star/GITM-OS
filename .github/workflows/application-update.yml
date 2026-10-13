@@ -24,20 +24,26 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: GITM-AutoDiag-3.4.0-debian-candidate
-          run-id: '38433095167'
+          run-id: '38436265822'
           github-token: ${{ github.token }}
           path: input
       - name: Verify public resource service
         run: |
           curl --fail --retry 6 --retry-delay 10 https://gitm-branding-preview.naimamiam1234.workers.dev/manifest.json -o /tmp/portal.json
           python3 -c "import json; j=json.load(open('/tmp/portal.json')); assert j['version']=='3.4.0' and len(j['assets'])==22"
-      - name: Fetch pinned identity and resource archives
-        run: python3 branding-update/fetch-assets.py
       - name: Build application-only candidate from SHA-pinned existing package
         run: |
-          source=$(find input -type f -name 'gitm-autodiag_3.4.0-1_all.deb' -print -quit)
+          source=$(find input -type f -name 'gitm-autodiag_3.4.0-2_all.deb' -print -quit)
           python3 application-update/build.py "$source"
-          python3 branding-update/build-resources.py dist/app-update
+          python3 - <<'PY'
+          import pathlib,hashlib,shutil
+          expected={'gitm-sdk-sources_2026.10.13-1_all.deb':'9c6c2b171bb047868ac704eba5eaa9f734631b5a8962df71be4084a9062d7959','gitm-obdb-data_2026.10.13-1_all.deb':'e9175c5db69cfaac0899e7d7a1a638a139c826d61be79e4e50092f801e8ef49f'}
+          for name,digest in expected.items():
+              source=pathlib.Path('input')/name
+              assert hashlib.sha256(source.read_bytes()).hexdigest()==digest
+              shutil.copy2(source,pathlib.Path('dist/app-update')/name)
+          shutil.copy2('input/resource-manifest.json','dist/app-update/resource-manifest.json')
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: GITM-AutoDiag-3.4.0-debian-candidate
@@ -70,7 +76,7 @@ jobs:
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           test -n "$source"
-          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.4.0-2_all.deb dist/app-update/gitm-sdk-sources_2026.10.13-1_all.deb dist/app-update/gitm-obdb-data_2026.10.13-1_all.deb
+          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.4.0-3_all.deb dist/app-update/gitm-sdk-sources_2026.10.13-1_all.deb dist/app-update/gitm-obdb-data_2026.10.13-1_all.deb
       - name: Install to fresh 40GiB disk and boot without ISO
         env:
           BOOT_MODE: ${{ matrix.boot_mode }}

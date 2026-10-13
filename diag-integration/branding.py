@@ -1,5 +1,5 @@
 """Local brand assets and explicit wallpaper preferences; no network or telemetry."""
-import json
+import json,os
 from pathlib import Path
 ROOT=Path(__file__).parent/'assets/branding'
 def manifest(root=None):
@@ -28,4 +28,4 @@ def brand_icon():
  return QIcon(symbol_pixmap(128))
 
 def is_legacy_wallpaper(path,root=None):
- return Path(path).resolve()==((root or ROOT).parent/"desktop/wallpaper.png").resolve()
+ return os.path.abspath(path)==os.path.abspath((root or ROOT).parent/"desktop/wallpaper.png")
