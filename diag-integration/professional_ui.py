@@ -4,7 +4,7 @@ from pathlib import Path
 from shiboken6 import isValid
 from PySide6.QtCore import Qt,QTimer,QSize,QEvent,QObject
 from PySide6.QtGui import QShortcut,QKeySequence,QAction,QPalette,QColor
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,QLineEdit,QComboBox,QMenu,QStackedWidget,QSizePolicy,QScrollArea,QTabWidget
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QLabel,QPushButton,QLineEdit,QComboBox,QMenu,QStackedWidget,QSizePolicy,QScrollArea,QTabWidget,QListWidget,QListWidgetItem
 import transport,store
 from i18n import language,change_language
 from professional_components import triple as t,InfoCard,action_button,icon,styles,palette,header_icon
@@ -35,18 +35,34 @@ class CloseGuard(QObject):
   if event.type()==QEvent.KeyPress and event.key()==Qt.Key_Escape and self.w.isFullScreen():self.w.showMaximized();return True
   return False
 
+class NavigationRail(QWidget):
+ def __init__(self,parent=None):
+  super().__init__(parent);self.expanded=False;self.pinned=False;self.items=[];self.setFixedWidth(60)
+ def register(self,button):
+  self.items.append((button,button.text()));button.setToolTip(button.text());button.setAccessibleName(button.text());button.setText('')
+ def reveal(self,expanded):
+  self.expanded=bool(expanded);self.setFixedWidth(192 if self.expanded else 60)
+  for button,label in self.items:button.setText(label if self.expanded else '')
+ def toggle(self):
+  self.pinned=not self.pinned;self.reveal(self.pinned)
+ def enterEvent(self,event):
+  self.reveal(True);super().enterEvent(event)
+ def leaveEvent(self,event):
+  if not self.pinned and not any(b.menu() and b.menu().isVisible() for b,_ in self.items):self.reveal(False)
+  super().leaveEvent(event)
+
 class Shell:
  def __init__(self,w):
   self.w=w;self.cache={};self.names={};self.current='home';self.pending=None;self.group=None;self.notifications=[];self.last_report=None;self.dark=False;self.recent_check=0
   import system_settings
   self.theme=system_settings.preferences().get('theme','auto');self.font=system_settings.preferences().get('font_size',16)
-  w.menuBar().clear();w.menuBar().hide();w.vehicle=dict(w.vehicle or store.cache('vehicle_selection') or {});old=w.centralWidget();w.takeCentralWidget();old.deleteLater();w.setWindowFlags(Qt.Window);w.setWindowTitle('GITM AutoDiag · Professional Interface');w.setMinimumSize(780,620)
+  w.menuBar().clear();w.menuBar().hide();w.vehicle=dict(w.vehicle or store.cache('vehicle_selection') or {});old=w.centralWidget();w.takeCentralWidget();old.deleteLater();w.setWindowFlags(Qt.Window);w.setWindowTitle('GearDiag');w.setMinimumSize(780,620)
   root=QWidget();w.setCentralWidget(root);outer=QVBoxLayout(root);outer.setContentsMargins(0,0,0,0);outer.setSpacing(0);w.layout=outer
   header=QWidget();header.setObjectName('header');hl=QHBoxLayout(header);hl.setContentsMargins(12,8,12,8)
-  toggle=action_button('☰');toggle.setAccessibleName(t('القائمة الجانبية','Navigation','Navigation'));toggle.setMaximumWidth(44);toggle.clicked.connect(lambda:self.sidebar.setVisible(not self.sidebar.isVisible()));hl.addWidget(toggle)
-  brand=QLabel('GITM AutoDiag');brand.setObjectName('brand');hl.addWidget(brand);self.title=QLabel(t('الرئيسية','Accueil','Home'));self.title.setObjectName('pageTitle');self.title.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Preferred);hl.addWidget(self.title,1)
+  toggle=action_button('☰');toggle.setAccessibleName(t('القائمة الجانبية','Navigation','Navigation'));toggle.setMaximumWidth(44);toggle.clicked.connect(lambda:self.sidebar.toggle());hl.addWidget(toggle)
+  brand=QLabel('GearDiag');brand.setObjectName('brand');hl.addWidget(brand);self.title=QLabel(t('الرئيسية','Accueil','Home'));self.title.setObjectName('pageTitle');self.title.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Preferred);hl.addWidget(self.title,1)
   import branding
-  brand_image=QLabel();brand_image.setPixmap(branding.symbol_pixmap(32));brand_image.setFixedSize(36,36);hl.insertWidget(1,brand_image);w.setWindowIcon(branding.brand_icon())
+  brand_image=QLabel();brand_image.setPixmap(icon('engine').pixmap(32,32));brand_image.setFixedSize(36,36);hl.insertWidget(1,brand_image);w.setWindowIcon(icon('engine'))
   self.search=QLineEdit();self.search.setPlaceholderText(t('بحث أو P0401','Recherche ou P0401','Search or P0401'));self.search.setMaximumWidth(230);self.search.textChanged.connect(self.filter);self.search.returnPressed.connect(self.search_action);hl.addWidget(self.search)
   self.lang=QComboBox();self.lang.addItems(['العربية','Français','English']);self.lang.setCurrentIndex({'ar':0,'fr':1,'en':2}[language()]);self.lang.currentIndexChanged.connect(self.set_language);hl.addWidget(self.lang)
   self.assistant_button=action_button(t('المساعد','Assistant','Assistant'),role='primary',icon='ai');self.assistant_button.setToolTip(t('المساعد التشخيصي · Ctrl+J','Assistant de session · Ctrl+J','Session assistant · Ctrl+J'));self.assistant_button.setObjectName('sessionAssistantButton');self.assistant_button.clicked.connect(self.toggle_assistant);hl.addWidget(self.assistant_button)
@@ -62,13 +78,13 @@ class Shell:
   self.bell=action_button('●');self.bell.setAccessibleName(t('الإشعارات','Notifications','Notifications'));nm=QMenu(self.bell);nm.aboutToShow.connect(self.alert_menu);self.bell.setMenu(nm);self.bell.setMaximumWidth(42);hl.addWidget(self.bell);outer.addWidget(header)
   self.header_buttons=((toggle,'menu'),(self.appearance,'appearance'),(self.split,'split'),(self.bell,'notifications'))
   for button,kind in self.header_buttons:button.setText('');button.setIcon(header_icon(kind));button.setIconSize(QSize(24,24))
-  middle=QHBoxLayout();middle.setContentsMargins(0,0,0,0);outer.addLayout(middle,1);self.sidebar=QWidget();self.sidebar.setObjectName('sidebar');self.sidebar.setFixedWidth(172);side=QVBoxLayout(self.sidebar);side.setContentsMargins(8,12,8,12);home=action_button(t('الرئيسية','Accueil','Home'),icon='home');home.clicked.connect(self.home);side.addWidget(home)
+  middle=QHBoxLayout();middle.setDirection(QHBoxLayout.RightToLeft if language()=='ar' else QHBoxLayout.LeftToRight);middle.setContentsMargins(0,0,0,0);outer.addLayout(middle,1);self.sidebar=NavigationRail();self.sidebar.setObjectName('sidebar');side=QVBoxLayout(self.sidebar);side.setContentsMargins(8,12,8,12);home=action_button(t('الرئيسية','Accueil','Home'),icon='home');home.clicked.connect(self.home);side.addWidget(home);self.sidebar.register(home)
   for i,group in enumerate(GROUPS):
-   b=action_button(t(*group));menu=QMenu(b)
+   b=action_button(t(*group),icon=('smart','tools','engine','data','history','settings')[i]);menu=QMenu(b)
    for key,labels,ico,method,g in ENTRIES:
     if g==i:menu.addAction(icon(ico),t(*labels),lambda key=key:self.navigate(key))
-   b.setMenu(menu);side.addWidget(b)
-  side.addStretch();full=action_button(t('ملء الشاشة F11','Plein écran F11','Fullscreen F11'));full.clicked.connect(self.fullscreen);side.addWidget(full);middle.addWidget(self.sidebar)
+   b.setMenu(menu);side.addWidget(b);self.sidebar.register(b)
+  side.addStretch();full=action_button(t('ملء الشاشة F11','Plein écran F11','Fullscreen F11'));full.setIcon(header_icon('split'));full.clicked.connect(self.fullscreen);side.addWidget(full);self.sidebar.register(full);middle.addWidget(self.sidebar)
   w.pages=QStackedWidget();middle.addWidget(w.pages,1);w.pages.currentChanged.connect(self.page_changed)
   self.middle=middle;self.assistant_panel=None
   self.build_home();footer=QWidget();footer.setObjectName('footer');fl=QHBoxLayout(footer);fl.setContentsMargins(14,7,14,7);self.context=QLabel();self.context.setWordWrap(True);fl.addWidget(self.context,1);w.status=self.context;outer.addWidget(footer)
@@ -109,13 +125,25 @@ class Shell:
    button=action_button(t(*labels),role='primary' if key=='diagnosis' else 'secondary',icon=ico);button.clicked.connect(lambda checked=False,key=key:self.navigate(key));actions.addWidget(button);self.home_actions[key]=button
   self.vehicle_card.body.addLayout(actions)
   portal=action_button(t('معلومات السيارة','Informations véhicule','Vehicle information'));portal.clicked.connect(w.sources_page);self.vehicle_card.body.addWidget(portal)
-  row=QHBoxLayout();allb=action_button(t('الكل','Tout','All'));allb.clicked.connect(lambda:self.select_group(None));row.addWidget(allb)
-  for i,group in enumerate(GROUPS[:5]):
-   b=action_button(t(*group));b.clicked.connect(lambda checked=False,i=i:self.select_group(i));row.addWidget(b)
-  body.addLayout(row);tiles=QWidget();self.grid=QGridLayout(tiles);self.grid.setContentsMargins(0,0,0,0);self.grid.setSpacing(8);body.addWidget(tiles,1);w.home_cards=[]
-  for i,(key,labels,ico,method,group) in enumerate(ENTRIES):
-   b=QPushButton();b.setObjectName('card');b.setAccessibleName(t(*labels));b.clicked.connect(lambda checked=False,key=key:self.navigate(key));b.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding);b.setMinimumHeight(62);row=QHBoxLayout(b);row.setContentsMargins(8,5,8,5);image=QLabel();image.setPixmap(icon(ico).pixmap(36,36));image.setFixedSize(36,36);image.setAttribute(Qt.WA_TransparentForMouseEvents);row.addWidget(image);label=QLabel(t(*labels));label.setObjectName('cardlabel');label.setWordWrap(True);label.setAttribute(Qt.WA_TransparentForMouseEvents);row.addWidget(label,1);self.grid.addWidget(b,i//4,i%4);w.home_cards.append(b)
-  self.recents=QLabel();self.recents.setObjectName('muted');self.recents.setWordWrap(True);body.addWidget(self.recents);w.pages.addWidget(home);self.names[home]=t('الرئيسية','Accueil','Home');self.cache['home']=home
+  heading=QLabel(t('ابدأ جلسة تشخيص','Démarrer une session','Start a diagnostic session'));heading.setObjectName('heading');body.insertWidget(0,heading)
+  self.home_state=QLabel();self.home_state.setWordWrap(True);body.insertWidget(1,self.home_state)
+  visit=action_button(t('استكمال زيارة / بدء زيارة','Reprendre / démarrer une visite','Resume / start a visit'),icon='history');vm=QMenu(visit);vm.addAction(t('استكمال الزيارة الحالية','Reprendre la visite','Resume current visit'),lambda:self.begin_visit(True));vm.addAction(t('إنشاء زيارة جديدة','Nouvelle visite','Create new visit'),lambda:self.begin_visit(False));visit.setMenu(vm);body.addWidget(visit)
+  records=InfoCard(t('السيارات السابقة','Véhicules précédents','Previous vehicles'));body.addWidget(records)
+  self.vehicle_records=QListWidget();self.vehicle_records.itemActivated.connect(self.restore_vehicle);records.body.addWidget(self.vehicle_records);self.vehicle_records.setMaximumHeight(280)
+  self.no_vehicles=QLabel(t('لا توجد سيارات محفوظة بعد. اختر السيارة ثم ابدأ زيارة لحفظها هنا.','Aucun véhicule enregistré. Choisir un véhicule et démarrer une visite.','No saved vehicles yet. Select a vehicle and start a visit to save it here.'));self.no_vehicles.setWordWrap(True);records.body.addWidget(self.no_vehicles)
+  self.recents=QLabel();self.recents.setObjectName('muted');self.recents.setWordWrap(True);body.addWidget(self.recents);body.addStretch(1)
+  w.home_cards=[];self.grid=QGridLayout();w.pages.addWidget(home);self.names[home]=t('الرئيسية','Accueil','Home');self.cache['home']=home
+ def begin_visit(self,resume=True):
+  import vehicle_history
+  try:
+   self.w.current_visit,self.w.vehicle=vehicle_history.begin_visit(self.w.vehicle,resume=resume)
+   store.cache('vehicle_selection',self.w.vehicle);self.recent_check=0;self.refresh()
+  except ValueError:self.home_state.setText(t('استكمل الماركة والموديل والسنة أولاً','Compléter marque, modèle et année','Complete make, model and year first'))
+ def restore_vehicle(self,item):
+  
+  if transport.LINK.info().get('connected'):
+   self.home_state.setText(t('افصل المحول قبل تغيير ملف السيارة.','Déconnecter avant de changer le véhicule.','Disconnect before changing the vehicle profile.'));return
+  self.w.vehicle=dict(item.data(Qt.UserRole));store.cache('vehicle_selection',self.w.vehicle);self.refresh()
  def page(self,title):
   w=self.w;w.live=False;w.timer.stop();outer=QWidget();container=QVBoxLayout(outer);container.setContentsMargins(0,0,0,0);scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff);container.addWidget(scroll);p=QWidget();scroll.setWidget(p);l=QVBoxLayout(p);l.setContentsMargins(12,8,12,8);l.setSpacing(8);w.pages.addWidget(outer);self.names[outer]=title;w.pages.setCurrentWidget(outer)
   if self.pending:self.cache[self.pending]=outer
@@ -157,7 +185,7 @@ class Shell:
  def select_group(self,group):self.group=group;self.filter(self.search.text());self.home()
  def filter(self,text):
   matched=[]
-  for i,e in enumerate(ENTRIES):
+  for i,e in enumerate(ENTRIES[:len(self.w.home_cards)]):
    b=self.w.home_cards[i];visible=(self.group is None or e[4]==self.group) and str(text).casefold() in (' '.join(e[1])+' '+e[0]).casefold();b.setVisible(visible)
    if visible:matched.append(b)
   for i,b in enumerate(matched):self.grid.addWidget(b,i//4,i%4)
@@ -223,7 +251,7 @@ class Shell:
   intent=store.cache('desktop_launch_intent')
   if isinstance(intent,dict) and intent.get('action')=='assistant' and intent.get('id') and intent.get('id')!=getattr(self,'last_launch_intent',None):
    self.last_launch_intent=intent['id'];store.cache('desktop_launch_intent',{'id':intent['id'],'action':'consumed'});self.show_assistant()
-  info=transport.LINK.info();v=self.w.vehicle;vehicle=' · '.join(str(v.get(k,'')) for k in ('make','model','year','engine') if v.get(k));self.vehicle_label.setText(vehicle or t('اختر سيارة أو اتصل بمحول','Choisir véhicule ou adaptateur','Choose a vehicle or adapter'));ui=getattr(self.w,'diagnostic_workspace',None);voltage='—';report=getattr(ui,'report',None)
+  info=transport.LINK.info();v=self.w.vehicle;self.home_state.setText(t('المحول متصل؛ تحقق من هوية السيارة قبل الفحص','Adaptateur connecté ; vérifier le véhicule','Adapter connected; verify vehicle identity') if info.get('connected') else t('غير متصل · اختر سيارة أو اربط محولاً لبدء القراءة','Déconnecté · choisir un véhicule ou un adaptateur','Disconnected · select a vehicle or connect an adapter'));vehicle=' · '.join(str(v.get(k,'')) for k in ('make','model','year','engine') if v.get(k));self.vehicle_label.setText(vehicle or t('اختر سيارة أو اتصل بمحول','Choisir véhicule ou adaptateur','Choose a vehicle or adapter'));ui=getattr(self.w,'diagnostic_workspace',None);voltage='—';report=getattr(ui,'report',None)
   if report and info.get('connected') and ui.connection_key()==ui.connection_identity and report.get('vehicle')==v:
    samples=[r for r in ui.samples if r.get('pid')==0x42 and isinstance(r.get('value'),(int,float))]
    if samples:voltage=str(samples[-1]['value'])+' V · '+str(samples[-1].get('at',''))
@@ -233,6 +261,11 @@ class Shell:
   if report and report.get('id')!=self.last_report:self.last_report=report.get('id');self.notifications.append(t('حُفظ فحص؛ راجع الحالة والأخطاء','Scan enregistré; vérifier erreurs','Scan saved; review status and errors'))
   if time.monotonic()-self.recent_check>10:
    self.recent_check=time.monotonic()
+   import vehicle_history
+   self.vehicle_records.clear()
+   profiles=vehicle_history.profiles();self.no_vehicles.setVisible(not profiles)
+   for profile in profiles:
+    v=profile['vehicle'];item=QListWidgetItem(' · '.join(str(v.get(k,'')) for k in ('make','model','year','engine'))+' · '+str(profile['visits'])+' '+t('زيارات','visites','visits'));item.setData(Qt.UserRole,v);self.vehicle_records.addItem(item)
    try:
     import json
     with store.db() as db:rows=db.execute('SELECT vehicle,command FROM reports ORDER BY id DESC LIMIT 3').fetchall()

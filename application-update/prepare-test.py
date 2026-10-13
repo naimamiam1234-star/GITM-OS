@@ -23,7 +23,7 @@ replacement="""            import hashlib
             (out/'ksplash-before.txt').write_text(owner.stdout+owner.stderr+(splash.read_text() if splash.is_file() else 'No prior global splash configuration'))
             transaction('install-app-package',['apt-get','install','-y',str(candidate)]+resources)
             if sentinel.read_text()!='Synthetic CI fixture, not customer data':raise RuntimeError('User sentinel modified')
-            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.4.0-3':raise RuntimeError('Candidate version not installed')
+            if run(['dpkg-query','-W','-f=${Version}','gitm-autodiag']).strip()!='3.5.0~preview1':raise RuntimeError('Candidate version not installed')
             shortcut=P('/usr/share/applications/gitm-assistant.desktop')
             if not shortcut.is_file() or '--assistant' not in shortcut.read_text():raise RuntimeError('Assistant launcher missing')
 """.replace('EXPECTED_CANDIDATE',repr(digest)).replace('RESOURCE_DIGESTS',repr(resource_digests))

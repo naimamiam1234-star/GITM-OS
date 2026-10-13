@@ -24,7 +24,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: GITM-AutoDiag-3.4.0-debian-candidate
-          run-id: '38436265822'
+          run-id: '38441081505'
           github-token: ${{ github.token }}
           path: input
       - name: Verify public resource service
@@ -33,7 +33,7 @@ jobs:
           python3 -c "import json; j=json.load(open('/tmp/portal.json')); assert j['version']=='3.4.0' and len(j['assets'])==22"
       - name: Build application-only candidate from SHA-pinned existing package
         run: |
-          source=$(find input -type f -name 'gitm-autodiag_3.4.0-2_all.deb' -print -quit)
+          source=$(find input -type f -name 'gitm-autodiag_3.4.0-3_all.deb' -print -quit)
           python3 application-update/build.py "$source"
           python3 - <<'PY'
           import pathlib,hashlib,shutil
@@ -76,7 +76,7 @@ jobs:
         run: |
           source=$(find input -type f -name '*.iso' -print -quit)
           test -n "$source"
-          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.4.0-3_all.deb dist/app-update/gitm-sdk-sources_2026.10.13-1_all.deb dist/app-update/gitm-obdb-data_2026.10.13-1_all.deb
+          python3 application-update/prepare-test.py "$source" dist/app-update/gitm-autodiag_3.5.0~preview1_all.deb dist/app-update/gitm-sdk-sources_2026.10.13-1_all.deb dist/app-update/gitm-obdb-data_2026.10.13-1_all.deb
       - name: Install to fresh 40GiB disk and boot without ISO
         env:
           BOOT_MODE: ${{ matrix.boot_mode }}

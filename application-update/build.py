@@ -1,6 +1,6 @@
 """Build an application-only .deb from the verified existing GITM ISO."""
 import argparse,hashlib,json,pathlib,shutil,subprocess,tempfile
-EXPECTED_BASE_DEB='1f3ed627c2288f80c66d3c1ebeddc9817af72773a582ee796abd62b845a98e7a'
+EXPECTED_BASE_DEB='bdfe0e9b830cedb8737a531a8555ee2a730fc549d7bd4b7bc9bda5a27a622081'
 EXPECTED='d5e7851cac398f2ed2aad2fe62e72913bfb5b0950fa048273b2aaa7d6a8e56be'
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 def sha(path):
@@ -24,18 +24,18 @@ def main():
   if not (app/'native.py').exists():raise ValueError('Existing GITM application missing')
   run('python3',ROOT/'diag-integration/install.py',app)
   for cache in list(app.rglob('__pycache__')):shutil.rmtree(cache)
-  (app/'gitm-app-release.json').write_text(json.dumps({'version':'3.4.0','debian_version':'3.4.0-3','source_iso_sha256':EXPECTED,'delivery':'local administrative Debian package; not a signed gitmupdate'},indent=2))
+  (app/'gitm-app-release.json').write_text(json.dumps({'version':'3.5.0-preview1','debian_version':'3.5.0~preview1','source_iso_sha256':EXPECTED,'delivery':'local administrative Debian package; not a signed gitmupdate'},indent=2))
   shutil.copytree(ROOT/'diag-integration/system-integration',stage,dirs_exist_ok=True)
   watermark=stage/'usr/share/plymouth/themes/gitm/watermark.png';watermark.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(app/'assets/branding/symbol.png',watermark)
   control=stage/'DEBIAN';control.mkdir()
-  (control/'control').write_text('Package: gitm-autodiag\nVersion: 3.4.0-3\nArchitecture: all\nMaintainer: GITM OS Project\nDepends: python3, plymouth, plymouth-theme-spinner\nDescription: Application-only GITM AutoDiag update for existing GITM OS\n Includes sourced brand assets and model names, retains installed runtime and user data.\n')
+  (control/'control').write_text('Package: gitm-autodiag\nVersion: 3.5.0~preview1\nArchitecture: all\nMaintainer: GITM OS Project\nDepends: python3, plymouth, plymouth-theme-spinner\nDescription: Application-only GITM AutoDiag update for existing GITM OS\n Includes sourced brand assets and model names, retains installed runtime and user data.\n')
   (control/'conffiles').write_text('/etc/default/grub.d/91-gitm-branding.cfg\n/etc/xdg/ksplashrc\n')
   pre=control/'preinst';pre.write_text('#!/bin/sh\nset -eu\n[ "$(dpkg --print-architecture)" = amd64 ]\n[ -x /opt/gitm-venv/bin/python ]\n[ -f /opt/gitm/native.py ]\n');pre.chmod(0o755)
   for name in ('postinst','postrm'):
    script=control/name;shutil.copy2(ROOT/'branding-update'/name,script);script.chmod(0o755)
   files=[f for folder in (app,stage/'usr',stage/'etc') for f in sorted(folder.rglob('*')) if f.is_file() and not f.is_symlink()]
   (control/'md5sums').write_text(''.join(hashlib.md5(f.read_bytes()).hexdigest()+'  '+str(f.relative_to(stage))+'\n' for f in files))
-  package=a.output/'gitm-autodiag_3.4.0-3_all.deb';run('dpkg-deb','--root-owner-group','--build',stage,package)
+  package=a.output/'gitm-autodiag_3.5.0~preview1_all.deb';run('dpkg-deb','--root-owner-group','--build',stage,package)
   manifest={'package':package.name,'sha256':sha(package),'bytes':package.stat().st_size,'source_iso_sha256':EXPECTED,'preserves':'Runtime, system signing key and home directories are outside this package','files':{str(f.relative_to(stage)):sha(f) for f in files},'symlinks':{str(f.relative_to(stage)):str(f.readlink()) for f in stage.rglob('*') if f.is_symlink()}}
   (a.output/'build-manifest.json').write_text(json.dumps(manifest,indent=2));(a.output/'SHA256SUMS').write_text(manifest['sha256']+'  '+package.name+'\n')
   print('PASS: application package built',package,manifest['sha256'])
