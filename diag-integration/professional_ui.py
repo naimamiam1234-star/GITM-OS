@@ -59,7 +59,7 @@ class Shell:
   import system_settings
   self.theme=system_settings.preferences().get('theme','auto');self.font=system_settings.preferences().get('font_size',16)
   w.menuBar().clear();w.menuBar().hide();w.vehicle=dict(w.vehicle or store.cache('vehicle_selection') or {});old=w.centralWidget();w.takeCentralWidget();old.deleteLater();w.setWindowFlags(Qt.Window);w.setWindowTitle('GearDiag');w.setMinimumSize(780,620)
-  root=QWidget();w.setCentralWidget(root);outer=QVBoxLayout(root);outer.setContentsMargins(0,0,0,0);outer.setSpacing(0);w.layout=outer
+  root=QWidget();root.setLayoutDirection(Qt.RightToLeft if language()=='ar' else Qt.LeftToRight);w.setCentralWidget(root);outer=QVBoxLayout(root);outer.setContentsMargins(0,0,0,0);outer.setSpacing(0);w.layout=outer
   header=QWidget();header.setObjectName('header');hl=QHBoxLayout(header);hl.setContentsMargins(12,8,12,8)
   toggle=action_button('☰');toggle.setAccessibleName(t('القائمة الجانبية','Navigation','Navigation'));toggle.setMaximumWidth(44);toggle.clicked.connect(lambda:self.sidebar.toggle());hl.addWidget(toggle)
   brand=QLabel('GearDiag');brand.setObjectName('brand');hl.addWidget(brand);self.title=QLabel(t('الرئيسية','Accueil','Home'));self.title.setObjectName('pageTitle');self.title.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Preferred);hl.addWidget(self.title,1)
@@ -80,7 +80,7 @@ class Shell:
   self.bell=action_button('●');self.bell.setAccessibleName(t('الإشعارات','Notifications','Notifications'));nm=QMenu(self.bell);nm.aboutToShow.connect(self.alert_menu);self.bell.setMenu(nm);self.bell.setMaximumWidth(42);hl.addWidget(self.bell);outer.addWidget(header)
   self.header_buttons=((toggle,'menu'),(self.appearance,'appearance'),(self.split,'split'),(self.bell,'notifications'))
   for button,kind in self.header_buttons:button.setText('');button.setIcon(header_icon(kind));button.setIconSize(QSize(24,24))
-  middle=QHBoxLayout();middle.setDirection(QHBoxLayout.RightToLeft if language()=='ar' else QHBoxLayout.LeftToRight);middle.setContentsMargins(0,0,0,0);outer.addLayout(middle,1);self.sidebar=NavigationRail();self.sidebar.setObjectName('sidebar');side=QVBoxLayout(self.sidebar);side.setContentsMargins(8,12,8,12);home=action_button(t('الرئيسية','Accueil','Home'),icon='home');home.clicked.connect(self.home);side.addWidget(home);self.sidebar.register(home)
+  middle=QHBoxLayout();middle.setDirection(QHBoxLayout.LeftToRight);middle.setContentsMargins(0,0,0,0);outer.addLayout(middle,1);self.sidebar=NavigationRail();self.sidebar.setObjectName('sidebar');side=QVBoxLayout(self.sidebar);side.setContentsMargins(8,12,8,12);home=action_button(t('الرئيسية','Accueil','Home'),icon='home');home.clicked.connect(self.home);side.addWidget(home);self.sidebar.register(home)
   for i,group in enumerate(GROUPS):
    b=action_button(t(*group),icon=('smart','tools','engine','data','history','settings')[i]);menu=QMenu(b)
    for key,labels,ico,method,g in ENTRIES:
@@ -121,20 +121,10 @@ class Shell:
   if self.assistant_panel is not None and not self.assistant_panel.isHidden():self.assistant_panel.hide()
   else:self.show_assistant()
  def build_home(self):
-  w=self.w;home=QWidget();body=QVBoxLayout(home);body.setContentsMargins(14,10,14,10);body.setSpacing(8);self.vehicle_card=InfoCard(t('السيارة الحالية','Véhicule actuel','Current vehicle'));self.vehicle_label=QLabel();self.vehicle_label.setWordWrap(True);self.vehicle_card.body.addWidget(self.vehicle_label);body.addWidget(self.vehicle_card)
-  actions=QHBoxLayout();self.home_actions={}
-  for key,labels,ico in [('vehicle',('اختيار سيارة','Choisir un véhicule','Choose vehicle'),'car'),('adapter',('ربط المحول','Connecter VCI','Connect adapter'),'engine'),('diagnosis',('بدء التشخيص','Diagnostic','Start diagnosis'),'smart'),('ai',('المساعد التشخيصي','Assistant de session','Session assistant'),'ai')]:
-   button=action_button(t(*labels),role='primary' if key=='diagnosis' else 'secondary',icon=ico);button.clicked.connect(lambda checked=False,key=key:self.navigate(key));actions.addWidget(button);self.home_actions[key]=button
-  self.vehicle_card.body.addLayout(actions)
-  portal=action_button(t('معلومات السيارة','Informations véhicule','Vehicle information'));portal.clicked.connect(w.sources_page);self.vehicle_card.body.addWidget(portal)
-  heading=QLabel(t('ابدأ جلسة تشخيص','Démarrer une session','Start a diagnostic session'));heading.setObjectName('heading');body.insertWidget(0,heading)
-  self.home_state=QLabel();self.home_state.setWordWrap(True);body.insertWidget(1,self.home_state)
-  visit=action_button(t('استكمال زيارة / بدء زيارة','Reprendre / démarrer une visite','Resume / start a visit'),icon='history');vm=QMenu(visit);vm.addAction(t('استكمال الزيارة الحالية','Reprendre la visite','Resume current visit'),lambda:self.begin_visit(True));vm.addAction(t('إنشاء زيارة جديدة','Nouvelle visite','Create new visit'),lambda:self.begin_visit(False));visit.setMenu(vm);body.addWidget(visit)
-  records=InfoCard(t('السيارات السابقة','Véhicules précédents','Previous vehicles'));body.addWidget(records)
-  self.vehicle_records=QListWidget();self.vehicle_records.itemActivated.connect(self.restore_vehicle);records.body.addWidget(self.vehicle_records);self.vehicle_records.setMaximumHeight(280)
-  self.no_vehicles=QLabel(t('لا توجد سيارات محفوظة بعد. اختر السيارة ثم ابدأ زيارة لحفظها هنا.','Aucun véhicule enregistré. Choisir un véhicule et démarrer une visite.','No saved vehicles yet. Select a vehicle and start a visit to save it here.'));self.no_vehicles.setWordWrap(True);records.body.addWidget(self.no_vehicles)
-  self.recents=QLabel();self.recents.setObjectName('muted');self.recents.setWordWrap(True);body.addWidget(self.recents);body.addStretch(1)
-  w.home_cards=[];self.grid=QGridLayout();w.pages.addWidget(home);self.names[home]=t('الرئيسية','Accueil','Home');self.cache['home']=home
+  from cockpit_dashboard import Cockpit
+  home=Cockpit(self);self.cockpit=home
+  for name in ('vehicle_label','home_state','home_actions','vehicle_records','no_vehicles','recents'):setattr(self,name,getattr(home,name))
+  self.w.home_cards=[];self.grid=QGridLayout();viewport=QScrollArea();viewport.setWidgetResizable(True);viewport.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff);viewport.setWidget(home);self.w.pages.addWidget(viewport);self.names[viewport]=t('الجلسة','Session','Session');self.cache['home']=viewport
  def begin_visit(self,resume=True):
   import vehicle_history
   try:
@@ -257,6 +247,7 @@ class Shell:
   if report and info.get('connected') and ui.connection_key()==ui.connection_identity and report.get('vehicle')==v:
    samples=[r for r in ui.samples if r.get('pid')==0x42 and isinstance(r.get('value'),(int,float))]
    if samples:voltage=str(samples[-1]['value'])+' V · '+str(samples[-1].get('at',''))
+  self.cockpit.update_session(self.w.vehicle,info,report)
   protocol=info.get('protocol_number');protocol_names={6:'CAN 11/500',7:'CAN 29/500',8:'CAN 11/250',9:'CAN 29/250'}
   mode=t('متصل بالمحاكي','Connecté au simulateur','Connected to simulator') if report and report.get('evidence')=='simulator' and ui.connection_key()==ui.connection_identity else t('متصل','Connecté','Connected')
   self.context.setText(('● '+mode if info.get('connected') else '○ '+t('غير متصل','Déconnecté','Disconnected'))+' · '+str(info.get('adapter') or '—')+' · '+str(info.get('target') or '—')+' · '+protocol_names.get(protocol,'—')+' · '+t('الجهد','Tension','Voltage')+': '+voltage+(' · '+vehicle if vehicle else ''))

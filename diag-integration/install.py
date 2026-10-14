@@ -1,7 +1,7 @@
 """Overlay tested engines and wire native AutoDiag pages; fail on source drift."""
 import pathlib, shutil, sys, py_compile
 
-MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','vci_workspace','adapter_registry','vehicle_workspace','vehicle_definitions','vehicle_resources','workshop_workspace','ai_workspace','assistant_core','session_assistant','instance_gate','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace','resource_library','vehicle_history','branding','branding_controls','boot_media')
+MODULES=('obd_session','obd_simulator','diagnostic_workspace','diagnostic_reports','ecu_workspace','ecu_scan','diagnostic_platform','professional_components','professional_ui','cockpit_dashboard','vci_workspace','adapter_registry','vehicle_workspace','vehicle_definitions','vehicle_resources','workshop_workspace','ai_workspace','assistant_core','session_assistant','instance_gate','update_workspace','business_workspace','can_workspace','support_workspace','knowledge_workspace','system_services','resource_workspace','resource_library','vehicle_history','branding','branding_controls','boot_media')
 def patch_assistant_launch(code):
     helper="def apply_launch_intent(window,argv):\n    if '--assistant' in argv:\n        window.professional_shell.show_assistant()\n\n"
     if 'def apply_launch_intent(' not in code:
