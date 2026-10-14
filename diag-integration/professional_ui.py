@@ -37,18 +37,17 @@ class CloseGuard(QObject):
 
 class NavigationRail(QWidget):
  def __init__(self,parent=None):
-  super().__init__(parent);self.expanded=False;self.pinned=False;self.items=[];self.setFixedWidth(8)
+  super().__init__(parent);self.expanded=False;self.pinned=False;self.items=[];self.setFixedWidth(60)
  def register(self,button):
-  self.items.append((button,button.text()));button.setToolTip(button.text());button.setAccessibleName(button.text());button.setText('');button.setVisible(False)
+  self.items.append((button,button.text()));button.setToolTip(button.text());button.setAccessibleName(button.text());button.setText('');button.setVisible(True)
  def reveal(self,expanded):
-  self.expanded=bool(expanded);self.setFixedWidth(192 if self.expanded else 8)
-  for button,label in self.items:button.setVisible(self.expanded);button.setText(label if self.expanded else '')
+  self.expanded=bool(expanded);self.setFixedWidth(192 if self.expanded else 60)
+  for button,label in self.items:button.setVisible(True);button.setText(label if self.expanded else '')
  def toggle(self):
   self.pinned=not self.pinned;self.reveal(self.pinned)
  def enterEvent(self,event):
   if not self.pinned:
-   self.setFixedWidth(60)
-   for button,label in self.items:button.setVisible(True);button.setText('')
+   self.reveal(True)
   super().enterEvent(event)
  def leaveEvent(self,event):
   if not self.pinned and not any(b.menu() and b.menu().isVisible() for b,_ in self.items):self.reveal(False)
