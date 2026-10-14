@@ -11,11 +11,11 @@ from vci_workspace import Workspace as ConnectionWorkspace
 def text(ar,fr,en):return triple(ar,fr,en)
 class BrandTile(QPushButton):
  def __init__(self,name):
-  super().__init__(name);self.setAccessibleName(name);self.setMinimumHeight(88)
+  super().__init__(name);self.setAccessibleName(name);self.setMinimumHeight(142)
  def paintEvent(self,event):
   painter=QStylePainter(self);option=QStyleOptionButton();self.initStyleOption(option);option.text='';option.icon=QIcon();painter.drawControl(QStyle.CE_PushButton,option)
-  pix=self.icon().pixmap(self.iconSize());painter.drawPixmap((self.width()-pix.width())//2,14,pix)
-  painter.setPen(self.palette().buttonText().color());label=self.fontMetrics().elidedText(self.text(),Qt.ElideRight,max(1,self.width()-16));painter.drawText(8,44,self.width()-16,self.height()-48,Qt.AlignCenter,label)
+  pix=self.icon().pixmap(self.iconSize());painter.drawPixmap((self.width()-pix.width())//2,24,pix)
+  painter.setPen(self.palette().buttonText().color());label=self.fontMetrics().elidedText(self.text(),Qt.ElideRight,max(1,self.width()-16));painter.drawText(8,84,self.width()-16,self.height()-88,Qt.AlignCenter,label)
 
 class Choice(QComboBox):
  def __init__(self,value='',choices=()):
@@ -48,10 +48,10 @@ class Workspace(QWidget):
    for name,asset in vehicle_resources.logos().items():
     key=next((key for key in logos if key.casefold()==name.casefold()),name);logos[key]=asset
   for name,data in logos.items():
-   button=BrandTile(name);button.setObjectName('vehicleBrand');button.setIconSize(QSize(32,24));pix=QPixmap(data.get('resolved_path') or str(base/str(data.get('path','')).lstrip('/')))
+   button=BrandTile(name);button.setObjectName('vehicleBrand');button.setIconSize(QSize(64,48));pix=QPixmap(data.get('resolved_path') or str(base/str(data.get('path','')).lstrip('/')))
    if not pix.isNull():
     # Source brand marks are often black; a neutral tile stays readable in both themes.
-    logo=pix.scaled(28,20,Qt.KeepAspectRatio,Qt.SmoothTransformation);tile=QPixmap(32,24);tile.fill(Qt.transparent);painter=QPainter(tile);painter.setRenderHint(QPainter.Antialiasing);painter.setPen(Qt.NoPen);painter.setBrush(QColor('#f4f6f8'));painter.drawRoundedRect(0,0,32,24,3,3);painter.drawPixmap((32-logo.width())//2,(24-logo.height())//2,logo);painter.end();button.setIcon(QIcon(tile))
+    logo=pix.scaled(56,40,Qt.KeepAspectRatio,Qt.SmoothTransformation);tile=QPixmap(64,48);tile.fill(Qt.transparent);painter=QPainter(tile);painter.setRenderHint(QPainter.Antialiasing);painter.setPen(Qt.NoPen);painter.setBrush(QColor('#f4f6f8'));painter.drawRoundedRect(0,0,64,48,6,6);painter.drawPixmap((64-logo.width())//2,(48-logo.height())//2,logo);painter.end();button.setIcon(QIcon(tile))
    button.setCheckable(True);button.clicked.connect(lambda checked=False,n=name:self.choose_make(n));self.buttons[name]=button
   self.search.textChanged.connect(self.reflow);self.only_favorites.toggled.connect(self.reflow)
   self.fields={};row=QHBoxLayout();detail_layout.addLayout(row,1);identity=InfoCard(text('هوية السيارة','Identité véhicule','Vehicle identity'));row.addWidget(identity,3);identity.body.setAlignment(Qt.AlignTop);identity.setMaximumHeight(380);form=QFormLayout();identity.body.addLayout(form);image_card=InfoCard(text('صورة السيارة المختارة','Photo du véhicule','Selected vehicle photo'));row.addWidget(image_card,2);image_card.setMaximumHeight(380);self.photo=QLabel();self.photo.setAlignment(Qt.AlignCenter);self.photo.setMinimumSize(160,130);self.photo.setWordWrap(True);image_card.body.addWidget(self.photo,1);self.photo_path='';self.photo_identity=None;attach=action_button(text('إضافة صورة السيارة','Ajouter une photo','Attach vehicle photo'));attach.clicked.connect(self.attach_photo);image_card.body.addWidget(attach);self.summary=QLabel();self.summary.setWordWrap(True);image_card.body.addWidget(self.summary)

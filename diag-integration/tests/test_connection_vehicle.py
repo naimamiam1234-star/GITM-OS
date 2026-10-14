@@ -44,7 +44,8 @@ class ConnectionVehicleTests(unittest.TestCase):
  def test_grid_reflows_and_logo_bounds(self):
   page=vehicle_workspace.Workspace(self.window,logos={'A':{},'B':{},'C':{},'D':{},'E':{}});self.widgets.append(page);page.resize(1280,800);page.reflow();self.assertEqual(page.columns(),4)
   page.search.setText('E');self.assertEqual(page.grid.itemAtPosition(0,0).widget().text(),'E')
-  self.assertEqual(page.buttons['E'].iconSize(),QSize(32,24));self.assertEqual(page.columns_for(1024),3)
+  self.assertEqual(page.buttons['E'].iconSize(),QSize(64,48));self.assertEqual(page.columns_for(1024),3)
  def test_lookup_requires_explicit_consent(self):
   page=vehicle_workspace.Workspace(self.window,logos={});self.widgets.append(page);page.launch=Mock();page.lookup();page.launch.assert_not_called()
 if __name__=='__main__':unittest.main()
+

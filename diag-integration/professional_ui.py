@@ -259,6 +259,7 @@ class Shell:
    profiles=vehicle_history.profiles();self.no_vehicles.setVisible(not profiles)
    for profile in profiles:
     v=profile['vehicle'];item=QListWidgetItem(' · '.join(str(v.get(k,'')) for k in ('make','model','year','engine'))+' · '+str(profile['visits'])+' '+t('زيارات','visites','visits'));item.setData(Qt.UserRole,v);self.vehicle_records.addItem(item)
+   self.vehicle_records.setVisible(bool(profiles))
    try:
     import json
     with store.db() as db:rows=db.execute('SELECT vehicle,command FROM reports ORDER BY id DESC LIMIT 3').fetchall()

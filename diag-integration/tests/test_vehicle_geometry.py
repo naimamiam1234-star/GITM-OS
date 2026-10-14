@@ -23,7 +23,8 @@ class VehicleGeometryTests(unittest.TestCase):
      option = QStyleOptionButton();button.initStyleOption(option)
      content = button.style().subElementRect(QStyle.SE_PushButtonContents, option, button)
      self.assertGreaterEqual(content.height(), max(button.iconSize().height(), button.fontMetrics().height()))
-     self.assertLessEqual(button.iconSize().width(), 32)
+     self.assertLessEqual(button.iconSize().width(), 64)
+     self.assertGreaterEqual(button.height()-88, button.fontMetrics().height())
      self.assertEqual(button.objectName(), 'vehicleBrand')
      page.close();page.deleteLater();window.deleteLater();APP.processEvents()
 
@@ -46,3 +47,4 @@ class VehicleGeometryTests(unittest.TestCase):
    self.assertEqual(page.columns(), 4)
    page.resize(700, 900);APP.processEvents();self.assertEqual(page.columns(), 2)
    page.close();page.deleteLater();window.deleteLater();APP.processEvents()
+
