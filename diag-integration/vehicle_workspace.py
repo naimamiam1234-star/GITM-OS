@@ -3,9 +3,9 @@ import json,hashlib,datetime
 from pathlib import Path
 from PySide6.QtCore import QSize,Qt
 from PySide6.QtGui import QPixmap,QIcon,QPainter,QColor,QFontMetrics
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QScrollArea,QLineEdit,QFormLayout,QCheckBox,QTextEdit,QLabel,QComboBox,QTabWidget,QFileDialog,QStackedWidget,QPushButton,QStylePainter,QStyleOptionButton,QStyle
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QScrollArea,QLineEdit,QFormLayout,QCheckBox,QTextEdit,QLabel,QComboBox,QTabWidget,QFileDialog,QStackedWidget,QPushButton,QStylePainter,QStyleOptionButton,QStyle,QSizePolicy
 import native,store,source_gateway
-from professional_components import triple,action_button,InfoCard
+from professional_components import triple,action_button,InfoCard,icon
 from vci_workspace import Workspace as ConnectionWorkspace
 
 def text(ar,fr,en):return triple(ar,fr,en)
@@ -90,15 +90,25 @@ class Workspace(QWidget):
    item=layout.takeAt(0)
    if item.widget():item.widget().deleteLater()
   heading=QLabel(title);heading.setObjectName('heading');heading.setWordWrap(True);layout.addWidget(heading)
-  if self.selected_definition:
-   source=QLabel(str(self.selected_definition.get('source',''))+' · '+str(self.selected_definition.get('market','')));source.setWordWrap(True);layout.addWidget(source)
+  identity=QLabel('  /  '.join(self.fields[k].text() for k in ('make','model','year') if self.fields[k].text()));identity.setObjectName('muted');identity.setWordWrap(True);layout.addWidget(identity)
   if options:
-   area=QScrollArea();area.setWidgetResizable(True);container=QWidget();items=QVBoxLayout(container)
+   search=QLineEdit();search.setPlaceholderText(text('ابحث في الخيارات','Rechercher une option','Search available options'));layout.addWidget(search)
+   area=QScrollArea();area.setWidgetResizable(True);container=QWidget();items=QGridLayout(container);items.setSpacing(14);items.setAlignment(Qt.AlignTop);buttons=[]
+   cols=5 if key=='year' else 2 if key=='engine' else max(2,min(4,self.columns()))
    for label,value in options:
-    button=action_button(label);button.clicked.connect(lambda checked=False,value=value:callback(value));items.addWidget(button)
-   items.addStretch();area.setWidget(container);layout.addWidget(area,1)
+    button=action_button(label,icon='engine' if key=='engine' else 'car' if key=='model' else 'history');button.setObjectName('vehicleChoice');button.setMinimumHeight(100 if key!='engine' else 112);button.setIconSize(QSize(36,36));button.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed);button.setToolTip(label)
+    button.clicked.connect(lambda checked=False,value=value:callback(value));buttons.append(button)
+   empty=QLabel(text('لا توجد نتائج مطابقة','Aucun résultat','No matching results'));layout.addWidget(empty);empty.hide()
+   def filter_options(query):
+    while items.count():items.takeAt(0)
+    visible=[b for b in buttons if query.strip().casefold() in b.text().casefold()]
+    for b in buttons:b.setVisible(b in visible)
+    for index,b in enumerate(visible):items.addWidget(b,index//cols,index%cols)
+    for col in range(cols):items.setColumnStretch(col,1)
+    empty.setVisible(not visible)
+   search.textChanged.connect(filter_options);filter_options('');area.setWidget(container);layout.addWidget(area,1)
   else:
-   empty=QLabel(text('لا توجد بيانات موثقة لهذه المرحلة؛ استخدم الإدخال اليدوي','Aucune donnée documentée ; saisie manuelle disponible','No documented entries for this step; manual entry available'));empty.setWordWrap(True);layout.addWidget(empty)
+   empty=InfoCard(text('المعلومات غير متوفرة بعد','Informations indisponibles','Information not available yet'));message=QLabel(text('لا توجد بيانات موثقة لهذه المرحلة. يمكنك إدخالها يدويًا دون اعتمادها كتوافق مؤكد.','Aucune donnée documentée. Saisie manuelle sans validation de compatibilité.','No documented entries for this step. Manual entry does not confirm compatibility.'));message.setWordWrap(True);empty.body.addWidget(message);layout.addWidget(empty)
   button=action_button(text('إدخال يدوي — بيانات غير متحقق منها','Saisie manuelle — non vérifiée','Manual entry — unverified'));button.clicked.connect(manual);layout.addWidget(button)
   self.tabs.setCurrentIndex({'model':1,'year':2,'engine':3}[key])
  def choose_make(self,make):
@@ -111,10 +121,10 @@ class Workspace(QWidget):
   known={row['model'].casefold() for row in rows}
   for item in vehicle_resources.models(make):
    if item['model'].casefold() not in known:rows.append({'make':make,'model':item['model'],'generation':'','market':'NHTSA vPIC · model name only','source':item['source'],'years':[],'engines':[]})
-  self.stage('model',make+' · '+text('اختر الموديل والجيل والسوق','Modèle, génération et marché','Model, generation and market'),[(r['model']+' · '+r['generation']+' · '+r['market'],r) for r in rows],self.choose_model,lambda:self.manual_stage('model',self.manual_year))
+  self.stage('model',make+' · '+text('اختر الموديل والجيل والسوق','Modèle, génération et marché','Model, generation and market'),[(' · '.join(v for v in (r['model'],r['generation'],r['market'] if r['years'] else '') if v),r) for r in rows],self.choose_model,lambda:self.manual_stage('model',self.manual_year))
  def choose_model(self,row):
   self.selected_definition=row;self.fields['model'].setText((row['model']+' '+row['generation']).strip());self.fields['year'].setText('');self.fields['engine'].setText('');self.fields['fuel'].setText('')
-  self.stage('year',text('سنوات الموديل المسجلة في المصدر','Années documentées du modèle','Documented model years'),[(str(y),y) for y in sorted(set(row['years']),reverse=True)],self.choose_year,lambda:self.manual_stage('year',self.manual_engine))
+  self.stage('year',text('اختيار سنة الموديل','Choisir l’année du modèle','Choose model year'),[(str(y),y) for y in sorted(set(row['years']),reverse=True)],self.choose_year,lambda:self.manual_stage('year',self.manual_engine))
  def choose_year(self,year):
   import vehicle_definitions
   self.fields['year'].setText(str(year));self.fields['engine'].setText('');self.fields['fuel'].setText('')

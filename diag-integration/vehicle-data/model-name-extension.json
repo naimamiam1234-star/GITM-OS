@@ -1,0 +1,65 @@
+[
+  {
+    "make": "Renault",
+    "model": "Clio",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Megane",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Captur",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Symbioz",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Austral",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Rafale",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Scenic",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Espace",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  },
+  {
+    "make": "Renault",
+    "model": "Kangoo",
+    "source": "https://www.renault.fr/gamme.html",
+    "scope": "model name only; no years, engine or diagnostic compatibility inferred",
+    "reviewed_utc": "2026-10-14"
+  }
+]

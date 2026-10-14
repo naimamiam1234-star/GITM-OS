@@ -17,4 +17,4 @@ def logos():
   output[row['name']]={'resolved_path':str(path),'source':'https://github.com/vehiclespecs/brand-logos','license':'Logo trademark rights; repository license excludes image ownership'}
  return output
 def models(make):
- return [row for row in read('models.json') if row['make'].casefold()==str(make).strip().casefold()]
+ return [row for row in read('models.json')+read('model-name-extension.json') if row['make'].casefold()==str(make).strip().casefold()]
